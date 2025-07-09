@@ -14,7 +14,7 @@ namespace lon
 {
 namespace log
 {
-class Logger
+class Logger : public std::enable_shared_from_this<Logger>
 {
   public:
     using Ptr = std::shared_ptr<Logger>;
@@ -33,6 +33,7 @@ class Logger
     void setLevel(const std::string &level);
     std::string getLevel() const;
     void getLevel(Loglevel::Level &level);
+    std::string getName() const;
 
     void test();
 
@@ -40,6 +41,7 @@ class Logger
     std::string m_name;                        //日志名称
     Loglevel::Level m_level;                   //日志等级
     std::vector<LogAppender::Ptr> m_appenders; //日志输出目的地向量
+    LogFormatter::Ptr m_formatter;
 };
 } // namespace log
 } // namespace lon

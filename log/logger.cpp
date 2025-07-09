@@ -5,7 +5,11 @@ namespace lon
 {
 namespace log
 {
-Logger::Logger(const std::string &name) : m_name(name), m_appenders({}) {}
+Logger::Logger(const std::string &name)
+    : m_name(name), m_appenders({}), m_level(Loglevel::Level::DEBUG)
+{
+    m_formatter = std::make_shared<LogFormatter>("%c->%d [%p] <%f:%l>: %m %n");
+}
 
 void Logger::log(Loglevel::Level level, LogEvent::Ptr event)
 {
@@ -15,7 +19,7 @@ void Logger::log(Loglevel::Level level, LogEvent::Ptr event)
     }
     for (const auto &it : m_appenders)
     {
-        it->log(level, event);
+        it->log(shared_from_this()->m_name, level, event);
     }
 }
 
@@ -29,7 +33,14 @@ void Logger::error(LogEvent::Ptr event) { log(Loglevel::Level::ERROR, event); }
 
 void Logger::fatal(LogEvent::Ptr event) { log(Loglevel::Level::FATAL, event); }
 
-void Logger::addAppender(LogAppender::Ptr appender) { m_appenders.push_back(appender); }
+void Logger::addAppender(LogAppender::Ptr appender)
+{
+    if (!appender->getFormatter())
+    {
+        appender->setFormatter(m_formatter);
+    }
+    m_appenders.push_back(appender);
+}
 
 void Logger::delAppender(LogAppender::Ptr appender)
 {
@@ -50,6 +61,8 @@ void Logger::setLevel(const std::string &level) { m_level = Loglevel::getLevelBy
 std::string Logger::getLevel() const { return Loglevel::getLevelName(m_level); }
 
 void Logger::getLevel(Loglevel::Level &level) { level = m_level; }
+
+std::string Logger::getName() const { return m_name; }
 
 void Logger::test()
 {

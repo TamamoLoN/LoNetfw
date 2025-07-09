@@ -20,7 +20,7 @@ const std::string Loglevel::getLevelName(Loglevel::Level level)
         break;
     }
 #undef GET_STR
-    return std::string();
+    return "UNKNOWN";
 }
 Loglevel::Level Loglevel::getLevelByName(const std::string level_name)
 {

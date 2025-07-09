@@ -1,6 +1,4 @@
 #pragma once
-// #include "log/logger.h"
-#include "log/logformatter.h"
 #include "log/loglevel.h"
 #include <iostream>
 #include <memory>
@@ -23,12 +21,22 @@ namespace log
  */
 class LogEvent
 {
-    friend class LogFormatter;
-
   public:
     using Ptr = std::shared_ptr<LogEvent>;
-    LogEvent();
-    ~LogEvent();
+    LogEvent(const std::string &filename, uint32_t line, uint32_t elapse, uint32_t thread_id,
+             uint32_t fiber_id, uint64_t time);
+    ~LogEvent() = default;
+
+    Loglevel::Level getLevel() const;
+    std::string getFile() const;
+    uint32_t getLine() const;
+    uint32_t getElapse() const;
+    uint32_t getThreadId() const;
+    uint32_t getFiberId() const;
+    uint64_t getTime() const;
+    std::string getMessage() const;
+    std::stringstream &getMessageStream();
+    std::string getThreadName() const;
 
   private:
     // Logger::Ptr m_logger;
@@ -38,7 +46,7 @@ class LogEvent
     uint32_t m_elapse;
     uint32_t m_thread_id;
     uint32_t m_fiber_id;
-    time_t m_time;
+    uint64_t m_time;
     std::stringstream m_ss;
     std::string m_thread_name;
 };

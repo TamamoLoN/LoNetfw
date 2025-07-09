@@ -1,5 +1,6 @@
 #pragma once
 #include "log/logevent.h"
+#include "log/logformatter.h"
 #include "log/loglevel.h"
 #include <fstream>
 #include <memory>
@@ -11,13 +12,16 @@ namespace log
 class LogAppender
 {
   public:
-    using Ptr                                                    = std::shared_ptr<LogAppender>;
-    explicit LogAppender()                                       = default;
-    virtual ~LogAppender()                                       = default;
-    virtual void log(Loglevel::Level level, LogEvent::Ptr event) = 0;
+    using Ptr              = std::shared_ptr<LogAppender>;
+    explicit LogAppender() = default;
+    virtual ~LogAppender() = default;
+    virtual void log(std::string logger_name, Loglevel::Level level, LogEvent::Ptr event) = 0;
+    void setFormatter(LogFormatter::Ptr formatter);
+    LogFormatter::Ptr getFormatter() const;
 
   protected:
-    Loglevel::Level m_level;
+    Loglevel::Level m_level = Loglevel::Level::DEBUG;
+    LogFormatter::Ptr m_formatter;
 };
 
 class StdoutLogAppender : public LogAppender
@@ -26,7 +30,7 @@ class StdoutLogAppender : public LogAppender
     using Ptr                    = std::shared_ptr<StdoutLogAppender>;
     explicit StdoutLogAppender() = default;
     ~StdoutLogAppender()         = default;
-    void log(Loglevel::Level level, LogEvent::Ptr event) override;
+    void log(std::string logger_name, Loglevel::Level level, LogEvent::Ptr event) override;
 };
 
 class FileLogAppender : public LogAppender
@@ -35,10 +39,11 @@ class FileLogAppender : public LogAppender
     using Ptr = std::shared_ptr<FileLogAppender>;
     explicit FileLogAppender(const std::string &filename);
     ~FileLogAppender() = default;
-    void log(Loglevel::Level level, LogEvent::Ptr event) override;
+    void log(std::string logger_name, Loglevel::Level level, LogEvent::Ptr event) override;
 
   private:
     std::string m_filename;
+    std::ofstream m_file;
 };
 
 } // namespace log

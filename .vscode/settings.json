@@ -103,7 +103,9 @@
         "shared_mutex": "cpp",
         "syncstream": "cpp",
         "variant": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "*.def": "cpp",
+        "*.inc": "cpp"
     },
     "[cpp]": {
         "editor.defaultFormatter": "xaver.clang-format",
