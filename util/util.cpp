@@ -48,6 +48,32 @@ std::string toUpper(const std::string &str)
     return res;
 }
 
+/**enum Color
+{
+    UNKNOWN = -1,
+    DEFAULT = 0,
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    PURPLE,
+    CYAN,
+    WHITE,
+};*/
+
+void getColorStr(std::string &str, Color color)
+{
+    auto color_num = (int)color;
+    if (color_num < 1)
+    {
+        return;
+    }
+    std::string front = "\033[" + std::to_string(29 + color_num) + "m";
+    std::string back  = "\033[0m";
+    str               = front + str + back;
+}
+
 std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::string &str)
 {
     std::vector<std::unordered_map<std::string, uint8_t>> res;
@@ -125,5 +151,9 @@ std::string getCurrentDateTime(const std::string &format)
     return getDateTime(getCurrentDateTime(), format);
 }
 
+uint32_t getThreadId() { return syscall(SYS_gettid); }
+
+// TODO - 实现获取协程id
+uint32_t getFiberId() { return 0; }
 } // namespace util
 } // namespace lon

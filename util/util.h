@@ -1,10 +1,11 @@
 #pragma once
 
 #include <iostream>
+#include <sys/syscall.h>
 #include <time.h>
+#include <unistd.h>
 #include <unordered_map>
 #include <vector>
-
 namespace lon
 {
 namespace util
@@ -14,6 +15,21 @@ char toLower(const char &ch);
 std::string toLower(const std::string &str);
 char toUpper(const char &ch);
 std::string toUpper(const std::string &str);
+
+enum Color
+{
+    UNKNOWN = -1,
+    DEFAULT = 0,
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    PURPLE,
+    CYAN,
+    WHITE,
+};
+void getColorStr(std::string &str, Color color);
 
 /**
  * 格式解析器
@@ -26,6 +42,10 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
 std::string getDateTime(const time_t &time, const std::string &format);
 time_t getCurrentDateTime();
 std::string getCurrentDateTime(const std::string &format);
+
+uint32_t getThreadId();
+uint32_t getFiberId();
+
 } // namespace util
 
 } // namespace lon

@@ -5,6 +5,7 @@
 #include "log/logappender.h"
 #include "log/logevent.h"
 #include "log/loglevel.h"
+#include "log/logmacro.h"
 #include "util/util.h"
 #include <iostream>
 #include <memory>
@@ -18,7 +19,8 @@ class Logger : public std::enable_shared_from_this<Logger>
 {
   public:
     using Ptr = std::shared_ptr<Logger>;
-    explicit Logger(const std::string &name = "root");
+    explicit Logger(const std::string &name = "root",
+                    Loglevel::Level level   = Loglevel::Level::DEBUG);
     virtual ~Logger() = default;
     void log(Loglevel::Level level, LogEvent::Ptr event);
     void debug(LogEvent::Ptr event);
@@ -31,8 +33,8 @@ class Logger : public std::enable_shared_from_this<Logger>
     void delAppender(LogAppender::Ptr appender);
     void setLevel(Loglevel::Level level);
     void setLevel(const std::string &level);
-    std::string getLevel() const;
-    void getLevel(Loglevel::Level &level);
+    Loglevel::Level getLevel() const;
+    void getLevel(std::string &level);
     std::string getName() const;
 
     void test();
@@ -43,5 +45,20 @@ class Logger : public std::enable_shared_from_this<Logger>
     std::vector<LogAppender::Ptr> m_appenders; //日志输出目的地向量
     LogFormatter::Ptr m_formatter;
 };
+
+class LoggerWrapper
+{
+  public:
+    LoggerWrapper(Logger::Ptr logger, LogEvent::Ptr event);
+    ~LoggerWrapper();
+
+    std::stringstream &getMessageStream();
+    LogEvent::Ptr getEvent() const;
+
+  private:
+    Logger::Ptr m_logger;
+    LogEvent::Ptr m_event;
+};
+
 } // namespace log
 } // namespace lon

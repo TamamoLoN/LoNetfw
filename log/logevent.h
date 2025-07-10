@@ -3,15 +3,15 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <stdarg.h>
 namespace lon
 {
 namespace log
 {
 /**
  * @brief 构造函数
- * @param[in] logger 日志器
  * @param[in] level 日志级别
- * @param[in] file 文件名
+ * @param[in] filename 文件名
  * @param[in] line 文件行号
  * @param[in] elapse 程序启动依赖的耗时(毫秒)
  * @param[in] thread_id 线程id
@@ -23,8 +23,8 @@ class LogEvent
 {
   public:
     using Ptr = std::shared_ptr<LogEvent>;
-    LogEvent(const std::string &filename, uint32_t line, uint32_t elapse, uint32_t thread_id,
-             uint32_t fiber_id, uint64_t time);
+    LogEvent(Loglevel::Level level, const std::string &filename, uint32_t line, uint32_t elapse,
+             uint32_t thread_id, uint32_t fiber_id, uint64_t time, std::string thread_name);
     ~LogEvent() = default;
 
     Loglevel::Level getLevel() const;
@@ -38,8 +38,11 @@ class LogEvent
     std::stringstream &getMessageStream();
     std::string getThreadName() const;
 
+    void setMessageStream(const char *fmt, ...);
+    void setMessageStream(const char *fmt, va_list al);
+
   private:
-    // Logger::Ptr m_logger;
+    // Logger::Ptr m_logger; //重新设计架构解耦
     Loglevel::Level m_level;
     std::string m_file;
     uint32_t m_line;

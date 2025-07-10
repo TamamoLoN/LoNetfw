@@ -5,10 +5,11 @@ namespace lon
 {
 namespace log
 {
-Logger::Logger(const std::string &name)
-    : m_name(name), m_appenders({}), m_level(Loglevel::Level::DEBUG)
+Logger::Logger(const std::string &name, Loglevel::Level level)
+    : m_name(name), m_appenders({}), m_level(level)
 {
-    m_formatter = std::make_shared<LogFormatter>("%c->%d [%p] <%f:%l>: %m %n");
+    m_formatter = std::make_shared<LogFormatter>(
+        "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n");
 }
 
 void Logger::log(Loglevel::Level level, LogEvent::Ptr event)
@@ -58,9 +59,9 @@ void Logger::setLevel(Loglevel::Level level) { m_level = level; }
 
 void Logger::setLevel(const std::string &level) { m_level = Loglevel::getLevelByName(level); }
 
-std::string Logger::getLevel() const { return Loglevel::getLevelName(m_level); }
+Loglevel::Level Logger::getLevel() const { return m_level; }
 
-void Logger::getLevel(Loglevel::Level &level) { level = m_level; }
+void Logger::getLevel(std::string &level) { level = Loglevel::getLevelName(m_level); }
 
 std::string Logger::getName() const { return m_name; }
 
@@ -72,5 +73,17 @@ void Logger::test()
         std::cout << Loglevel::getLevelName(Loglevel::WARN) << std::endl;
     }
 }
+
+LoggerWrapper::LoggerWrapper(Logger::Ptr logger, LogEvent::Ptr event)
+    : m_logger(logger), m_event(event)
+{
+}
+
+LoggerWrapper::~LoggerWrapper() { m_logger->log(m_event->getLevel(), m_event); }
+
+std::stringstream &LoggerWrapper::getMessageStream() { return m_event->getMessageStream(); }
+
+LogEvent::Ptr LoggerWrapper::getEvent() const { return m_event; }
+
 } // namespace log
 } // namespace lon

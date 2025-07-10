@@ -116,11 +116,28 @@ void test(std::string m_pattern)
 
 int main(int argc, char const *argv[])
 {
-    auto l = std::make_shared<Logger>("test");
-    l->addAppender(std::make_shared<StdoutLogAppender>());
-    auto e = std::make_shared<LogEvent>(std::string(__FILE__), __LINE__, 0, 1, 2, time(0));
+    auto l = std::make_shared<Logger>("test", Loglevel::Level::DEBUG);
+    l->addAppender(std::make_shared<StdoutLogAppender>(Loglevel::Level::WARN));
+    auto file_appender = std::make_shared<FileLogAppender>("./.log/test.log");
+    file_appender->setFormatter(std::make_shared<LogFormatter>(
+        "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+    l->addAppender(file_appender);
+    auto e = std::make_shared<LogEvent>(Loglevel::DEBUG, std::string(__FILE__), __LINE__, 0,
+                                        util::getThreadId(), util::getFiberId(),
+                                        util::getCurrentDateTime(), "thread");
     e->getMessageStream() << "hello lon log";
-    l->log(Loglevel::Level::DEBUG, e);
+    // l->log(Loglevel::Level::DEBUG, e);
+
+    LON_DEBUG(l) << "hello lon debug" << 122 << 3.1415926;
+    LON_INFO(l) << "hello lon info";
+    LON_WARN(l) << "hello lon warn";
+    LON_ERROR(l) << "hello lon error";
+    LON_FATAL(l) << "hello lon fatal";
+
+    LON_DEBUG_FMT(l, "hello lon debug %s:%d", "123123", 12);
+
+    // getchar();
+
     // // l.debug()
     // l.test();
     // print(1, "hello", 11.2);
@@ -136,6 +153,6 @@ int main(int argc, char const *argv[])
     // }
 
     // test("(%a) %%%%  %n%b %v");
-    std::cout << getCurrentDateTime("%Y-%m-%d %H:%M:%S");
+    // std::cout << getCurrentDateTime("%Y-%m-%d %H:%M:%S");
     return 0;
 }
