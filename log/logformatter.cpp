@@ -29,7 +29,7 @@ LogFormatter::LogFormatter(const std::string &format) : m_format(format), m_item
         ITEM_FACTORY(t, ThreadIdLogFormatItem), ITEM_FACTORY(l, LineLogFormatItem),
         ITEM_FACTORY(d, DateTimeLogFormatItem), ITEM_FACTORY(f, FilenameLogFormatItem),
         ITEM_FACTORY(F, FiberIdLogFormatItem),  ITEM_FACTORY(N, ThreadNameLogFormatItem),
-        ITEM_FACTORY(n, NewLineLogFormatItem),
+        ITEM_FACTORY(n, NewLineLogFormatItem),  ITEM_FACTORY(T, TabLogFormatItem),
 #undef ITEM_FACTORY
     };
     auto vec = util::formatParser(m_format);
@@ -37,7 +37,11 @@ LogFormatter::LogFormatter(const std::string &format) : m_format(format), m_item
     {
         for (const auto &it : map)
         {
-            if (it.second)
+            if (it.second == 0)
+            {
+                m_items.push_back(std::make_shared<StringLogFormatItem>(it.first));
+            }
+            else if (it.second == 1)
             {
                 if (m_item_factory.find(it.first) != m_item_factory.end())
                 {
@@ -49,9 +53,9 @@ LogFormatter::LogFormatter(const std::string &format) : m_format(format), m_item
                                                                             it.first + ">"));
                 }
             }
-            else
+            else if (it.second == 2)
             {
-                m_items.push_back(std::make_shared<StringLogFormatItem>(it.first));
+                m_items.push_back(std::make_shared<DateTimeLogFormatItem>(it.first, it.first));
             }
         }
     }

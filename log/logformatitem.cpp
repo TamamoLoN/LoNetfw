@@ -84,5 +84,11 @@ void StringLogFormatItem::format(std::ostream &os, std::string logger_name, Logl
     os << m_str;
 }
 
+void TabLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+                              LogEvent::Ptr event)
+{
+    os << "\t";
+}
+
 } // namespace log
 } // namespace lon

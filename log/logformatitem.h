@@ -22,6 +22,7 @@ class LogFormatItem
     std::string m_str;
 };
 
+//日志等级输出
 class LevelLogFormatItem : public LogFormatItem
 {
   public:
@@ -30,6 +31,7 @@ class LevelLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//文件名输出
 class FilenameLogFormatItem : public LogFormatItem
 {
   public:
@@ -38,6 +40,7 @@ class FilenameLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//行号输出
 class LineLogFormatItem : public LogFormatItem
 {
   public:
@@ -46,6 +49,7 @@ class LineLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//日志名输出
 class NameLogFormatItem : public LogFormatItem
 {
   public:
@@ -54,6 +58,7 @@ class NameLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//持续时间输出
 class ElapseLogFormatItem : public LogFormatItem
 {
   public:
@@ -62,6 +67,7 @@ class ElapseLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//线程id输出
 class ThreadIdLogFormatItem : public LogFormatItem
 {
   public:
@@ -70,6 +76,7 @@ class ThreadIdLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//协程ID输出
 class FiberIdLogFormatItem : public LogFormatItem
 {
   public:
@@ -78,6 +85,7 @@ class FiberIdLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//日期时间输出
 class DateTimeLogFormatItem : public LogFormatItem
 {
   public:
@@ -93,6 +101,7 @@ class DateTimeLogFormatItem : public LogFormatItem
     std::string m_format;
 };
 
+//日志消息输出
 class MessageLogFormatItem : public LogFormatItem
 {
   public:
@@ -101,6 +110,7 @@ class MessageLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//线程名输出
 class ThreadNameLogFormatItem : public LogFormatItem
 {
   public:
@@ -109,6 +119,7 @@ class ThreadNameLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//换行符输出
 class NewLineLogFormatItem : public LogFormatItem
 {
   public:
@@ -117,10 +128,20 @@ class NewLineLogFormatItem : public LogFormatItem
                 LogEvent::Ptr event) override;
 };
 
+//字符串输出
 class StringLogFormatItem : public LogFormatItem
 {
   public:
     explicit StringLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
+    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+                LogEvent::Ptr event) override;
+};
+
+//制表符输出
+class TabLogFormatItem : public LogFormatItem
+{
+  public:
+    explicit TabLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
     void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
                 LogEvent::Ptr event) override;
 };

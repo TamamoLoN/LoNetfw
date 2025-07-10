@@ -48,9 +48,9 @@ std::string toUpper(const std::string &str)
     return res;
 }
 
-std::vector<std::unordered_map<std::string, bool>> formatParser(const std::string &str)
+std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::string &str)
 {
-    std::vector<std::unordered_map<std::string, bool>> res;
+    std::vector<std::unordered_map<std::string, uint8_t>> res;
     for (int i = 0; i < str.size(); i++)
     {
         if (str[i] != '%')
@@ -61,8 +61,8 @@ std::vector<std::unordered_map<std::string, bool>> formatParser(const std::strin
                 temp += str[i];
                 i++;
             }
-            std::unordered_map<std::string, bool> m;
-            m[temp] = false;
+            std::unordered_map<std::string, uint8_t> m;
+            m[temp] = 0;
             res.push_back(m);
             i--;
         }
@@ -70,17 +70,38 @@ std::vector<std::unordered_map<std::string, bool>> formatParser(const std::strin
         {
             if ((i + 1) < str.size() && str[i + 1] != '%')
             {
-                std::unordered_map<std::string, bool> m;
-                std::string temp = "";
-                temp += str[i + 1];
-                m[temp] = true;
-                res.push_back(m);
-                i++;
+                if ((i + 2) < str.size() && str[i + 1] == 'd' && str[i + 2] == '{')
+                {
+                    i += 3;
+                    std::string temp = "";
+                    while (str[i] != '}' && i < str.size())
+                    {
+                        temp += str[i];
+                        i++;
+                    }
+                    if (i >= str.size())
+                    {
+                        throw std::runtime_error(temp + ": format error");
+                        break;
+                    }
+                    std::unordered_map<std::string, uint8_t> m;
+                    m[temp] = 2;
+                    res.push_back(m);
+                }
+                else
+                {
+                    std::unordered_map<std::string, uint8_t> m;
+                    std::string temp = "";
+                    temp += str[i + 1];
+                    m[temp] = 1;
+                    res.push_back(m);
+                    i++;
+                }
             }
             else
             {
-                std::unordered_map<std::string, bool> m;
-                m["%"] = false;
+                std::unordered_map<std::string, uint8_t> m;
+                m["%"] = 0;
                 res.push_back(m);
             }
         }
