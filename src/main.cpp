@@ -126,7 +126,7 @@ int main(int argc, char const *argv[])
                                         util::getThreadId(), util::getFiberId(),
                                         util::getCurrentDateTime(), "thread");
     e->getMessageStream() << "hello lon log";
-    // l->log(Loglevel::Level::DEBUG, e);
+    l->log(Loglevel::Level::DEBUG, e);
 
     LON_DEBUG(l) << "hello lon debug" << 122 << 3.1415926;
     LON_INFO(l) << "hello lon info";
@@ -135,6 +135,10 @@ int main(int argc, char const *argv[])
     LON_FATAL(l) << "hello lon fatal";
 
     LON_DEBUG_FMT(l, "hello lon debug %s:%d", "123123", 12);
+
+    LM->setLogger("test", l);
+    auto lm = LM->getLogger("test");
+    LON_DEBUG(lm) << "hello lm lon info";
 
     // getchar();
 

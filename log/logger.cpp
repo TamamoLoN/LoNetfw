@@ -85,5 +85,33 @@ std::stringstream &LoggerWrapper::getMessageStream() { return m_event->getMessag
 
 LogEvent::Ptr LoggerWrapper::getEvent() const { return m_event; }
 
+LoggerManager::LoggerManager(const Logger::Ptr logger_root) : m_logger_root(logger_root)
+{
+    if (m_logger_root == nullptr)
+    {
+        m_logger_root = std::make_shared<Logger>();
+        m_logger_root->addAppender(std::make_shared<StdoutLogAppender>());
+        m_loggers[m_logger_root->getName()] = m_logger_root;
+        return;
+    }
+    m_loggers[logger_root->getName()] = logger_root;
+}
+
+void LoggerManager::setLogger(const std::string &name, const Logger::Ptr logger)
+{
+    m_loggers[name] = logger;
+}
+
+Logger::Ptr LoggerManager::getLogger(const std::string &name)
+{
+    if (m_loggers.find(name) == m_loggers.end())
+    {
+        return nullptr;
+    }
+    return m_loggers[name];
+}
+
+Logger::Ptr LoggerManager::getRoot() { return m_logger_root; }
+
 } // namespace log
 } // namespace lon

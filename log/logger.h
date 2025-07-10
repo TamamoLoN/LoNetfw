@@ -6,6 +6,7 @@
 #include "log/logevent.h"
 #include "log/loglevel.h"
 #include "log/logmacro.h"
+#include "util/singleton.h"
 #include "util/util.h"
 #include <iostream>
 #include <memory>
@@ -58,6 +59,21 @@ class LoggerWrapper
   private:
     Logger::Ptr m_logger;
     LogEvent::Ptr m_event;
+};
+
+class LoggerManager
+{
+  public:
+    LoggerManager(const Logger::Ptr logger_root = nullptr);
+    ~LoggerManager() = default;
+
+    void setLogger(const std::string &name, const Logger::Ptr logger);
+    Logger::Ptr getLogger(const std::string &name);
+    Logger::Ptr getRoot();
+
+  private:
+    std::map<std::string, Logger::Ptr> m_loggers;
+    Logger::Ptr m_logger_root;
 };
 
 } // namespace log

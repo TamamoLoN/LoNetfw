@@ -33,3 +33,5 @@
     LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::ERROR, fmt, __VA_ARGS__)
 #define LON_FATAL_FMT(logger, fmt, ...)                                                            \
     LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::FATAL, fmt, __VA_ARGS__)
+
+#define LM util::SingletonPtr<LoggerManager>::Instance()
