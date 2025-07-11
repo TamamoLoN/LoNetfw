@@ -1,4 +1,4 @@
-#include "util.h"
+#include "util/util.h"
 
 namespace lon
 {
@@ -48,19 +48,74 @@ std::string toUpper(const std::string &str)
     return res;
 }
 
-/**enum Color
+bool isValidParamName(const std::string &str)
 {
-    UNKNOWN = -1,
-    DEFAULT = 0,
-    BLACK,
-    RED,
-    GREEN,
-    YELLOW,
-    BLUE,
-    PURPLE,
-    CYAN,
-    WHITE,
-};*/
+    if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.") !=
+        std::string::npos)
+    {
+        return false;
+    }
+    return true;
+}
+
+void printYamlString(const YAML::Node &node, int layer)
+{
+    if (node.IsNull())
+    {
+        std::stringstream ss;
+        ss << std::string(layer * 2, ' ') << "Null -" << node.Type() << "-" << layer << std::endl;
+        std::cout << ss.str();
+    }
+    else if (node.IsScalar())
+    {
+        std::stringstream ss;
+        ss << std::string(layer * 2, ' ') << node.Scalar() << "-" << node.Type() << "-" << layer
+           << std::endl;
+        std::cout << ss.str();
+    }
+    else if (node.IsMap())
+    {
+        for (auto it = node.begin(); it != node.end(); ++it)
+        {
+            std::stringstream ss;
+            ss << std::string(layer * 2, ' ') << it->first << "-" << it->second.Type() << "-"
+               << layer << std::endl;
+            std::cout << ss.str();
+            printYamlString(it->second, layer + 1);
+        }
+    }
+    else if (node.IsSequence())
+    {
+        for (int cnt = 0; cnt < node.size(); cnt++)
+        {
+            std::stringstream ss;
+            ss << std::string(layer * 2, ' ') << cnt << "-" << node[cnt].Type() << "-" << layer
+               << std::endl;
+            std::cout << ss.str();
+            printYamlString(node[cnt], layer + 1);
+        }
+    }
+}
+
+void convertYamlToVector(const std::string &prefix, const YAML::Node &node,
+                         std::vector<std::pair<std::string, YAML::Node>> &vec)
+{
+    if (!isValidParamName(toLower(prefix)))
+    {
+        throw std::runtime_error("data name is invalid: " + prefix);
+    }
+    vec.push_back(std::make_pair(toLower(prefix), node));
+    if (node.IsMap())
+    {
+        for (auto it = node.begin(); it != node.end(); ++it)
+        {
+            convertYamlToVector(prefix.empty()
+                                    ? it->first.Scalar()
+                                    : std::string(toLower(prefix) + "." + it->first.Scalar()),
+                                it->second, vec);
+        }
+    }
+}
 
 void getColorStr(std::string &str, Color color)
 {

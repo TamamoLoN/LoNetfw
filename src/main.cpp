@@ -1,5 +1,6 @@
 #include "log/logger.h"
 #include "util/util.h"
+
 using namespace std;
 using namespace lon;
 using namespace log;
@@ -116,17 +117,17 @@ void test(std::string m_pattern)
 
 int main(int argc, char const *argv[])
 {
-    auto l = std::make_shared<Logger>("test", Loglevel::Level::DEBUG);
-    l->addAppender(std::make_shared<StdoutLogAppender>(Loglevel::Level::WARN));
+    auto l = std::make_shared<Logger>("test", LogLevel::Level::DEBUG);
+    l->addAppender(std::make_shared<StdoutLogAppender>(LogLevel::Level::WARN));
     auto file_appender = std::make_shared<FileLogAppender>("./.log/test.log");
     file_appender->setFormatter(std::make_shared<LogFormatter>(
         "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
     l->addAppender(file_appender);
-    auto e = std::make_shared<LogEvent>(Loglevel::DEBUG, std::string(__FILE__), __LINE__, 0,
+    auto e = std::make_shared<LogEvent>(LogLevel::DEBUG, std::string(__FILE__), __LINE__, 0,
                                         util::getThreadId(), util::getFiberId(),
                                         util::getCurrentDateTime(), "thread");
     e->getMessageStream() << "hello lon log";
-    l->log(Loglevel::Level::DEBUG, e);
+    l->log(LogLevel::Level::DEBUG, e);
 
     LON_DEBUG(l) << "hello lon debug" << 122 << 3.1415926;
     LON_INFO(l) << "hello lon info";
@@ -136,9 +137,12 @@ int main(int argc, char const *argv[])
 
     LON_DEBUG_FMT(l, "hello lon debug %s:%d", "123123", 12);
 
-    LM->setLogger("test", l);
-    auto lm = LM->getLogger("test");
-    LON_DEBUG(lm) << "hello lm lon info";
+    LON_LOG_MANAGER.setLogger("test", l);
+    auto lm = LON_LOG_MANAGER.getLogger("root");
+    if (lm != nullptr)
+    {
+        LON_DEBUG(lm) << "hello lm lon info";
+    }
 
     // getchar();
 
@@ -158,5 +162,7 @@ int main(int argc, char const *argv[])
 
     // test("(%a) %%%%  %n%b %v");
     // std::cout << getCurrentDateTime("%Y-%m-%d %H:%M:%S");
+    auto res = util::lexical_cast<double>("3.1415");
+    std::cout << res << "\n";
     return 0;
 }

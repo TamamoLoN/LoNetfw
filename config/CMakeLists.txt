@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.1)
+
+include_directories(${CMAKE_SOURCE_DIR})
+
+file(GLOB CONFIG_SRCS ${CMAKE_SOURCE_DIR}/config/*.cpp)
+
+add_library(config SHARED
+            ${CONFIG_SRCS}
+            )
+
+target_link_libraries(config PRIVATE util)
+target_include_directories(config PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)

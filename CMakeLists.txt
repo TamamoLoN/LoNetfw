@@ -15,16 +15,35 @@ set(CMAKE_CXX_COMPILER "g++")
 
 add_subdirectory(util)
 add_subdirectory(log)
+add_subdirectory(config)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
                  )
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_SOURCE_DIR}/src
+                    # ${CMAKE_SOURCE_DIR}/third_party
                     )
+
+# find_library(YAML_CPP_LIB
+#             NAMES yaml-cpp
+#             PATHS ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp
+#             NO_DEFAULT_PATH 
+#             )
 
 add_executable(${PROJECT_NAME}
                ${CMAKE_SOURCE_DIR}/src/main.cpp
                )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE util log) 
+target_link_libraries(${PROJECT_NAME} PRIVATE util log config) 
+
+add_executable(test_config
+               ${CMAKE_SOURCE_DIR}/src/test_config.cpp
+               )
+target_link_libraries(test_config PRIVATE 
+                        util 
+                        log 
+                        config 
+                        yaml-cpp
+                        # ${YAML_CPP_LIB}
+                        ) 
