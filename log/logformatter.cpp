@@ -61,7 +61,7 @@ LogFormatter::LogFormatter(const std::string &format) : m_format(format), m_item
     }
 }
 
-std::string LogFormatter::format(std::string logger_name, Loglevel::Level level,
+std::string LogFormatter::format(std::string logger_name, LogLevel::Level level,
                                  LogEvent::Ptr event)
 {
     std::stringstream ss;

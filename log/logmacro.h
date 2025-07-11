@@ -8,11 +8,11 @@
                                         lon::util::getThreadId(), lon::util::getFiberId(),         \
                                         lon::util::getCurrentDateTime(), "thread"))                \
         .getMessageStream()
-#define LON_DEBUG(logger) LON_LOG_LEVEL(logger, lon::log::Loglevel::Level::DEBUG)
-#define LON_INFO(logger) LON_LOG_LEVEL(logger, lon::log::Loglevel::Level::INFO)
-#define LON_WARN(logger) LON_LOG_LEVEL(logger, lon::log::Loglevel::Level::WARN)
-#define LON_ERROR(logger) LON_LOG_LEVEL(logger, lon::log::Loglevel::Level::ERROR)
-#define LON_FATAL(logger) LON_LOG_LEVEL(logger, lon::log::Loglevel::Level::FATAL)
+#define LON_DEBUG(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::DEBUG)
+#define LON_INFO(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::INFO)
+#define LON_WARN(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::WARN)
+#define LON_ERROR(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::ERROR)
+#define LON_FATAL(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::FATAL)
 
 #define LON_LOG_LEVEL_FMT(logger, level, fmt, ...)                                                 \
     if (logger->getLevel() <= level)                                                               \
@@ -24,14 +24,15 @@
         ->setMessageStream(fmt, __VA_ARGS__)
 
 #define LON_DEBUG_FMT(logger, fmt, ...)                                                            \
-    LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::DEBUG, fmt, __VA_ARGS__)
+    LON_LOG_LEVEL_FMT(logger, lon::log::LogLevel::Level::DEBUG, fmt, __VA_ARGS__)
 #define LON_INFO_FMT(logger, fmt, ...)                                                             \
-    LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::INFO, fmt, __VA_ARGS__)
+    LON_LOG_LEVEL_FMT(logger, lon::log::LogLevel::Level::INFO, fmt, __VA_ARGS__)
 #define LON_WARN_FMT(logger, fmt, ...)                                                             \
-    LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::WARN, fmt, __VA_ARGS__)
+    LON_LOG_LEVEL_FMT(logger, lon::log::LogLevel::Level::WARN, fmt, __VA_ARGS__)
 #define LON_ERROR_FMT(logger, fmt, ...)                                                            \
-    LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::ERROR, fmt, __VA_ARGS__)
+    LON_LOG_LEVEL_FMT(logger, lon::log::LogLevel::Level::ERROR, fmt, __VA_ARGS__)
 #define LON_FATAL_FMT(logger, fmt, ...)                                                            \
-    LON_LOG_LEVEL_FMT(logger, lon::log::Loglevel::Level::FATAL, fmt, __VA_ARGS__)
+    LON_LOG_LEVEL_FMT(logger, lon::log::LogLevel::Level::FATAL, fmt, __VA_ARGS__)
 
-#define LM util::SingletonPtr<LoggerManager>::Instance()
+#define LON_LOG_MANAGER lon::util::Singleton<lon::log::LoggerManager>::Instance()
+#define LON_LOG_ROOT LON_LOG_MANAGER.getRoot()

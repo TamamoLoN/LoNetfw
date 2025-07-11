@@ -15,7 +15,7 @@ class LogFormatItem
     using Ptr = std::shared_ptr<LogFormatItem>;
     explicit LogFormatItem(const std::string &str = "") : m_str(str){};
     virtual ~LogFormatItem()                 = default;
-    virtual void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    virtual void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                         LogEvent::Ptr event) = 0;
 
   protected:
@@ -27,7 +27,7 @@ class LevelLogFormatItem : public LogFormatItem
 {
   public:
     explicit LevelLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -36,7 +36,7 @@ class FilenameLogFormatItem : public LogFormatItem
 {
   public:
     explicit FilenameLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -45,7 +45,7 @@ class LineLogFormatItem : public LogFormatItem
 {
   public:
     explicit LineLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -54,7 +54,7 @@ class NameLogFormatItem : public LogFormatItem
 {
   public:
     explicit NameLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -63,7 +63,7 @@ class ElapseLogFormatItem : public LogFormatItem
 {
   public:
     explicit ElapseLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -72,7 +72,7 @@ class ThreadIdLogFormatItem : public LogFormatItem
 {
   public:
     explicit ThreadIdLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -81,7 +81,7 @@ class FiberIdLogFormatItem : public LogFormatItem
 {
   public:
     explicit FiberIdLogFormatItem(const std::string &format) : LogFormatItem(format) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -94,7 +94,7 @@ class DateTimeLogFormatItem : public LogFormatItem
         : LogFormatItem(str), m_format(format)
     {
     }
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 
   private:
@@ -106,7 +106,7 @@ class MessageLogFormatItem : public LogFormatItem
 {
   public:
     explicit MessageLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -115,7 +115,7 @@ class ThreadNameLogFormatItem : public LogFormatItem
 {
   public:
     explicit ThreadNameLogFormatItem(const std::string &str) : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -124,7 +124,7 @@ class NewLineLogFormatItem : public LogFormatItem
 {
   public:
     explicit NewLineLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -133,7 +133,7 @@ class StringLogFormatItem : public LogFormatItem
 {
   public:
     explicit StringLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 
@@ -142,7 +142,7 @@ class TabLogFormatItem : public LogFormatItem
 {
   public:
     explicit TabLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
-    void format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+    void format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                 LogEvent::Ptr event) override;
 };
 

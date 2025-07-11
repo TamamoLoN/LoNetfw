@@ -4,50 +4,50 @@ namespace lon
 {
 namespace log
 {
-void LevelLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void LevelLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                 LogEvent::Ptr event)
 {
-    // os << Loglevel::getLevelName(event->getLevel());
-    os << Loglevel::getLevelName(level);
+    // os << LogLevel::getLevelName(event->getLevel());
+    os << LogLevel::getLevelName(level);
 }
 
-void FilenameLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void FilenameLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                    LogEvent::Ptr event)
 {
     os << event->getFile();
 }
 
-void LineLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void LineLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                LogEvent::Ptr event)
 {
     os << event->getLine();
 }
 
-void NameLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void NameLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                LogEvent::Ptr event)
 {
     os << logger_name;
 }
 
-void ElapseLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void ElapseLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                  LogEvent::Ptr event)
 {
     os << event->getMessage();
 }
 
-void ThreadIdLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void ThreadIdLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                    LogEvent::Ptr event)
 {
     os << event->getThreadId();
 }
 
-void FiberIdLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void FiberIdLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                   LogEvent::Ptr event)
 {
     os << event->getFiberId();
 }
 
-void DateTimeLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void DateTimeLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                    LogEvent::Ptr event)
 {
     if (m_format.empty())
@@ -60,31 +60,31 @@ void DateTimeLogFormatItem::format(std::ostream &os, std::string logger_name, Lo
     }
 }
 
-void MessageLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void MessageLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                   LogEvent::Ptr event)
 {
     os << event->getMessage();
 }
 
 void ThreadNameLogFormatItem::format(std::ostream &os, std::string logger_name,
-                                     Loglevel::Level level, LogEvent::Ptr event)
+                                     LogLevel::Level level, LogEvent::Ptr event)
 {
     os << event->getThreadName();
 }
 
-void NewLineLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void NewLineLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                   LogEvent::Ptr event)
 {
     os << std::endl;
 }
 
-void StringLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void StringLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                                  LogEvent::Ptr event)
 {
     os << m_str;
 }
 
-void TabLogFormatItem::format(std::ostream &os, std::string logger_name, Loglevel::Level level,
+void TabLogFormatItem::format(std::ostream &os, std::string logger_name, LogLevel::Level level,
                               LogEvent::Ptr event)
 {
     os << "\t";

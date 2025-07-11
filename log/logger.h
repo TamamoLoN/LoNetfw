@@ -21,9 +21,9 @@ class Logger : public std::enable_shared_from_this<Logger>
   public:
     using Ptr = std::shared_ptr<Logger>;
     explicit Logger(const std::string &name = "root",
-                    Loglevel::Level level   = Loglevel::Level::DEBUG);
+                    LogLevel::Level level   = LogLevel::Level::DEBUG);
     virtual ~Logger() = default;
-    void log(Loglevel::Level level, LogEvent::Ptr event);
+    void log(LogLevel::Level level, LogEvent::Ptr event);
     void debug(LogEvent::Ptr event);
     void info(LogEvent::Ptr event);
     void warn(LogEvent::Ptr event);
@@ -32,9 +32,9 @@ class Logger : public std::enable_shared_from_this<Logger>
 
     void addAppender(LogAppender::Ptr appender);
     void delAppender(LogAppender::Ptr appender);
-    void setLevel(Loglevel::Level level);
+    void setLevel(LogLevel::Level level);
     void setLevel(const std::string &level);
-    Loglevel::Level getLevel() const;
+    LogLevel::Level getLevel() const;
     void getLevel(std::string &level);
     std::string getName() const;
 
@@ -42,7 +42,7 @@ class Logger : public std::enable_shared_from_this<Logger>
 
   private:
     std::string m_name;                        //日志名称
-    Loglevel::Level m_level;                   //日志等级
+    LogLevel::Level m_level;                   //日志等级
     std::vector<LogAppender::Ptr> m_appenders; //日志输出目的地向量
     LogFormatter::Ptr m_formatter;
 };

@@ -23,11 +23,11 @@ class LogEvent
 {
   public:
     using Ptr = std::shared_ptr<LogEvent>;
-    LogEvent(Loglevel::Level level, const std::string &filename, uint32_t line, uint32_t elapse,
+    LogEvent(LogLevel::Level level, const std::string &filename, uint32_t line, uint32_t elapse,
              uint32_t thread_id, uint32_t fiber_id, uint64_t time, std::string thread_name);
     ~LogEvent() = default;
 
-    Loglevel::Level getLevel() const;
+    LogLevel::Level getLevel() const;
     std::string getFile() const;
     uint32_t getLine() const;
     uint32_t getElapse() const;
@@ -43,7 +43,7 @@ class LogEvent
 
   private:
     // Logger::Ptr m_logger; //重新设计架构解耦
-    Loglevel::Level m_level;
+    LogLevel::Level m_level;
     std::string m_file;
     uint32_t m_line;
     uint32_t m_elapse;

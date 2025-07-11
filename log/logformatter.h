@@ -35,7 +35,7 @@ class LogFormatter
     using Ptr = std::shared_ptr<LogFormatter>;
     explicit LogFormatter(const std::string &format = "");
     virtual ~LogFormatter() = default;
-    std::string format(std::string logger_name, Loglevel::Level level, LogEvent::Ptr event);
+    std::string format(std::string logger_name, LogLevel::Level level, LogEvent::Ptr event);
     void setFormat(const std::string &format);
     std::string getFormat() const;
 

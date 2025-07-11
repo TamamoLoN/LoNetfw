@@ -5,14 +5,14 @@ namespace lon
 {
 namespace log
 {
-Logger::Logger(const std::string &name, Loglevel::Level level)
+Logger::Logger(const std::string &name, LogLevel::Level level)
     : m_name(name), m_appenders({}), m_level(level)
 {
     m_formatter = std::make_shared<LogFormatter>(
         "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n");
 }
 
-void Logger::log(Loglevel::Level level, LogEvent::Ptr event)
+void Logger::log(LogLevel::Level level, LogEvent::Ptr event)
 {
     if (m_level > level)
     {
@@ -24,15 +24,15 @@ void Logger::log(Loglevel::Level level, LogEvent::Ptr event)
     }
 }
 
-void Logger::debug(LogEvent::Ptr event) { log(Loglevel::Level::DEBUG, event); }
+void Logger::debug(LogEvent::Ptr event) { log(LogLevel::Level::DEBUG, event); }
 
-void Logger::info(LogEvent::Ptr event) { log(Loglevel::Level::INFO, event); }
+void Logger::info(LogEvent::Ptr event) { log(LogLevel::Level::INFO, event); }
 
-void Logger::warn(LogEvent::Ptr event) { log(Loglevel::Level::WARN, event); }
+void Logger::warn(LogEvent::Ptr event) { log(LogLevel::Level::WARN, event); }
 
-void Logger::error(LogEvent::Ptr event) { log(Loglevel::Level::ERROR, event); }
+void Logger::error(LogEvent::Ptr event) { log(LogLevel::Level::ERROR, event); }
 
-void Logger::fatal(LogEvent::Ptr event) { log(Loglevel::Level::FATAL, event); }
+void Logger::fatal(LogEvent::Ptr event) { log(LogLevel::Level::FATAL, event); }
 
 void Logger::addAppender(LogAppender::Ptr appender)
 {
@@ -55,22 +55,22 @@ void Logger::delAppender(LogAppender::Ptr appender)
     }
 }
 
-void Logger::setLevel(Loglevel::Level level) { m_level = level; }
+void Logger::setLevel(LogLevel::Level level) { m_level = level; }
 
-void Logger::setLevel(const std::string &level) { m_level = Loglevel::getLevelByName(level); }
+void Logger::setLevel(const std::string &level) { m_level = LogLevel::getLevelByName(level); }
 
-Loglevel::Level Logger::getLevel() const { return m_level; }
+LogLevel::Level Logger::getLevel() const { return m_level; }
 
-void Logger::getLevel(std::string &level) { level = Loglevel::getLevelName(m_level); }
+void Logger::getLevel(std::string &level) { level = LogLevel::getLevelName(m_level); }
 
 std::string Logger::getName() const { return m_name; }
 
 void Logger::test()
 {
     std::cout << util::toUpper("ASDASD123Sas") << std::endl;
-    if (Loglevel::getLevelByName("ERrOR") == Loglevel::Level::ERROR)
+    if (LogLevel::getLevelByName("ERrOR") == LogLevel::Level::ERROR)
     {
-        std::cout << Loglevel::getLevelName(Loglevel::WARN) << std::endl;
+        std::cout << LogLevel::getLevelName(LogLevel::WARN) << std::endl;
     }
 }
 

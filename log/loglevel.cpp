@@ -3,7 +3,7 @@ namespace lon
 {
 namespace log
 {
-const std::string Loglevel::getLevelName(Loglevel::Level level)
+const std::string LogLevel::getLevelName(LogLevel::Level level)
 {
 #define GET_STR(t)                                                                                 \
     case t:                                                                                        \
@@ -22,18 +22,18 @@ const std::string Loglevel::getLevelName(Loglevel::Level level)
 #undef GET_STR
     return "UNKNOWN";
 }
-Loglevel::Level Loglevel::getLevelByName(const std::string level_name)
+LogLevel::Level LogLevel::getLevelByName(const std::string level_name)
 {
 #define GET_LEVEL(t, v)                                                                            \
     if (util::toUpper(level_name) == #v)                                                           \
-        return Loglevel::Level::t;
+        return LogLevel::Level::t;
     GET_LEVEL(DEBUG, DEBUG)
     GET_LEVEL(INFO, INFO)
     GET_LEVEL(WARN, WARN)
     GET_LEVEL(ERROR, ERROR)
     GET_LEVEL(FATAL, FATAL)
 #undef GET_LEVEL
-    return Loglevel::Level::UNKNOWN;
+    return LogLevel::Level::UNKNOWN;
 }
 } // namespace log
 } // namespace lon

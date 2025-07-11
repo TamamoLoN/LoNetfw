@@ -5,15 +5,15 @@ namespace lon
 {
 namespace log
 {
-LogAppender::LogAppender(Loglevel::Level level) : m_level(level) {}
+LogAppender::LogAppender(LogLevel::Level level) : m_level(level) {}
 
 void LogAppender::setFormatter(LogFormatter::Ptr formatter) { m_formatter = formatter; }
 
 LogFormatter::Ptr LogAppender::getFormatter() const { return m_formatter; }
 
-StdoutLogAppender::StdoutLogAppender(Loglevel::Level level) : LogAppender(level) {}
+StdoutLogAppender::StdoutLogAppender(LogLevel::Level level) : LogAppender(level) {}
 
-void StdoutLogAppender::log(std::string logger_name, Loglevel::Level level, LogEvent::Ptr event)
+void StdoutLogAppender::log(std::string logger_name, LogLevel::Level level, LogEvent::Ptr event)
 {
     if (level < m_level)
     {
@@ -22,16 +22,16 @@ void StdoutLogAppender::log(std::string logger_name, Loglevel::Level level, LogE
     auto str = m_formatter->format(logger_name, level, event);
     switch (level)
     {
-    case Loglevel::Level::INFO:
+    case LogLevel::Level::INFO:
         util::getColorStr(str, util::Color::GREEN);
         break;
-    case Loglevel::Level::WARN:
+    case LogLevel::Level::WARN:
         util::getColorStr(str, util::Color::YELLOW);
         break;
-    case Loglevel::Level::ERROR:
+    case LogLevel::Level::ERROR:
         util::getColorStr(str, util::Color::RED);
         break;
-    case Loglevel::Level::FATAL:
+    case LogLevel::Level::FATAL:
         util::getColorStr(str, util::Color::PURPLE);
         break;
     default:
@@ -41,7 +41,7 @@ void StdoutLogAppender::log(std::string logger_name, Loglevel::Level level, LogE
     std::cout << str;
 }
 
-FileLogAppender::FileLogAppender(const std::string &filename, Loglevel::Level level)
+FileLogAppender::FileLogAppender(const std::string &filename, LogLevel::Level level)
     : LogAppender(level), m_filename(filename)
 {
     m_file.open(filename, std::ios::app);
@@ -55,7 +55,7 @@ FileLogAppender::~FileLogAppender()
     }
 }
 
-void FileLogAppender::log(std::string logger_name, Loglevel::Level level, LogEvent::Ptr event)
+void FileLogAppender::log(std::string logger_name, LogLevel::Level level, LogEvent::Ptr event)
 {
     if (level < m_level)
     {

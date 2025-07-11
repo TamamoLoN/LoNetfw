@@ -3,7 +3,7 @@ namespace lon
 {
 namespace log
 {
-LogEvent::LogEvent(Loglevel::Level level, const std::string &filename, uint32_t line,
+LogEvent::LogEvent(LogLevel::Level level, const std::string &filename, uint32_t line,
                    uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time,
                    std::string thread_name)
     : m_level(level), m_file(filename), m_line(line), m_elapse(elapse), m_thread_id(thread_id),
@@ -11,7 +11,7 @@ LogEvent::LogEvent(Loglevel::Level level, const std::string &filename, uint32_t 
 {
 }
 
-Loglevel::Level LogEvent::getLevel() const { return m_level; }
+LogLevel::Level LogEvent::getLevel() const { return m_level; }
 
 std::string LogEvent::getFile() const { return m_file; }
 

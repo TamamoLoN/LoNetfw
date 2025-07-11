@@ -5,7 +5,7 @@ namespace lon
 {
 namespace log
 {
-class Loglevel
+class LogLevel
 {
   public:
     enum Level
@@ -18,8 +18,8 @@ class Loglevel
         FATAL
     };
 
-    static const std::string getLevelName(Loglevel::Level level);
-    static Loglevel::Level getLevelByName(const std::string level_name);
+    static const std::string getLevelName(LogLevel::Level level);
+    static LogLevel::Level getLevelByName(const std::string level_name);
 };
 } // namespace log
 } // namespace lon
