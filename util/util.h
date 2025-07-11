@@ -24,6 +24,16 @@ void printYamlString(const YAML::Node &node, int layer = 0);
 void convertYamlToVector(const std::string &prefix, const YAML::Node &node,
                          std::vector<std::pair<std::string, YAML::Node>> &vec);
 
+template <class T> std::string getTypeStr()
+{
+    // abi::__cxa_demangle 获取的字符串需要手动释放内存
+    char *type_str  = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr);
+    std::string res = type_str;
+    free(type_str);
+    type_str = nullptr;
+    return res;
+}
+
 enum Color
 {
     UNKNOWN = -1,

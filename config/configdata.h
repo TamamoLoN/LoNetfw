@@ -13,6 +13,7 @@ struct ConfigDataBase
     virtual ~ConfigDataBase()                       = default;
     virtual std::string toString()                  = 0;
     virtual bool fromString(const std::string &str) = 0;
+    virtual std::string getType() const             = 0;
 
     std::string getName() const;
     std::string getDescription() const;
@@ -33,6 +34,7 @@ struct ConfigData : public ConfigDataBase
         : ConfigDataBase(name, description), m_data(data){};
     ~ConfigData() = default;
 
+    std::string getType() const override { return util::getTypeStr<T>(); }
     std::string toString() override
     {
         try
@@ -54,7 +56,7 @@ struct ConfigData : public ConfigDataBase
         }
         catch (const std::runtime_error &e)
         {
-            LON_ERROR(LON_LOG_ROOT) << e.what();
+            LON_ERROR(LON_LOG_ROOT) << e.what() << ": " << getType() << "; msg:[" << str << "]";
             return false;
         }
     }

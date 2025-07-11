@@ -32,3 +32,38 @@ test:
     umap:
       key2: 12
       key1: 4
+      key3: 213
+    bool: true
+class:
+    person:
+      name: yqm
+      age: 21
+      gender: female
+      score: 0
+    map:
+      mmd:
+        name: yqm
+        age: 21
+        gender: female
+        score: 0
+      mmd1:
+        name: sss
+        age: 33
+        gender: female
+        score: 2.2
+    map_vec:
+      sdsd:
+          - name: yqm
+            age: 21
+            gender: female
+            score: 34.2
+          - name: sdsdsds
+            age: 65
+            gender: male
+            score: 1.1
+      sdsds:
+          - name: sss
+            age: 33
+            gender: female
+            score: 2.2
+    

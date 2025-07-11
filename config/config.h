@@ -23,6 +23,23 @@ class Config
             LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << name;
             return nullptr;
         }
+        auto it = s_datas.find(name_lower);
+        if (it != s_datas.end())
+        {
+            auto data_ptr = std::dynamic_pointer_cast<ConfigData<T>>(it->second);
+            if (data_ptr != nullptr)
+            {
+                LON_WARN(LON_LOG_ROOT) << "data is exists: " << name;
+                return data_ptr;
+            }
+            else
+            {
+                LON_ERROR(LON_LOG_ROOT)
+                    << "data is exists: " << name << ", but type is not match: this->"
+                    << util::getTypeStr<T>() << "; exists->" << it->second->getType();
+                return nullptr;
+            }
+        }
         auto data_ptr       = std::make_shared<ConfigData<T>>(name, data, description);
         s_datas[name_lower] = data_ptr;
         return data_ptr;
@@ -30,11 +47,29 @@ class Config
 
     static void setData(const ConfigDataBase::Ptr &data_ptr)
     {
-        auto name_lower = util::toLower(data_ptr->getName());
+        auto name       = data_ptr->getName();
+        auto name_lower = util::toLower(name);
         if (!util::isValidParamName(name_lower))
         {
-            LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << data_ptr->getName();
+            LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << name;
             return;
+        }
+        auto it = s_datas.find(name_lower);
+        if (it != s_datas.end())
+        {
+            auto exists_type = it->second->getType();
+            if (exists_type == data_ptr->getType())
+            {
+                LON_WARN(LON_LOG_ROOT) << "data is exists: " << name;
+                return;
+            }
+            else
+            {
+                LON_ERROR(LON_LOG_ROOT)
+                    << "data is exists: " << name << ", but type is not match: this->"
+                    << data_ptr->getType() << "; exists->" << exists_type;
+                return;
+            }
         }
         s_datas[name_lower] = data_ptr;
     }

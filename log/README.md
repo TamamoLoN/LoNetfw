@@ -1,0 +1,6 @@
+##日志模块
+架构
+LoggerManager
+    ├─Logger:LogEvent ├─LoggerA ├─LoggerB ...
+        ├─LogAppender 
+            ├─LogFormatter:LogFormatItemA, LogFormatItemB, ...
