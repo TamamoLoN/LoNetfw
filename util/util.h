@@ -1,14 +1,13 @@
 #pragma once
 
+#include "util/lexicalcast.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
-#include <map>
 #include <sstream>
 #include <sys/syscall.h>
 #include <time.h>
 #include <unistd.h>
-#include <unordered_map>
-#include <vector>
+
 namespace lon
 {
 namespace util
@@ -39,56 +38,6 @@ enum Color
     WHITE,
 };
 void getColorStr(std::string &str, Color color);
-
-template <typename T, typename S> T lexical_cast(const S &source)
-{
-    std::stringstream ss;
-    T res;
-    if (!(ss << source) || !(ss >> res) || !(ss >> std::ws).eof())
-    {
-        throw std::runtime_error("error cast: [" + ss.str() + "]");
-    }
-
-    return res;
-}
-
-// T：输出类型 S：输入类型
-template <typename T, typename S> class LexicalCast
-{
-  public:
-    T operator()(const S &source) const { return lexical_cast<T>(source); }
-};
-
-template <typename T> class LexicalCast<std::vector<T>, std::string>
-{
-  public:
-    std::vector<T> operator()(const std::string &source) const
-    {
-        YAML::Node node = YAML::Load(source);
-        std::vector<T> res;
-        for (int cnt = 0; cnt < node.size(); cnt++)
-        {
-            res.push_back(LexicalCast<T, std::string>()(node[cnt].as<std::string>()));
-        }
-        return res;
-    }
-};
-
-template <typename T> class LexicalCast<std::string, std::vector<T>>
-{
-  public:
-    std::string operator()(std::vector<T> &source) const
-    {
-        YAML::Node node;
-        for (int cnt = 0; cnt < source.size(); cnt++)
-        {
-            node.push_back(LexicalCast<std::string, T>()(source[cnt]));
-        }
-        std::stringstream ss;
-        ss << node;
-        return ss.str();
-    }
-};
 
 /**
  * 格式解析器
