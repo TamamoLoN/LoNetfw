@@ -52,6 +52,44 @@ template <typename T, typename S> T lexical_cast(const S &source)
     return res;
 }
 
+// T：输出类型 S：输入类型
+template <typename T, typename S> class LexicalCast
+{
+  public:
+    T operator()(const S &source) const { return lexical_cast<T>(source); }
+};
+
+template <typename T> class LexicalCast<std::vector<T>, std::string>
+{
+  public:
+    std::vector<T> operator()(const std::string &source) const
+    {
+        YAML::Node node = YAML::Load(source);
+        std::vector<T> res;
+        for (int cnt = 0; cnt < node.size(); cnt++)
+        {
+            res.push_back(LexicalCast<T, std::string>()(node[cnt].as<std::string>()));
+        }
+        return res;
+    }
+};
+
+template <typename T> class LexicalCast<std::string, std::vector<T>>
+{
+  public:
+    std::string operator()(std::vector<T> &source) const
+    {
+        YAML::Node node;
+        for (int cnt = 0; cnt < source.size(); cnt++)
+        {
+            node.push_back(LexicalCast<std::string, T>()(source[cnt]));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+};
+
 /**
  * 格式解析器
  * map<输出字符或给定格式: str,格式类型: uint8>

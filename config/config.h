@@ -12,17 +12,20 @@ class Config
     explicit Config()   = default;
     virtual ~Config()   = default;
 
+    //创建并设置当前Config数据，返回数据实例
     template <typename T>
-    static void setData(const std::string &name, const T &data, const std::string &description = "")
+    static ConfigDataBase::Ptr setData(const std::string &name, const T &data,
+                                       const std::string &description = "")
     {
         auto name_lower = util::toLower(name);
         if (!util::isValidParamName(name_lower))
         {
             LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << name;
-            return;
+            return nullptr;
         }
         auto data_ptr       = std::make_shared<ConfigData<T>>(name, data, description);
         s_datas[name_lower] = data_ptr;
+        return data_ptr;
     }
 
     static void setData(const ConfigDataBase::Ptr &data_ptr)

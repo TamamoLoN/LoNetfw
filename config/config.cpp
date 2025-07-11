@@ -37,8 +37,8 @@ void Config::parseFromYaml(YAML::Node node)
             auto data_base = getDataBase(key);
             if (data_base == nullptr)
             {
-                LON_WARN(LON_LOG_ROOT) << "Config::parseFromYaml: "
-                                       << "cannot find data: " << key;
+                LON_DEBUG(LON_LOG_ROOT) << "Config::parseFromYaml: "
+                                        << "cannot find data: " << key;
             }
             else
             {

@@ -22,7 +22,9 @@ struct ConfigDataBase
     std::string m_description;
 };
 
-template <typename T> struct ConfigData : public ConfigDataBase
+template <typename T, class FromStr = util::LexicalCast<T, std::string>,
+          class ToStr = util::LexicalCast<std::string, T>>
+struct ConfigData : public ConfigDataBase
 {
   public:
     using Ptr = std::shared_ptr<ConfigData<T>>;
@@ -35,7 +37,7 @@ template <typename T> struct ConfigData : public ConfigDataBase
     {
         try
         {
-            return util::lexical_cast<std::string>(m_data);
+            return ToStr()(m_data);
         }
         catch (const std::runtime_error &e)
         {
@@ -47,7 +49,7 @@ template <typename T> struct ConfigData : public ConfigDataBase
     {
         try
         {
-            m_data = util::lexical_cast<T>(str);
+            m_data = FromStr()(str);
             return true;
         }
         catch (const std::runtime_error &e)
