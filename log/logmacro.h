@@ -2,7 +2,8 @@
 
 //设计思想：局部变量，出了if语句自动析构
 #define LON_LOG_LEVEL(logger, level)                                                               \
-    if (logger->getLevel() <= level)                                                               \
+    if (logger != nullptr)                                                                         \
+        if (logger->getLevel() <= level)                                                           \
     lon::log::LoggerWrapper(logger, std::make_shared<lon::log::LogEvent>(                          \
                                         level, std::string(__FILE__), __LINE__, 0,                 \
                                         lon::util::getThreadId(), lon::util::getFiberId(),         \
@@ -15,7 +16,8 @@
 #define LON_FATAL(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::FATAL)
 
 #define LON_LOG_LEVEL_FMT(logger, level, fmt, ...)                                                 \
-    if (logger->getLevel() <= level)                                                               \
+    if (logger != nullptr)                                                                         \
+        if (logger->getLevel() <= level)                                                           \
     lon::log::LoggerWrapper(logger, std::make_shared<lon::log::LogEvent>(                          \
                                         level, std::string(__FILE__), __LINE__, 0,                 \
                                         lon::util::getThreadId(), lon::util::getFiberId(),         \
@@ -36,3 +38,4 @@
 
 #define LON_LOG_MANAGER lon::util::Singleton<lon::log::LoggerManager>::Instance()
 #define LON_LOG_ROOT LON_LOG_MANAGER.getRoot()
+#define LON_LOG_NAME(name) LON_LOG_MANAGER.getLogger(name)

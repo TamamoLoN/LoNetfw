@@ -55,6 +55,8 @@ void Logger::delAppender(LogAppender::Ptr appender)
     }
 }
 
+void Logger::clearAppenders() { m_appenders.clear(); }
+
 void Logger::setLevel(LogLevel::Level level) { m_level = level; }
 
 void Logger::setLevel(const std::string &level) { m_level = LogLevel::getLevelByName(level); }
@@ -65,13 +67,19 @@ void Logger::getLevel(std::string &level) { level = LogLevel::getLevelName(m_lev
 
 std::string Logger::getName() const { return m_name; }
 
-void Logger::test()
+std::string Logger::getYaml() const
 {
-    std::cout << util::toUpper("ASDASD123Sas") << std::endl;
-    if (LogLevel::getLevelByName("ERrOR") == LogLevel::Level::ERROR)
+    YAML::Node root;
+    root["name"]  = m_name;
+    root["level"] = LogLevel::getLevelName(m_level);
+    auto node     = root["appenders"];
+    for (const auto &it : m_appenders)
     {
-        std::cout << LogLevel::getLevelName(LogLevel::WARN) << std::endl;
+        node.push_back(YAML::Load(it->getYaml()));
     }
+    std::stringstream ss;
+    ss << root;
+    return ss.str();
 }
 
 LoggerWrapper::LoggerWrapper(Logger::Ptr logger, LogEvent::Ptr event)
@@ -106,12 +114,36 @@ Logger::Ptr LoggerManager::getLogger(const std::string &name)
 {
     if (m_loggers.find(name) == m_loggers.end())
     {
+        LON_WARN(LON_LOG_ROOT) << "the logger has not been initialized: " << name;
         return nullptr;
     }
     return m_loggers[name];
 }
 
+void LoggerManager::delLogger(const std::string &name)
+{
+    auto it = m_loggers.find(name);
+    if (it == m_loggers.end())
+    {
+        return;
+    }
+    m_loggers.erase(it);
+}
+
 Logger::Ptr LoggerManager::getRoot() { return m_logger_root; }
+
+std::string LoggerManager::getYaml() const
+{
+    YAML::Node root;
+    auto node = root["logs"];
+    for (const auto &it : m_loggers)
+    {
+        node.push_back(YAML::Load(it.second->getYaml()));
+    }
+    std::stringstream ss;
+    ss << root;
+    return ss.str();
+}
 
 } // namespace log
 } // namespace lon

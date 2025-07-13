@@ -4,13 +4,11 @@ namespace lon
 {
 namespace config
 {
-Config::ConfigDataMap Config::s_datas = {{}};
-
 ConfigDataBase::Ptr Config::getDataBase(const std::string &name)
 {
-    if (s_datas.find(name) != s_datas.end())
+    if (getDatas().find(name) != getDatas().end())
     {
-        return s_datas[name];
+        return getDatas()[name];
     }
     return nullptr;
 }

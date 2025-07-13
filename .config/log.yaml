@@ -1,69 +1,21 @@
 logs:
     - name: root
-      level: info
-      format: '%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n'
+      level: debug
       appenders:
-          - type: FileLogAppender
-            file: /home/idriver/yqh/git/LoNetfw/.log/root.log
-          - type: StdoutLogAppender
+          - type: 1
+            log_path: /home/tamamo/LoNetfw/.log/root.log
+            format: '%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n'
+            level: debug
+          - type: 0
+            format: '%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n'
+            level: debug
     - name: system
-      level: info
-      format: '%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n'
+      level: debug
       appenders:
-          - type: FileLogAppender
-            file: /home/idriver/yqh/git/LoNetfw/.log/system.log
-          - type: StdoutLogAppender
-test:
-    port: 8554
-    value: 1.114514
-    # vec:
-    #    - 114
-    #    - 514
-    #    - 1919
-    #    - 810
-    vec: [114,514]
-    list: [444,555]
-    set: [999, 777, 888, 777]
-    uset: [999, 777, 888, 777]
-    # map: [1,2,3]
-    map:
-      key2: 12
-      key1: 4
-    umap:
-      key2: 12
-      key1: 4
-      key3: 213
-    bool: true
-class:
-    person:
-      name: yqm
-      age: 21
-      gender: female
-      score: 0
-    map:
-      mmd:
-        name: yqm
-        age: 21
-        gender: female
-        score: 0
-      mmd1:
-        name: sss
-        age: 33
-        gender: female
-        score: 2.2
-    map_vec:
-      sdsd:
-          - name: yqm
-            age: 21
-            gender: female
-            score: 34.2
-          - name: sdsdsds
-            age: 65
-            gender: male
-            score: 1.1
-      sdsds:
-          - name: sss
-            age: 33
-            gender: female
-            score: 2.2
-    
+          - type: 1
+            log_path: /home/tamamo/LoNetfw/.log/system.log
+            format: '%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n'
+            level: debug
+          - type: 0
+            format: '%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n'
+            level: debug

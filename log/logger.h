@@ -32,13 +32,13 @@ class Logger : public std::enable_shared_from_this<Logger>
 
     void addAppender(LogAppender::Ptr appender);
     void delAppender(LogAppender::Ptr appender);
+    void clearAppenders();
     void setLevel(LogLevel::Level level);
     void setLevel(const std::string &level);
     LogLevel::Level getLevel() const;
     void getLevel(std::string &level);
     std::string getName() const;
-
-    void test();
+    std::string getYaml() const;
 
   private:
     std::string m_name;                        //日志名称
@@ -69,7 +69,9 @@ class LoggerManager
 
     void setLogger(const std::string &name, const Logger::Ptr logger);
     Logger::Ptr getLogger(const std::string &name);
+    void delLogger(const std::string &name);
     Logger::Ptr getRoot();
+    std::string getYaml() const;
 
   private:
     std::map<std::string, Logger::Ptr> m_loggers;

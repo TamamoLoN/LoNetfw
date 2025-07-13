@@ -23,8 +23,8 @@ class Config
             LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << name;
             return nullptr;
         }
-        auto it = s_datas.find(name_lower);
-        if (it != s_datas.end())
+        auto it = getDatas().find(name_lower);
+        if (it != getDatas().end())
         {
             auto data_ptr = std::dynamic_pointer_cast<ConfigData<T>>(it->second);
             if (data_ptr != nullptr)
@@ -40,8 +40,8 @@ class Config
                 return nullptr;
             }
         }
-        auto data_ptr       = std::make_shared<ConfigData<T>>(name, data, description);
-        s_datas[name_lower] = data_ptr;
+        auto data_ptr          = std::make_shared<ConfigData<T>>(name, data, description);
+        getDatas()[name_lower] = data_ptr;
         return data_ptr;
     }
 
@@ -54,8 +54,8 @@ class Config
             LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << name;
             return;
         }
-        auto it = s_datas.find(name_lower);
-        if (it != s_datas.end())
+        auto it = getDatas().find(name_lower);
+        if (it != getDatas().end())
         {
             auto exists_type = it->second->getType();
             if (exists_type == data_ptr->getType())
@@ -71,19 +71,19 @@ class Config
                 return;
             }
         }
-        s_datas[name_lower] = data_ptr;
+        getDatas()[name_lower] = data_ptr;
     }
 
     template <typename T> static typename ConfigData<T>::Ptr getData(const std::string &name)
     {
         auto name_lower = util::toLower(name);
-        auto it         = s_datas.find(name_lower);
+        auto it         = getDatas().find(name_lower);
         if (!util::isValidParamName(name_lower))
         {
             LON_ERROR(LON_LOG_ROOT) << "ConfigData<T>::Ptr getData: data name is invalid: " << name;
             return nullptr;
         }
-        if (it == s_datas.end())
+        if (it == getDatas().end())
         {
             LON_WARN(LON_LOG_ROOT) << "ConfigData<T>::Ptr getData: cannot find data: " << name;
             return nullptr;
@@ -97,7 +97,14 @@ class Config
     static void parseFromYaml(YAML::Node node);
 
   private:
-    static ConfigDataMap s_datas;
+    //使静态变量s_datas必须先初始化
+    static ConfigDataMap &getDatas()
+    {
+        static ConfigDataMap s_datas;
+        return s_datas;
+    }
 };
 } // namespace config
 } // namespace lon
+//相关配置项
+#include "config/configlog.h"

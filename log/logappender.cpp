@@ -41,6 +41,17 @@ void StdoutLogAppender::log(std::string logger_name, LogLevel::Level level, LogE
     std::cout << str;
 }
 
+std::string StdoutLogAppender::getYaml() const
+{
+    YAML::Node node;
+    node["type"]   = 0;
+    node["format"] = m_formatter->getFormat();
+    node["level"]  = LogLevel::getLevelName(m_level);
+    std::stringstream ss;
+    ss << node;
+    return ss.str();
+}
+
 FileLogAppender::FileLogAppender(const std::string &filename, LogLevel::Level level)
     : LogAppender(level), m_filename(filename)
 {
@@ -67,6 +78,18 @@ void FileLogAppender::log(std::string logger_name, LogLevel::Level level, LogEve
     }
     m_file << m_formatter->format(logger_name, level, event);
     m_file.flush();
+}
+
+std::string FileLogAppender::getYaml() const
+{
+    YAML::Node node;
+    node["type"]     = 1;
+    node["format"]   = m_formatter->getFormat();
+    node["level"]    = LogLevel::getLevelName(m_level);
+    node["log_path"] = m_filename;
+    std::stringstream ss;
+    ss << node;
+    return ss.str();
 }
 
 } // namespace log

@@ -1,6 +1,4 @@
 #include "config/config.h"
-#include "yaml-cpp/yaml.h"
-
 class Person
 {
   public:
@@ -57,7 +55,7 @@ template <> class lon::util::LexicalCast<std::string, Person>
     }
 };
 
-int main(int argc, char const *argv[])
+void test_std_type()
 {
     auto config = std::make_shared<lon::config::Config>();
     lon::config::ConfigData<int>::Ptr data1 =
@@ -86,35 +84,16 @@ int main(int argc, char const *argv[])
 
     auto data10 = std::make_shared<lon::config::ConfigData<int>>("test.value", 114, "testtest");
 
-    auto data11 =
-        lon::config::Config::setData("class.person", Person("yqh", 22, "male", 100.0f), "yqh");
-
     auto data12 = lon::config::Config::setData(
         "class.map", std::map<std::string, Person>({{"mmd", Person("yqh", 22, "male", 100.0f)}}),
         "yqh");
 
     auto data13 = lon::config::Config::setData("test.bool", false, "test.bool");
 
-    auto data14 = lon::config::Config::setData(
-        "class.map_vec",
-        std::map<std::string, std::vector<Person>>({{"mmd", {Person("yqh", 22, "male", 100.0f)}}}),
-        "yqh");
-
-    data11->addConfigDataChangeCB(1, [](const Person &old_data, const Person &new_data) {
-        LON_FATAL(LON_LOG_ROOT) << "11111old_data: " << old_data.print();
-        LON_FATAL(LON_LOG_ROOT) << "11111new_data: " << new_data.print();
-    });
-
     config->setData(data1);
     config->setData("test.value", 3.1415f, "testtest");
     config->setData(data3);
     config->setData(data10);
-
-    // auto vec = lon::config::Config::getData<std::vector<int>>("test.vec")->getData();
-    // for (auto &v : vec)
-    // {
-    //     LON_INFO(LON_LOG_ROOT) << v;
-    // }
 
     auto res = config->getData<int>("test");
     if (res != nullptr)
@@ -122,14 +101,7 @@ int main(int argc, char const *argv[])
         LON_INFO(LON_LOG_ROOT) << res->toString();
     }
 
-    YAML::Node root = YAML::LoadFile("/home/tamamo/LoNetfw/.config/log.yaml");
-    auto log_node   = root["logs"];
-    // for (const auto &node : log_node)
-    // {
-    //     LON_DEBUG(LON_LOG_ROOT) << node["name"].as<std::string>();
-    // }
-    // LON_FATAL(LON_LOG_ROOT) << root;
-    // lon::util::printYamlString(root);
+    YAML::Node root = YAML::LoadFile("/home/tamamo/LoNetfw/.config/test.yaml");
 
     LON_INFO(LON_LOG_ROOT) << "before: " << data1->getData();
     LON_INFO(LON_LOG_ROOT) << "before: " << data2->toString();
@@ -139,11 +111,8 @@ int main(int argc, char const *argv[])
     LON_INFO(LON_LOG_ROOT) << "before: " << data6->toString();
     LON_INFO(LON_LOG_ROOT) << "before: " << data7->toString();
     LON_INFO(LON_LOG_ROOT) << "before: " << data8->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data11->toString();
     LON_INFO(LON_LOG_ROOT) << "before: " << data12->toString();
     LON_INFO(LON_LOG_ROOT) << "before: " << data13->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data14->toString();
-    // config->parseFromYaml("/home/idriver/yqh/git/LoNetfw/.config/log.yaml");
     lon::config::Config::parseFromYaml(root);
 
     LON_INFO(LON_LOG_ROOT) << "after: " << data1->getData();
@@ -154,12 +123,46 @@ int main(int argc, char const *argv[])
     LON_INFO(LON_LOG_ROOT) << "after: " << data6->toString();
     LON_INFO(LON_LOG_ROOT) << "after: " << data7->toString();
     LON_INFO(LON_LOG_ROOT) << "after: " << data8->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data11->toString();
     LON_INFO(LON_LOG_ROOT) << "after: " << data12->toString();
     LON_INFO(LON_LOG_ROOT) << "after: " << data13->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data14->toString();
 
     // LON_INFO(LON_LOG_ROOT) << "__cplusplus = " << __cplusplus;
+}
 
-    return 0;
+void test_diy_type()
+{
+    auto data11 =
+        lon::config::Config::setData("class.person", Person("yqh", 22, "male", 100.0f), "yqh");
+    auto data14 = lon::config::Config::setData(
+        "class.map_vec",
+        std::map<std::string, std::vector<Person>>({{"mmd", {Person("yqh", 22, "male", 100.0f)}}}),
+        "yqh");
+    data11->addConfigDataChangeCB(1, [](const Person &old_data, const Person &new_data) {
+        LON_FATAL(LON_LOG_ROOT) << "11111old_data: " << old_data.print();
+        LON_FATAL(LON_LOG_ROOT) << "11111new_data: " << new_data.print();
+    });
+    LON_INFO(LON_LOG_ROOT) << "before: " << data11->toString();
+    LON_INFO(LON_LOG_ROOT) << "before: " << data14->toString();
+    lon::config::Config::parseFromYaml("/home/tamamo/LoNetfw/.config/test.yaml");
+    LON_INFO(LON_LOG_ROOT) << "after: " << data11->toString();
+    LON_INFO(LON_LOG_ROOT) << "after: " << data14->toString();
+}
+
+void test_log_config()
+{
+    std::cout << "before:" << LON_LOG_MANAGER.getYaml() << std::endl;
+    lon::config::Config::parseFromYaml("/home/tamamo/LoNetfw/.config/log.yaml");
+
+    auto logger_root   = LON_LOG_NAME("root");
+    auto logger_system = LON_LOG_NAME("system");
+    LON_DEBUG(logger_root) << "root logger";
+    LON_DEBUG(logger_system) << "system logger";
+    std::cout << "after:" << LON_LOG_MANAGER.getYaml() << std::endl;
+}
+
+int main(int argc, char **argv)
+{
+    // test_std_type();
+    // test_diy_type();
+    test_log_config();
 }
