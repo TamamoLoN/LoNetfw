@@ -106,7 +106,7 @@ struct ConfigLogChanged
                 }
             }
         });
-    };
+    }
     static ConfigLogChanged &Instance()
     {
         static ConfigLogChanged instance;

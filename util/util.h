@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/lexicalcast.h"
+#include "util/noncopyable.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
 #include <sstream>

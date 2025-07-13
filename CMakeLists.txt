@@ -38,6 +38,7 @@ endfunction()
 add_subdirectory(util)
 add_subdirectory(log)
 add_subdirectory(config)
+add_subdirectory(thread)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
                  )
@@ -72,3 +73,15 @@ target_link_libraries(test_config PRIVATE
                         pthread
                         ) 
 force_redefine_file_macro_for_sources(test_config)
+
+add_executable(test_thread
+               ${CMAKE_SOURCE_DIR}/src/test_thread.cpp
+               )
+target_link_libraries(test_thread PRIVATE 
+                        util 
+                        log 
+                        config 
+                        thread
+                        yaml-cpp
+                        ) 
+force_redefine_file_macro_for_sources(test_thread)

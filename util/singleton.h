@@ -1,5 +1,4 @@
 #pragma once
-#include "util/noncopyable.h"
 #include <memory>
 namespace lon
 {

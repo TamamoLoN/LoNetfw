@@ -8,5 +8,5 @@ add_library(config SHARED
             ${CONFIG_SRCS}
             )
 
-target_link_libraries(config PRIVATE util)
+target_link_libraries(config PRIVATE util log)
 target_include_directories(config PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
