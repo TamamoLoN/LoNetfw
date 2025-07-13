@@ -28,7 +28,8 @@ template <typename T, class FromStr = util::LexicalCast<T, std::string>,
 struct ConfigData : public ConfigDataBase
 {
   public:
-    using Ptr = std::shared_ptr<ConfigData<T>>;
+    using Ptr                  = std::shared_ptr<ConfigData<T>>;
+    using onConfigDataChangeCB = std::function<void(const T &old_data, const T &new_data)>;
 
     ConfigData(const std::string &name, const T &data, const std::string &description = "")
         : ConfigDataBase(name, description), m_data(data){};
@@ -39,7 +40,7 @@ struct ConfigData : public ConfigDataBase
     {
         try
         {
-            return ToStr()(m_data);
+            return ToStr()(getData());
         }
         catch (const std::runtime_error &e)
         {
@@ -51,7 +52,7 @@ struct ConfigData : public ConfigDataBase
     {
         try
         {
-            m_data = FromStr()(str);
+            setData(FromStr()(str));
             return true;
         }
         catch (const std::runtime_error &e)
@@ -61,10 +62,59 @@ struct ConfigData : public ConfigDataBase
         }
     }
     T getData() const { return m_data; }
-    void setData(const T &data) { m_data = data; }
+    void setData(const T &data)
+    {
+        if (m_data == data)
+        {
+            return;
+        }
+        for (const auto &it : m_cbs)
+        {
+            it.second(m_data, data);
+        }
+        m_data = data;
+    }
+
+    bool addConfigDataChangeCB(uint64_t key, onConfigDataChangeCB cb)
+    {
+        auto it = m_cbs.find(key);
+        if (it != m_cbs.end())
+        {
+            LON_WARN(LON_LOG_ROOT) << "addConfigDataChangeCB: key is exists: " << key;
+            return false;
+        }
+        m_cbs[key] = cb;
+        return true;
+    }
+
+    bool delConfigDataChangeCB(const uint64_t &key)
+    {
+        auto it = m_cbs.find(key);
+        if (it != m_cbs.end())
+        {
+            LON_WARN(LON_LOG_ROOT) << "delConfigDataChangeCB: key is not exists: " << key;
+            return false;
+        }
+        m_cbs.erase(it);
+        return true;
+    }
+
+    onConfigDataChangeCB getConfigDataChangeCB(const uint64_t &key)
+    {
+        auto it = m_cbs.find(key);
+        if (it != m_cbs.end())
+        {
+            LON_WARN(LON_LOG_ROOT) << "getConfigDataChangeCB: key is not exists: " << key;
+            return nullptr;
+        }
+        return it->second;
+    }
+
+    void clearConfigDataChangeCB() { m_cbs.clear(); }
 
   private:
     T m_data;
+    std::map<uint64_t, onConfigDataChangeCB> m_cbs;
 };
 
 } // namespace config

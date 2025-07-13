@@ -14,8 +14,8 @@ class Config
 
     //创建并设置当前Config数据，返回数据实例
     template <typename T>
-    static ConfigDataBase::Ptr setData(const std::string &name, const T &data,
-                                       const std::string &description = "")
+    static typename ConfigData<T>::Ptr setData(const std::string &name, const T &data,
+                                               const std::string &description = "")
     {
         auto name_lower = util::toLower(name);
         if (!util::isValidParamName(name_lower))

@@ -15,6 +15,15 @@ class Person
         ss << "[Person: " << m_name << ", " << m_age << ", " << m_gender << ", " << m_score << "]";
         return ss.str();
     }
+    bool operator==(const Person &other) const
+    {
+        if (other.m_name != this->m_name || other.m_age != this->m_age ||
+            other.m_gender != this->m_gender || other.m_score != this->m_score)
+        {
+            return false;
+        }
+        return true;
+    }
     std::string m_name;
     int m_age;
     std::string m_gender;
@@ -91,6 +100,11 @@ int main(int argc, char const *argv[])
         std::map<std::string, std::vector<Person>>({{"mmd", {Person("yqh", 22, "male", 100.0f)}}}),
         "yqh");
 
+    data11->addConfigDataChangeCB(1, [](const Person &old_data, const Person &new_data) {
+        LON_FATAL(LON_LOG_ROOT) << "11111old_data: " << old_data.print();
+        LON_FATAL(LON_LOG_ROOT) << "11111new_data: " << new_data.print();
+    });
+
     config->setData(data1);
     config->setData("test.value", 3.1415f, "testtest");
     config->setData(data3);
@@ -108,7 +122,7 @@ int main(int argc, char const *argv[])
         LON_INFO(LON_LOG_ROOT) << res->toString();
     }
 
-    YAML::Node root = YAML::LoadFile("/home/idriver/yqh/git/LoNetfw/.config/log.yaml");
+    YAML::Node root = YAML::LoadFile("/home/tamamo/LoNetfw/.config/log.yaml");
     auto log_node   = root["logs"];
     // for (const auto &node : log_node)
     // {
@@ -144,6 +158,8 @@ int main(int argc, char const *argv[])
     LON_INFO(LON_LOG_ROOT) << "after: " << data12->toString();
     LON_INFO(LON_LOG_ROOT) << "after: " << data13->toString();
     LON_INFO(LON_LOG_ROOT) << "after: " << data14->toString();
+
+    // LON_INFO(LON_LOG_ROOT) << "__cplusplus = " << __cplusplus;
 
     return 0;
 }
