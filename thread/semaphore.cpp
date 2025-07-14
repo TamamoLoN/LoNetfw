@@ -11,7 +11,6 @@ Semaphore::Semaphore(uint32_t count) : m_count(count)
     {
         std::stringstream ss;
         ss << "sem_init failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -36,7 +35,6 @@ void Semaphore::notify()
     {
         std::stringstream ss;
         ss << "sem_post failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }

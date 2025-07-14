@@ -46,11 +46,11 @@ void test_thread_mutex()
     {
         threads.push_back(std::make_shared<lon::thread::Thread>(
             [&]() {
-                for (int j = 0; j < 50000; j++)
+                for (int j = 0; j < 1000000; j++)
                 {
-                    lon::thread::Mutex::Lock lock(mtx);
-                    // lon::thread::RWMutex::RdLock lock(mtx);
-                    // lon::thread::RWMutex::WrLock lock(rwmtx);
+                    // lon::thread::Mutex::Lock lock(mtx);
+                    // lon::thread::RWMutex::RdLock lock(rwmtx);
+                    lon::thread::RWMutex::WrLock lock(rwmtx);
                     // LON_INFO(LON_LOG_ROOT) << cnt;
                     cnt++;
                 }

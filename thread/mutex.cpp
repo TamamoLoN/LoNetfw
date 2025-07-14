@@ -11,7 +11,6 @@ Mutex::Mutex()
     {
         std::stringstream ss;
         ss << "pthread_mutex_init failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -25,7 +24,6 @@ void Mutex::lock()
     {
         std::stringstream ss;
         ss << "pthread_mutex_lock failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -37,7 +35,6 @@ void Mutex::unlock()
     {
         std::stringstream ss;
         ss << "pthread_mutex_unlock failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -49,7 +46,6 @@ RWMutex::RWMutex()
     {
         std::stringstream ss;
         ss << "pthread_rwlock_init failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -63,7 +59,6 @@ void RWMutex::rdlock()
     {
         std::stringstream ss;
         ss << "pthread_rwlock_rdlock failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -75,7 +70,6 @@ void RWMutex::wrlock()
     {
         std::stringstream ss;
         ss << "pthread_rwlock_wrlock failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }
@@ -87,7 +81,6 @@ void RWMutex::unlock()
     {
         std::stringstream ss;
         ss << "pthread_rwlock_unlock failed, rt = " << rt;
-        LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
 }

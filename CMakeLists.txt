@@ -58,7 +58,7 @@ add_executable(${PROJECT_NAME}
                ${CMAKE_SOURCE_DIR}/src/main.cpp
                )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE util log config) 
+target_link_libraries(${PROJECT_NAME} PRIVATE util thread log config) 
 force_redefine_file_macro_for_sources(${PROJECT_NAME})
 
 add_executable(test_config
@@ -66,6 +66,7 @@ add_executable(test_config
                )
 target_link_libraries(test_config PRIVATE 
                         util 
+                        thread
                         log 
                         config 
                         yaml-cpp
@@ -79,9 +80,9 @@ add_executable(test_thread
                )
 target_link_libraries(test_thread PRIVATE 
                         util 
+                        thread
                         log 
                         config 
-                        thread
                         yaml-cpp
                         ) 
 force_redefine_file_macro_for_sources(test_thread)

@@ -1,9 +1,10 @@
 #pragma once
 
-#include "log/logger.h"
 #include "util/noncopyable.h"
 #include <errno.h>
 #include <semaphore.h>
+#include <sstream>
+#include <stdint.h>
 
 namespace lon
 {

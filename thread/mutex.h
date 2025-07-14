@@ -1,8 +1,7 @@
 #pragma once
-#include "log/logger.h"
 #include "thread/scopedlock.h"
 #include <pthread.h>
-
+#include <sstream>
 namespace lon
 {
 namespace thread

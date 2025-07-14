@@ -38,13 +38,14 @@ class Logger : public std::enable_shared_from_this<Logger>
     LogLevel::Level getLevel() const;
     void getLevel(std::string &level);
     std::string getName() const;
-    std::string getYaml() const;
+    std::string getYaml();
 
   private:
     std::string m_name;                        //日志名称
     LogLevel::Level m_level;                   //日志等级
     std::vector<LogAppender::Ptr> m_appenders; //日志输出目的地向量
     LogFormatter::Ptr m_formatter;
+    thread::Mutex m_mutex;
 };
 
 class LoggerWrapper
@@ -71,11 +72,12 @@ class LoggerManager
     Logger::Ptr getLogger(const std::string &name);
     void delLogger(const std::string &name);
     Logger::Ptr getRoot();
-    std::string getYaml() const;
+    std::string getYaml();
 
   private:
     std::map<std::string, Logger::Ptr> m_loggers;
     Logger::Ptr m_logger_root;
+    thread::Mutex m_mutex;
 };
 
 } // namespace log

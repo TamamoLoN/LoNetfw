@@ -8,5 +8,5 @@ add_library(thread SHARED
             ${THREAD_SRCS}
             )
 
-target_link_libraries(thread PRIVATE util log pthread)
+target_link_libraries(thread PRIVATE util pthread)
 target_include_directories(thread PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)

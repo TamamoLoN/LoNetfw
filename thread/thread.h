@@ -1,6 +1,5 @@
 #pragma once
 
-#include "log/logger.h"
 #include "thread/mutex.h"
 #include "thread/semaphore.h"
 #include "util/util.h"

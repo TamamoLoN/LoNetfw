@@ -7,9 +7,17 @@ namespace log
 {
 LogAppender::LogAppender(LogLevel::Level level) : m_level(level) {}
 
-void LogAppender::setFormatter(LogFormatter::Ptr formatter) { m_formatter = formatter; }
+void LogAppender::setFormatter(LogFormatter::Ptr formatter)
+{
+    thread::Mutex::Lock lock(m_mutex);
+    m_formatter = formatter;
+}
 
-LogFormatter::Ptr LogAppender::getFormatter() const { return m_formatter; }
+LogFormatter::Ptr LogAppender::getFormatter()
+{
+    thread::Mutex::Lock lock(m_mutex);
+    return m_formatter;
+}
 
 StdoutLogAppender::StdoutLogAppender(LogLevel::Level level) : LogAppender(level) {}
 
@@ -19,6 +27,7 @@ void StdoutLogAppender::log(std::string logger_name, LogLevel::Level level, LogE
     {
         return;
     }
+    thread::Mutex::Lock lock(m_mutex);
     auto str = m_formatter->format(logger_name, level, event);
     switch (level)
     {
@@ -41,9 +50,10 @@ void StdoutLogAppender::log(std::string logger_name, LogLevel::Level level, LogE
     std::cout << str;
 }
 
-std::string StdoutLogAppender::getYaml() const
+std::string StdoutLogAppender::getYaml()
 {
     YAML::Node node;
+    thread::Mutex::Lock lock(m_mutex);
     node["type"]   = 0;
     node["format"] = m_formatter->getFormat();
     node["level"]  = LogLevel::getLevelName(m_level);
@@ -76,13 +86,15 @@ void FileLogAppender::log(std::string logger_name, LogLevel::Level level, LogEve
     {
         return;
     }
+    thread::Mutex::Lock lock(m_mutex);
     m_file << m_formatter->format(logger_name, level, event);
     m_file.flush();
 }
 
-std::string FileLogAppender::getYaml() const
+std::string FileLogAppender::getYaml()
 {
     YAML::Node node;
+    thread::Mutex::Lock lock(m_mutex);
     node["type"]     = 1;
     node["format"]   = m_formatter->getFormat();
     node["level"]    = LogLevel::getLevelName(m_level);

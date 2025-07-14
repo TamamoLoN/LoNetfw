@@ -14,6 +14,7 @@ Logger::Logger(const std::string &name, LogLevel::Level level)
 
 void Logger::log(LogLevel::Level level, LogEvent::Ptr event)
 {
+    thread::Mutex::Lock lock(m_mutex);
     if (m_level > level)
     {
         return;
@@ -36,6 +37,7 @@ void Logger::fatal(LogEvent::Ptr event) { log(LogLevel::Level::FATAL, event); }
 
 void Logger::addAppender(LogAppender::Ptr appender)
 {
+    thread::Mutex::Lock lock(m_mutex);
     if (!appender->getFormatter())
     {
         appender->setFormatter(m_formatter);
@@ -45,6 +47,7 @@ void Logger::addAppender(LogAppender::Ptr appender)
 
 void Logger::delAppender(LogAppender::Ptr appender)
 {
+    thread::Mutex::Lock lock(m_mutex);
     for (auto it = m_appenders.begin(); it != m_appenders.end(); ++it)
     {
         if (*it == appender)
@@ -55,7 +58,11 @@ void Logger::delAppender(LogAppender::Ptr appender)
     }
 }
 
-void Logger::clearAppenders() { m_appenders.clear(); }
+void Logger::clearAppenders()
+{
+    thread::Mutex::Lock lock(m_mutex);
+    m_appenders.clear();
+}
 
 void Logger::setLevel(LogLevel::Level level) { m_level = level; }
 
@@ -67,9 +74,10 @@ void Logger::getLevel(std::string &level) { level = LogLevel::getLevelName(m_lev
 
 std::string Logger::getName() const { return m_name; }
 
-std::string Logger::getYaml() const
+std::string Logger::getYaml()
 {
     YAML::Node root;
+    thread::Mutex::Lock lock(m_mutex);
     root["name"]  = m_name;
     root["level"] = LogLevel::getLevelName(m_level);
     auto node     = root["appenders"];
@@ -107,11 +115,13 @@ LoggerManager::LoggerManager(const Logger::Ptr logger_root) : m_logger_root(logg
 
 void LoggerManager::setLogger(const std::string &name, const Logger::Ptr logger)
 {
+    thread::Mutex::Lock lock(m_mutex);
     m_loggers[name] = logger;
 }
 
 Logger::Ptr LoggerManager::getLogger(const std::string &name)
 {
+    thread::Mutex::Lock lock(m_mutex);
     if (m_loggers.find(name) == m_loggers.end())
     {
         LON_WARN(LON_LOG_ROOT) << "the logger has not been initialized: " << name;
@@ -122,6 +132,7 @@ Logger::Ptr LoggerManager::getLogger(const std::string &name)
 
 void LoggerManager::delLogger(const std::string &name)
 {
+    thread::Mutex::Lock lock(m_mutex);
     auto it = m_loggers.find(name);
     if (it == m_loggers.end())
     {
@@ -132,9 +143,10 @@ void LoggerManager::delLogger(const std::string &name)
 
 Logger::Ptr LoggerManager::getRoot() { return m_logger_root; }
 
-std::string LoggerManager::getYaml() const
+std::string LoggerManager::getYaml()
 {
     YAML::Node root;
+    thread::Mutex::Lock lock(m_mutex);
     auto node = root["logs"];
     for (const auto &it : m_loggers)
     {
