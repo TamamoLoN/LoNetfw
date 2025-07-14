@@ -20,7 +20,7 @@ class Logger : public std::enable_shared_from_this<Logger>
 {
   public:
     using Ptr       = std::shared_ptr<Logger>;
-    using MutexType = thread::Mutex;
+    using MutexType = thread::SpinLock;
     explicit Logger(const std::string &name = "root",
                     LogLevel::Level level   = LogLevel::Level::DEBUG);
     virtual ~Logger() = default;
@@ -66,7 +66,7 @@ class LoggerWrapper
 class LoggerManager
 {
   public:
-    using MutexType = thread::Mutex;
+    using MutexType = thread::SpinLock;
     LoggerManager(const Logger::Ptr logger_root = nullptr);
     ~LoggerManager() = default;
 

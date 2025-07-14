@@ -1,5 +1,6 @@
 #pragma once
 #include "thread/scopedlock.h"
+#include <atomic>
 #include <pthread.h>
 #include <sstream>
 namespace lon
@@ -56,6 +57,19 @@ class RWMutex : public util::Nonecopyable
 
   private:
     pthread_rwlock_t m_lock;
+};
+
+class SpinLock : public util::Nonecopyable
+{
+  public:
+    using Lock = ScopedLock<SpinLock>;
+    SpinLock();
+    virtual ~SpinLock();
+    void lock();
+    void unlock();
+
+  private:
+    pthread_spinlock_t m_lock;
 };
 
 } // namespace thread

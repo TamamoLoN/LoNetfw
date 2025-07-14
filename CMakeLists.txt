@@ -54,12 +54,24 @@ include_directories(${CMAKE_SOURCE_DIR}
 #             NO_DEFAULT_PATH 
 #             )
 
-add_executable(${PROJECT_NAME}
-               ${CMAKE_SOURCE_DIR}/src/main.cpp
-               )
+# add_executable(${PROJECT_NAME}
+#                ${CMAKE_SOURCE_DIR}/src/main.cpp
+#                )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE util thread log config) 
-force_redefine_file_macro_for_sources(${PROJECT_NAME})
+# target_link_libraries(${PROJECT_NAME} PRIVATE util thread log config) 
+# force_redefine_file_macro_for_sources(${PROJECT_NAME})
+
+add_executable(test_log
+               ${CMAKE_SOURCE_DIR}/src/test_log.cpp
+               )
+target_link_libraries(test_log PRIVATE 
+                        util 
+                        thread
+                        log 
+                        config 
+                        yaml-cpp
+                        ) 
+force_redefine_file_macro_for_sources(test_log)
 
 add_executable(test_config
                ${CMAKE_SOURCE_DIR}/src/test_config.cpp

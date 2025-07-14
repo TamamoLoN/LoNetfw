@@ -14,7 +14,7 @@ class LogAppender
 {
   public:
     using Ptr       = std::shared_ptr<LogAppender>;
-    using MutexType = thread::Mutex;
+    using MutexType = thread::SpinLock;
     explicit LogAppender(LogLevel::Level level);
     virtual ~LogAppender()                                                                = default;
     virtual void log(std::string logger_name, LogLevel::Level level, LogEvent::Ptr event) = 0;

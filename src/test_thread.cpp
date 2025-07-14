@@ -69,35 +69,47 @@ void test_thread_mutex_log()
 {
     std::vector<lon::thread::Thread::Ptr> threads;
     // lon::thread::Mutex mtx;
-    int cnt = 0;
-    for (int i = 0; i < 5; i++)
+    auto start = std::chrono::high_resolution_clock::now();
+
+    int k = 0;
+    for (int i = 0; i < 1; i++)
     {
         auto t1 = std::make_shared<lon::thread::Thread>(
             [&]() {
+                int j = 0;
                 while (1)
                 {
                     // lon::thread::Mutex::Lock lock(mtx);
                     LON_INFO(LON_LOG_NAME("root")) << "*************************************";
+                    cnt++;
                 }
             },
-            "thread_" + std::to_string(cnt++));
-        auto t2 = std::make_shared<lon::thread::Thread>(
-            [&]() {
-                while (1)
-                {
-                    // lon::thread::Mutex::Lock lock(mtx);
-                    LON_INFO(LON_LOG_NAME("root")) << "-------------------------------------";
-                }
-            },
-            "thread_" + std::to_string(cnt++));
+            "thread_" + std::to_string(k++));
+        // auto t2 = std::make_shared<lon::thread::Thread>(
+        //     [&]() {
+        //         int j = 0;
+        //         while (1)
+        //         {
+        //             // lon::thread::Mutex::Lock lock(mtx);
+        //             LON_INFO(LON_LOG_NAME("root")) << "-------------------------------------";
+        //             cnt++;
+        //         }
+        //     },
+        //     "thread_" + std::to_string(k++));
         threads.push_back(t1);
-        threads.push_back(t2);
+        // threads.push_back(t2);
     }
 
     for (const auto &it : threads)
     {
         it->join();
     }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    LON_INFO(LON_LOG_ROOT)
+        << "duration: "
+        << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+        << "us; write count:" << cnt;
 }
 
 int main(int argc, char const *argv[])
