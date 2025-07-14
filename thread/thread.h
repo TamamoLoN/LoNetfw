@@ -23,6 +23,8 @@ class Thread : public util::Nonecopyable
     static Thread *getThis();
     static const std::string &getNameStatic();
     static void setNameStatic(const std::string &name);
+    static const pid_t getIdStatic();
+    static void setIdStatic(const pid_t &id);
 
   private:
     static void *run(void *arg);

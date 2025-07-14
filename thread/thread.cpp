@@ -10,7 +10,7 @@ static thread_local std::string t_thread_name = "UNKNOWN";
 Thread::Thread(std::function<void()> cb, const std::string &name) : m_cb(cb), m_name(name), m_id(-1)
 {
     int rt = pthread_create(&m_thread, nullptr, &Thread::run, this);
-    if (rt)
+    if (rt != 0)
     {
         std::stringstream ss;
         ss << "pthread create failed, rt = " << rt << ", name=" << m_name;
@@ -39,7 +39,7 @@ void Thread::join()
     if (m_thread)
     {
         int rt = pthread_join(m_thread, nullptr);
-        if (rt)
+        if (rt != 0)
         {
             std::stringstream ss;
             ss << "pthread join failed, rt = " << rt << ", name=" << m_name;
@@ -53,6 +53,7 @@ void Thread::join()
 //静态成员函数
 Thread *Thread::getThis() { return t_thread; }
 const std::string &Thread::getNameStatic() { return t_thread_name; }
+
 void Thread::setNameStatic(const std::string &name)
 {
     if (t_thread != nullptr)
@@ -61,11 +62,30 @@ void Thread::setNameStatic(const std::string &name)
     }
     t_thread_name = name;
 }
+
+const pid_t Thread::getIdStatic()
+{
+    if (t_thread != nullptr)
+    {
+        return t_thread->getId();
+    }
+    return -1;
+}
+
+void Thread::setIdStatic(const pid_t &id)
+{
+    if (t_thread != nullptr)
+    {
+        t_thread->setId(id);
+    }
+}
+
 void *Thread::run(void *arg)
 {
     Thread *thread = (Thread *)arg;
     t_thread       = thread;
     thread->setId(util::getThreadId());
+    thread->setNameStatic(thread->getName());
     pthread_setname_np(pthread_self(), thread->getName().substr(0, 15).c_str());
     std::function<void()> cb;
     // swap不会改变智能指针的引用次数
