@@ -65,13 +65,49 @@ void test_thread_mutex()
     LON_INFO(LON_LOG_ROOT) << cnt;
 }
 
+void test_thread_mutex_log()
+{
+    std::vector<lon::thread::Thread::Ptr> threads;
+    // lon::thread::Mutex mtx;
+    int cnt = 0;
+    for (int i = 0; i < 5; i++)
+    {
+        auto t1 = std::make_shared<lon::thread::Thread>(
+            [&]() {
+                while (1)
+                {
+                    // lon::thread::Mutex::Lock lock(mtx);
+                    LON_INFO(LON_LOG_NAME("root")) << "*************************************";
+                }
+            },
+            "thread_" + std::to_string(cnt++));
+        auto t2 = std::make_shared<lon::thread::Thread>(
+            [&]() {
+                while (1)
+                {
+                    // lon::thread::Mutex::Lock lock(mtx);
+                    LON_INFO(LON_LOG_NAME("root")) << "-------------------------------------";
+                }
+            },
+            "thread_" + std::to_string(cnt++));
+        threads.push_back(t1);
+        threads.push_back(t2);
+    }
+
+    for (const auto &it : threads)
+    {
+        it->join();
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml("./.config/log.yaml");
 
     // test_thread_no_join();
     // test_thread();
-    test_thread_mutex();
+    // test_thread_mutex();
+    test_thread_mutex_log();
 
     return 0;
 }

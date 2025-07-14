@@ -13,7 +13,8 @@ namespace log
 class LogAppender
 {
   public:
-    using Ptr = std::shared_ptr<LogAppender>;
+    using Ptr       = std::shared_ptr<LogAppender>;
+    using MutexType = thread::Mutex;
     explicit LogAppender(LogLevel::Level level);
     virtual ~LogAppender()                                                                = default;
     virtual void log(std::string logger_name, LogLevel::Level level, LogEvent::Ptr event) = 0;
@@ -24,7 +25,7 @@ class LogAppender
   protected:
     LogLevel::Level m_level;
     LogFormatter::Ptr m_formatter;
-    thread::Mutex m_mutex;
+    MutexType m_mutex;
 };
 
 class StdoutLogAppender : public LogAppender

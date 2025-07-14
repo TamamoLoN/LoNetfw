@@ -7,6 +7,16 @@ namespace lon
 namespace thread
 {
 //普通锁
+class MutexNull : public util::Nonecopyable
+{
+  public:
+    using Lock           = ScopedLock<MutexNull>;
+    MutexNull()          = default;
+    virtual ~MutexNull() = default;
+    void lock() {}
+    void unlock() {}
+};
+
 class Mutex : public util::Nonecopyable
 {
   public:
@@ -21,6 +31,18 @@ class Mutex : public util::Nonecopyable
 };
 
 //读写锁
+class RWMutexNull : public util::Nonecopyable
+{
+  public:
+    using RdLock           = ScopedRdLock<RWMutexNull>;
+    using WrLock           = ScopedWrLock<RWMutexNull>;
+    RWMutexNull()          = default;
+    virtual ~RWMutexNull() = default;
+    void rdlock() {}
+    void wrlock() {}
+    void unlock() {}
+};
+
 class RWMutex : public util::Nonecopyable
 {
   public:

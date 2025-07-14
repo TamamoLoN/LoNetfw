@@ -19,7 +19,8 @@ namespace log
 class Logger : public std::enable_shared_from_this<Logger>
 {
   public:
-    using Ptr = std::shared_ptr<Logger>;
+    using Ptr       = std::shared_ptr<Logger>;
+    using MutexType = thread::Mutex;
     explicit Logger(const std::string &name = "root",
                     LogLevel::Level level   = LogLevel::Level::DEBUG);
     virtual ~Logger() = default;
@@ -45,7 +46,7 @@ class Logger : public std::enable_shared_from_this<Logger>
     LogLevel::Level m_level;                   //日志等级
     std::vector<LogAppender::Ptr> m_appenders; //日志输出目的地向量
     LogFormatter::Ptr m_formatter;
-    thread::Mutex m_mutex;
+    MutexType m_mutex;
 };
 
 class LoggerWrapper
@@ -65,6 +66,7 @@ class LoggerWrapper
 class LoggerManager
 {
   public:
+    using MutexType = thread::Mutex;
     LoggerManager(const Logger::Ptr logger_root = nullptr);
     ~LoggerManager() = default;
 
@@ -77,7 +79,7 @@ class LoggerManager
   private:
     std::map<std::string, Logger::Ptr> m_loggers;
     Logger::Ptr m_logger_root;
-    thread::Mutex m_mutex;
+    MutexType m_mutex;
 };
 
 } // namespace log
