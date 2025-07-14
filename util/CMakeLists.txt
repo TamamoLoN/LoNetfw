@@ -9,4 +9,4 @@ add_library(util SHARED
             )
 
 target_include_directories(util PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(util PRIVATE yaml-cpp)
+target_link_libraries(util PRIVATE yaml-cpp pthread)

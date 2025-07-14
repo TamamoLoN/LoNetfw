@@ -17,6 +17,8 @@ Thread::Thread(std::function<void()> cb, const std::string &name) : m_cb(cb), m_
         LON_ERROR(LON_LOG_NAME("system")) << ss.str();
         throw std::runtime_error(ss.str());
     }
+    //等待线程运行起来，目的是让线程创建成功后，保证函数可以运行(保证线程执行函数顺序)
+    m_semaphore.wait();
 }
 Thread::~Thread()
 {
@@ -90,6 +92,7 @@ void *Thread::run(void *arg)
     std::function<void()> cb;
     // swap不会改变智能指针的引用次数
     cb.swap(thread->m_cb);
+    thread->m_semaphore.notify();
     cb();
     return nullptr;
 }

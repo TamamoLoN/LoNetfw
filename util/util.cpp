@@ -208,6 +208,13 @@ std::string getCurrentDateTime(const std::string &format)
 
 uint32_t getThreadId() { return syscall(SYS_gettid); }
 
+std::string getThreadName()
+{
+    char buf[16] = {0};
+    pthread_getname_np(pthread_self(), buf, sizeof(buf));
+    return std::string(buf);
+}
+
 // TODO - 实现获取协程id
 uint32_t getFiberId() { return 0; }
 } // namespace util

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "log/logger.h"
+#include "thread/mutex.h"
+#include "thread/semaphore.h"
 #include "util/util.h"
 #include <pthread.h>
 
@@ -34,6 +36,7 @@ class Thread : public util::Nonecopyable
     pthread_t m_thread;
     std::function<void()> m_cb;
     std::string m_name;
+    Semaphore m_semaphore;
 };
 } // namespace thread
 } // namespace lon

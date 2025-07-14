@@ -4,6 +4,7 @@
 #include "util/noncopyable.h"
 #include "yaml-cpp/yaml.h"
 #include <iostream>
+#include <pthread.h>
 #include <sstream>
 #include <sys/syscall.h>
 #include <time.h>
@@ -63,6 +64,7 @@ time_t getCurrentDateTime();
 std::string getCurrentDateTime(const std::string &format);
 
 uint32_t getThreadId();
+std::string getThreadName();
 uint32_t getFiberId();
 
 } // namespace util
