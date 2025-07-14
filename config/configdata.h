@@ -1,5 +1,6 @@
 #pragma once
 #include "log/logger.h"
+#include "thread/mutex.h"
 #include "util/util.h"
 namespace lon
 {
@@ -30,6 +31,7 @@ struct ConfigData : public ConfigDataBase
   public:
     using Ptr                  = std::shared_ptr<ConfigData<T>>;
     using onConfigDataChangeCB = std::function<void(const T &old_data, const T &new_data)>;
+    using MutexType            = thread::RWMutex;
 
     ConfigData(const std::string &name, const T &data, const std::string &description = "")
         : ConfigDataBase(name, description), m_data(data){};
@@ -61,34 +63,45 @@ struct ConfigData : public ConfigDataBase
             return false;
         }
     }
-    T getData() const { return m_data; }
+    T getData()
+    {
+        thread::RWMutex::RdLock lock(m_mutex);
+        return m_data;
+    }
     void setData(const T &data)
     {
-        if (m_data == data)
         {
-            return;
+            thread::RWMutex::RdLock lock(m_mutex);
+            if (m_data == data)
+            {
+                return;
+            }
+            for (const auto &it : m_cbs)
+            {
+                it.second(m_data, data);
+            }
         }
-        for (const auto &it : m_cbs)
-        {
-            it.second(m_data, data);
-        }
+        thread::RWMutex::WrLock lock(m_mutex);
         m_data = data;
     }
 
-    bool addConfigDataChangeCB(uint64_t key, onConfigDataChangeCB cb)
+    uint64_t addConfigDataChangeCB(onConfigDataChangeCB cb)
     {
-        auto it = m_cbs.find(key);
+        static int m_key = 0;
+        thread::RWMutex::WrLock lock(m_mutex);
+        auto it = m_cbs.find(m_key);
         if (it != m_cbs.end())
         {
-            LON_WARN(LON_LOG_ROOT) << "addConfigDataChangeCB: key is exists: " << key;
+            LON_WARN(LON_LOG_ROOT) << "addConfigDataChangeCB: key is exists: " << m_key;
             return false;
         }
-        m_cbs[key] = cb;
-        return true;
+        m_cbs[m_key] = cb;
+        return m_key;
     }
 
     bool delConfigDataChangeCB(const uint64_t &key)
     {
+        thread::RWMutex::WrLock lock(m_mutex);
         auto it = m_cbs.find(key);
         if (it != m_cbs.end())
         {
@@ -101,6 +114,7 @@ struct ConfigData : public ConfigDataBase
 
     onConfigDataChangeCB getConfigDataChangeCB(const uint64_t &key)
     {
+        thread::RWMutex::RdLock lock(m_mutex);
         auto it = m_cbs.find(key);
         if (it != m_cbs.end())
         {
@@ -110,11 +124,16 @@ struct ConfigData : public ConfigDataBase
         return it->second;
     }
 
-    void clearConfigDataChangeCB() { m_cbs.clear(); }
+    void clearConfigDataChangeCB()
+    {
+        thread::RWMutex::WrLock lock(m_mutex);
+        m_cbs.clear();
+    }
 
   private:
     T m_data;
     std::map<uint64_t, onConfigDataChangeCB> m_cbs;
+    mutable MutexType m_mutex;
 };
 
 } // namespace config

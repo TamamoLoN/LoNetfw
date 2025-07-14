@@ -28,7 +28,7 @@ class Mutex : public util::Nonecopyable
     void unlock();
 
   private:
-    pthread_mutex_t m_lock;
+    mutable pthread_mutex_t m_lock;
 };
 
 //读写锁
@@ -56,7 +56,7 @@ class RWMutex : public util::Nonecopyable
     void unlock();
 
   private:
-    pthread_rwlock_t m_lock;
+    mutable pthread_rwlock_t m_lock;
 };
 
 class SpinLock : public util::Nonecopyable
@@ -69,7 +69,7 @@ class SpinLock : public util::Nonecopyable
     void unlock();
 
   private:
-    pthread_spinlock_t m_lock;
+    mutable pthread_spinlock_t m_lock;
 };
 
 } // namespace thread

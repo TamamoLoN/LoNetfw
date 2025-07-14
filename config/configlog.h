@@ -51,8 +51,8 @@ struct ConfigLogChanged
     explicit ConfigLogChanged()
     {
         auto g_config_log = Config::setData("logs", std::set<ConfigLog>({}), "logs config");
-        g_config_log->addConfigDataChangeCB(0x00, [](const std::set<ConfigLog> &old_data,
-                                                     const std::set<ConfigLog> &new_data) {
+        g_config_log->addConfigDataChangeCB([](const std::set<ConfigLog> &old_data,
+                                               const std::set<ConfigLog> &new_data) {
             LON_INFO(LON_LOG_ROOT) << "on config log data changed";
             for (const auto &data : new_data)
             {

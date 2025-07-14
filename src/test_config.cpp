@@ -137,7 +137,7 @@ void test_diy_type()
         "class.map_vec",
         std::map<std::string, std::vector<Person>>({{"mmd", {Person("yqh", 22, "male", 100.0f)}}}),
         "yqh");
-    data11->addConfigDataChangeCB(1, [](const Person &old_data, const Person &new_data) {
+    data11->addConfigDataChangeCB([](const Person &old_data, const Person &new_data) {
         LON_FATAL(LON_LOG_ROOT) << "11111old_data: " << old_data.print();
         LON_FATAL(LON_LOG_ROOT) << "11111new_data: " << new_data.print();
     });
@@ -160,9 +160,19 @@ void test_log_config()
     std::cout << "after:" << LON_LOG_MANAGER.getYaml() << std::endl;
 }
 
+void test_visit()
+{
+    lon::config::Config::visit([](lon::config::ConfigDataBase::Ptr data) {
+        LON_INFO(LON_LOG_NAME("root"))
+            << "name: " << data->getName() << "; description: " << data->getDescription()
+            << "; data: " << data->toString();
+    });
+}
+
 int main(int argc, char **argv)
 {
     // test_std_type();
-    // test_diy_type();
-    test_log_config();
+    test_diy_type();
+    // test_log_config();
+    test_visit();
 }

@@ -77,7 +77,7 @@ void test_thread_mutex_log()
         auto t1 = std::make_shared<lon::thread::Thread>(
             [&]() {
                 int j = 0;
-                while (1)
+                while (cnt < 100000)
                 {
                     // lon::thread::Mutex::Lock lock(mtx);
                     LON_INFO(LON_LOG_NAME("root")) << "*************************************";

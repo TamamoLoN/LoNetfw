@@ -46,7 +46,7 @@ class Logger : public std::enable_shared_from_this<Logger>
     LogLevel::Level m_level;                   //日志等级
     std::vector<LogAppender::Ptr> m_appenders; //日志输出目的地向量
     LogFormatter::Ptr m_formatter;
-    MutexType m_mutex;
+    mutable MutexType m_mutex;
 };
 
 class LoggerWrapper
@@ -79,7 +79,7 @@ class LoggerManager
   private:
     std::map<std::string, Logger::Ptr> m_loggers;
     Logger::Ptr m_logger_root;
-    MutexType m_mutex;
+    mutable MutexType m_mutex;
 };
 
 } // namespace log

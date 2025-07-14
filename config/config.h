@@ -9,6 +9,7 @@ class Config
   public:
     using ConfigDataMap = std::map<std::string, ConfigDataBase::Ptr>;
     using Ptr           = std::shared_ptr<Config>;
+    using MutexType     = thread::RWMutex;
     explicit Config()   = default;
     virtual ~Config()   = default;
 
@@ -17,6 +18,7 @@ class Config
     static typename ConfigData<T>::Ptr setData(const std::string &name, const T &data,
                                                const std::string &description = "")
     {
+        thread::RWMutex::WrLock lock(getMutex());
         auto name_lower = util::toLower(name);
         if (!util::isValidParamName(name_lower))
         {
@@ -47,6 +49,7 @@ class Config
 
     static void setData(const ConfigDataBase::Ptr &data_ptr)
     {
+        thread::RWMutex::WrLock lock(getMutex());
         auto name       = data_ptr->getName();
         auto name_lower = util::toLower(name);
         if (!util::isValidParamName(name_lower))
@@ -76,6 +79,7 @@ class Config
 
     template <typename T> static typename ConfigData<T>::Ptr getData(const std::string &name)
     {
+        thread::RWMutex::RdLock lock(getMutex());
         auto name_lower = util::toLower(name);
         auto it         = getDatas().find(name_lower);
         if (!util::isValidParamName(name_lower))
@@ -95,6 +99,7 @@ class Config
 
     static void parseFromYaml(const std::string &yaml_path);
     static void parseFromYaml(YAML::Node node);
+    static void visit(std::function<void(config::ConfigDataBase::Ptr)> cb);
 
   private:
     //使静态变量s_datas必须先初始化
@@ -102,6 +107,12 @@ class Config
     {
         static ConfigDataMap s_datas;
         return s_datas;
+    }
+
+    static MutexType &getMutex()
+    {
+        static MutexType s_mutex;
+        return s_mutex;
     }
 };
 } // namespace config

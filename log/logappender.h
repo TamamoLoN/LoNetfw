@@ -2,7 +2,7 @@
 #include "log/logevent.h"
 #include "log/logformatter.h"
 #include "log/loglevel.h"
-#include "thread/thread.h"
+#include "thread/mutex.h"
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -25,7 +25,7 @@ class LogAppender
   protected:
     LogLevel::Level m_level;
     LogFormatter::Ptr m_formatter;
-    MutexType m_mutex;
+    mutable MutexType m_mutex;
 };
 
 class StdoutLogAppender : public LogAppender

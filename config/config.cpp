@@ -59,5 +59,14 @@ void Config::parseFromYaml(YAML::Node node)
     }
 }
 
+void Config::visit(std::function<void(config::ConfigDataBase::Ptr)> cb)
+{
+    thread::RWMutex::RdLock lock(getMutex());
+    for (const auto it : getDatas())
+    {
+        cb(it.second);
+    }
+}
+
 } // namespace config
 } // namespace lon
