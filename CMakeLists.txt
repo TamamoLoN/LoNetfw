@@ -34,6 +34,20 @@ function(force_redefine_file_macro_for_sources targetname)
     endforeach()
 endfunction()
 
+function(add_build_target targetname)
+    add_executable(${targetname}
+                ${CMAKE_SOURCE_DIR}/src/${targetname}.cpp
+                )
+    target_link_libraries(${targetname} PRIVATE 
+                            util 
+                            thread
+                            log 
+                            config 
+                            yaml-cpp
+                            ) 
+    force_redefine_file_macro_for_sources(${targetname})
+endfunction()
+
 
 add_subdirectory(util)
 add_subdirectory(log)
@@ -73,28 +87,8 @@ target_link_libraries(test_log PRIVATE
                         ) 
 force_redefine_file_macro_for_sources(test_log)
 
-add_executable(test_config
-               ${CMAKE_SOURCE_DIR}/src/test_config.cpp
-               )
-target_link_libraries(test_config PRIVATE 
-                        util 
-                        thread
-                        log 
-                        config 
-                        yaml-cpp
-                        # ${YAML_CPP_LIB}
-                        pthread
-                        ) 
-force_redefine_file_macro_for_sources(test_config)
+add_build_target(test_config)
 
-add_executable(test_thread
-               ${CMAKE_SOURCE_DIR}/src/test_thread.cpp
-               )
-target_link_libraries(test_thread PRIVATE 
-                        util 
-                        thread
-                        log 
-                        config 
-                        yaml-cpp
-                        ) 
-force_redefine_file_macro_for_sources(test_thread)
+add_build_target(test_thread)
+
+add_build_target(test_util)

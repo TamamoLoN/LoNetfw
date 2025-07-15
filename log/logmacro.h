@@ -41,3 +41,20 @@
 #define LON_LOG_MANAGER lon::util::Singleton<lon::log::LoggerManager>::Instance()
 #define LON_LOG_ROOT LON_LOG_MANAGER.getRoot()
 #define LON_LOG_NAME(name) LON_LOG_MANAGER.getLogger(name)
+
+#define LON_ASSERT(arg)                                                                            \
+    if (!(arg))                                                                                    \
+    {                                                                                              \
+        LON_ERROR(LON_LOG_ROOT) << "ASSERTATION: " << #arg << "\nbacktrace: \n"                    \
+                                << lon::util::backtrace(100, 2, "\t");                             \
+        assert(arg);                                                                               \
+    }
+
+#define LON_ASSERT_(arg, str)                                                                      \
+    if (!(arg))                                                                                    \
+    {                                                                                              \
+        LON_ERROR(LON_LOG_ROOT) << "ASSERTATION: " << #arg << "\n"                                 \
+                                << str << "\nbacktrace: \n"                                        \
+                                << lon::util::backtrace(100, 2, "\t");                             \
+        assert(arg);                                                                               \
+    }

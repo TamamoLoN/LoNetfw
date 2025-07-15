@@ -3,6 +3,7 @@
 #include "util/lexicalcast.h"
 #include "util/noncopyable.h"
 #include "yaml-cpp/yaml.h"
+#include <execinfo.h>
 #include <iostream>
 #include <pthread.h>
 #include <sstream>
@@ -66,6 +67,10 @@ std::string getCurrentDateTime(const std::string &format);
 uint32_t getThreadId();
 std::string getThreadName();
 uint32_t getFiberId();
+
+//打印堆栈信息
+void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip);
+const std::string backtrace(int32_t size = 10, int32_t skip = 0, const std::string &prefix = "");
 
 } // namespace util
 

@@ -217,5 +217,37 @@ std::string getThreadName()
 
 // TODO - 实现获取协程id
 uint32_t getFiberId() { return 0; }
+
+void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip)
+{
+    //协程会使用（栈设置的很小），尽量不在栈上分配内存，防止栈溢出
+    void **array   = (void **)malloc(sizeof(void *) * size);
+    int32_t s      = ::backtrace(array, size);
+    char **strings = backtrace_symbols(array, s);
+    if (strings == nullptr)
+    {
+        free(array);
+        throw std::runtime_error("backtrace error");
+    }
+    for (int32_t i = skip; i < s; ++i)
+    {
+        bt.push_back(strings[i]);
+    }
+    free(array);
+    free(strings);
+}
+
+const std::string backtrace(int32_t size, int32_t skip, const std::string &prefix)
+{
+    std::vector<std::string> bt;
+    backtrace(bt, size, skip);
+    std::stringstream ss;
+    for (auto &s : bt)
+    {
+        ss << prefix << s << std::endl;
+    }
+    return ss.str();
+}
+
 } // namespace util
 } // namespace lon
