@@ -249,5 +249,9 @@ const std::string backtrace(int32_t size, int32_t skip, const std::string &prefi
     return ss.str();
 }
 
+void *Allocator::allocate(size_t size) { return malloc(size); }
+
+void Allocator::deallocate(void *ptr) { free(ptr); }
+
 } // namespace util
 } // namespace lon

@@ -72,6 +72,14 @@ uint32_t getFiberId();
 void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip);
 const std::string backtrace(int32_t size = 10, int32_t skip = 0, const std::string &prefix = "");
 
+//内存分配
+class Allocator
+{
+  public:
+    static void *allocate(size_t size);
+    static void deallocate(void *ptr);
+};
+
 } // namespace util
 
 } // namespace lon

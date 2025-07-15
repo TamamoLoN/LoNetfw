@@ -1,4 +1,5 @@
 #pragma once
+#include "fiber/fiber.h"
 #include "log/logevent.h"
 #include "log/logformatter.h"
 #include "log/loglevel.h"

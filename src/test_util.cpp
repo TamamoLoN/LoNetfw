@@ -1,3 +1,4 @@
+#include "config/config.h"
 #include "log/logger.h"
 #include "util/util.h"
 #include <assert.h>
@@ -18,6 +19,7 @@ void test_assert() { LON_ASSERT_(1 == 1, "hello world"); }
 
 int main(int argc, char const *argv[])
 {
+    lon::config::Config::parseFromYaml("./.config/log.yaml");
     // test_backtrace();
     test_assert();
     return 0;

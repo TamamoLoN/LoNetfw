@@ -118,4 +118,4 @@ class Config
 } // namespace config
 } // namespace lon
 //相关配置项
-#include "config/configlog.h"
+#include "config/configinit.h"

@@ -5,7 +5,6 @@
 
 namespace lon
 {
-
 namespace config
 {
 struct ConfigLogAppender
@@ -46,13 +45,13 @@ struct ConfigLog
     std::vector<ConfigLogAppender> appenders;
 };
 
-struct ConfigLogChanged
+struct ConfigInitter
 {
-    explicit ConfigLogChanged()
+    explicit ConfigInitter()
     {
-        auto g_config_log = Config::setData("logs", std::set<ConfigLog>({}), "logs config");
-        g_config_log->addConfigDataChangeCB([](const std::set<ConfigLog> &old_data,
-                                               const std::set<ConfigLog> &new_data) {
+        config_log = Config::setData("logs", std::set<ConfigLog>({}), "logs config");
+        config_log->addConfigDataChangeCB([](const std::set<ConfigLog> &old_data,
+                                             const std::set<ConfigLog> &new_data) {
             LON_INFO(LON_LOG_ROOT) << "on config log data changed";
             for (const auto &data : new_data)
             {
@@ -106,20 +105,28 @@ struct ConfigLogChanged
                 }
             }
         });
+
+        config_fiber =
+            Config::setData("fiber.stack_size", (size_t)(1024 * 1024), "fiber stack size");
+        config_fiber->addConfigDataChangeCB([](const size_t &old_data, const size_t &new_data) {
+            LON_INFO(LON_LOG_ROOT) << "on config fiber data changed";
+            LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+        });
     }
-    static ConfigLogChanged &Instance()
+    static ConfigInitter &Instance()
     {
-        static ConfigLogChanged instance;
+        static ConfigInitter instance;
         return instance;
     }
+    ConfigData<std::set<ConfigLog>>::Ptr config_log;
+    ConfigData<size_t>::Ptr config_fiber;
 };
 
 //全局变量，使其在main函数之前初始化
 // static ConfigLogChanged __log_changed;//这样写会被初始化多次
-auto __log_changed = ConfigLogChanged::Instance();
+auto g_conifg_initter = ConfigInitter::Instance();
 
 } // namespace config
-
 template <> class util::LexicalCast<config::ConfigLogAppender, std::string>
 {
   public:
@@ -191,5 +198,4 @@ template <> class util::LexicalCast<std::string, config::ConfigLog>
         return ss.str();
     }
 };
-
 } // namespace lon

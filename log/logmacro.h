@@ -7,7 +7,7 @@
     lon::log::LoggerWrapper(logger,                                                                \
                             std::make_shared<lon::log::LogEvent>(                                  \
                                 level, std::string(__FILE__), __LINE__, 0,                         \
-                                lon::util::getThreadId(), lon::util::getFiberId(),                 \
+                                lon::util::getThreadId(), lon::fiber::Fiber::getFiberId(),         \
                                 lon::util::getCurrentDateTime(), lon::util::getThreadName()))      \
         .getMessageStream()
 #define LON_DEBUG(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::DEBUG)
@@ -22,7 +22,7 @@
     lon::log::LoggerWrapper(logger,                                                                \
                             std::make_shared<lon::log::LogEvent>(                                  \
                                 level, std::string(__FILE__), __LINE__, 0,                         \
-                                lon::util::getThreadId(), lon::util::getFiberId(),                 \
+                                lon::util::getThreadId(), lon::fiber::Fiber::getFiberId(),         \
                                 lon::util::getCurrentDateTime(), lon::util::getThreadName()))      \
         .getEvent()                                                                                \
         ->setMessageStream(fmt, __VA_ARGS__)

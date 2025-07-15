@@ -8,5 +8,5 @@ add_library(log SHARED
             ${LOG_SRCS}
             )
 
-target_link_libraries(log PRIVATE util thread)
+target_link_libraries(log PRIVATE util fiber thread)
 target_include_directories(log PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)

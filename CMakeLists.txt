@@ -13,7 +13,7 @@ add_definitions(-g -LINUX_X86)
 # set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++-8")
 set(CMAKE_CXX_COMPILER "g++")
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate")
 
 function(force_redefine_file_macro_for_sources targetname)
     get_target_property (source_files "${targetname}" SOURCES)
@@ -40,12 +40,13 @@ function(add_build_target targetname)
                 )
     target_link_libraries(${targetname} PRIVATE 
                             util 
+                            fiber
                             thread
                             log 
                             config 
                             yaml-cpp
                             ) 
-    force_redefine_file_macro_for_sources(${targetname})
+    # force_redefine_file_macro_for_sources(${targetname})
 endfunction()
 
 
@@ -83,3 +84,5 @@ add_build_target(test_config)
 add_build_target(test_thread)
 
 add_build_target(test_util)
+
+add_build_target(test_fiber)
