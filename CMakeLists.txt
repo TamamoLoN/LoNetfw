@@ -52,6 +52,7 @@ endfunction()
 add_subdirectory(util)
 add_subdirectory(log)
 add_subdirectory(config)
+add_subdirectory(fiber)
 add_subdirectory(thread)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
@@ -75,17 +76,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 # target_link_libraries(${PROJECT_NAME} PRIVATE util thread log config) 
 # force_redefine_file_macro_for_sources(${PROJECT_NAME})
 
-add_executable(test_log
-               ${CMAKE_SOURCE_DIR}/src/test_log.cpp
-               )
-target_link_libraries(test_log PRIVATE 
-                        util 
-                        thread
-                        log 
-                        config 
-                        yaml-cpp
-                        ) 
-force_redefine_file_macro_for_sources(test_log)
+add_build_target(test_log)
 
 add_build_target(test_config)
 
