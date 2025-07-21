@@ -20,7 +20,7 @@ Fiber::Fiber() : m_id(0), m_state(EXEC), m_stack(nullptr)
         throw std::runtime_error("getcontext error\n" + util::backtrace(100, 2, "\t"));
     }
     s_fiber_count++;
-    std::cout << "111\n";
+    std::cout << "Fiber create: " << m_id << std::endl;
 }
 
 Fiber::Fiber(std::function<void()> cb, size_t stack_size)
@@ -38,7 +38,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stack_size)
     m_ctx.uc_stack.ss_size = m_stack_size;
 
     makecontext(&m_ctx, &Fiber::mainFunc, 0);
-    std::cout << "111\n";
+    std::cout << "Fiber create: " << m_id << std::endl;
 }
 
 Fiber::~Fiber()
@@ -47,7 +47,7 @@ Fiber::~Fiber()
     if (m_stack)
     {
         StackAllocator::deallocate(m_stack);
-        if (m_state != TERM || m_state != INIT || m_state != ERROR)
+        if (m_state != TERM && m_state != INIT || m_state == ERROR)
         {
             throw std::runtime_error("m_state error: m_state not TERM or INIT\n" +
                                      util::backtrace(100, 2, "\t"));
@@ -70,7 +70,7 @@ Fiber::~Fiber()
             setThis(nullptr);
         }
     }
-    std::cout << "222\n";
+    std::cout << "Fiber destroyed: " << m_id << std::endl;
 }
 
 void Fiber::reset(std::function<void()> cb)
@@ -192,6 +192,10 @@ void Fiber::mainFunc()
     {
         cur->m_state = ERROR;
     }
+    auto cur_raw = cur.get();
+    cur.reset();
+    //函数执行完毕后需要手动切回主协程
+    cur_raw->swapOut();
 }
 
 } // namespace fiber
