@@ -33,4 +33,4 @@ fi
 
 cd $dir_name
 cmake ..
-make -j8
+make

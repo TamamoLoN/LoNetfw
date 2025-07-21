@@ -51,10 +51,29 @@ void test_thread_fiber()
     }
 }
 
+void test_thread_fiber_()
+{
+    lon::thread::Thread::Ptr t1;
+    lon::thread::Thread::Ptr t2;
+    lon::thread::Thread::Ptr t3;
+
+    t1 = std::make_shared<lon::thread::Thread>([]() { test_fiber(); }, "thread_1");
+    t2 = std::make_shared<lon::thread::Thread>([]() { test_fiber(); }, "thread_2");
+    t3 = std::make_shared<lon::thread::Thread>([]() { test_fiber(); }, "thread_3");
+
+    t3->join();
+    t1->join();
+    t2->join();
+}
+
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml("./.config/log.yaml");
     // test_fiber();
+    /* FIXME - 这里用valgrind运行会出现报错，但是内存无泄漏
+    Conditional jump or move depends on uninitialised value(s)
+    ==15243== Use of uninitialised value of size 8*/
     test_thread_fiber();
+    // test_thread_fiber_();
     return 0;
 }

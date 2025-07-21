@@ -20,7 +20,7 @@ Fiber::Fiber() : m_id(0), m_state(EXEC), m_stack(nullptr)
         throw std::runtime_error("getcontext error\n" + util::backtrace(100, 2, "\t"));
     }
     s_fiber_count++;
-    std::cout << "Fiber create: " << m_id << std::endl;
+    // std::cout << "Fiber create: " << m_id << std::endl;
 }
 
 Fiber::Fiber(std::function<void()> cb, size_t stack_size)
@@ -38,7 +38,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stack_size)
     m_ctx.uc_stack.ss_size = m_stack_size;
 
     makecontext(&m_ctx, &Fiber::mainFunc, 0);
-    std::cout << "Fiber create: " << m_id << std::endl;
+    // std::cout << "Fiber create: " << m_id << std::endl;
 }
 
 Fiber::~Fiber()
@@ -70,7 +70,7 @@ Fiber::~Fiber()
             setThis(nullptr);
         }
     }
-    std::cout << "Fiber destroyed: " << m_id << std::endl;
+    // std::cout << "Fiber destroyed: " << m_id << std::endl;
 }
 
 void Fiber::reset(std::function<void()> cb)
