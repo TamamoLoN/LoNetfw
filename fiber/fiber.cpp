@@ -47,7 +47,7 @@ Fiber::~Fiber()
     if (m_stack)
     {
         StackAllocator::deallocate(m_stack);
-        if (m_state != TERM && m_state != INIT || m_state == ERROR)
+        if (m_state != TERM && m_state != INIT && m_state == ERROR)
         {
             throw std::runtime_error("m_state error: m_state not TERM or INIT\n" +
                                      util::backtrace(100, 2, "\t"));
@@ -79,7 +79,7 @@ void Fiber::reset(std::function<void()> cb)
     {
         throw std::runtime_error("reset error: m_stack is null\n" + util::backtrace(100, 2, "\t"));
     }
-    if (m_state != TERM || m_state != INIT || m_state != ERROR)
+    if (m_state != TERM && m_state != INIT && m_state == ERROR)
     {
         throw std::runtime_error("reset error: m_state not TERM or INIT\n" +
                                  util::backtrace(100, 2, "\t"));
@@ -177,7 +177,8 @@ uint64_t Fiber::getFiberId()
 
 void Fiber::mainFunc()
 {
-    Fiber::Ptr cur = getThis();
+    Fiber::Ptr &&cur = std::move(getThis());
+    // Fiber::Ptr cur = getThis();
     try
     {
         cur->m_cb();
@@ -192,10 +193,11 @@ void Fiber::mainFunc()
     {
         cur->m_state = ERROR;
     }
-    auto cur_raw = cur.get();
-    cur.reset();
-    //函数执行完毕后需要手动切回主协程
-    cur_raw->swapOut();
+    // auto cur_raw = cur.get();
+    // cur.reset();
+    // //函数执行完毕后需要手动切回主协程
+    // cur_raw->swapOut();
+    cur->swapOut();
 }
 
 } // namespace fiber
