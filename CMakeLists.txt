@@ -44,6 +44,7 @@ function(add_build_target targetname)
                             thread
                             log 
                             config 
+                            scheduler
                             yaml-cpp
                             ) 
     # force_redefine_file_macro_for_sources(${targetname})
@@ -55,6 +56,7 @@ add_subdirectory(log)
 add_subdirectory(config)
 add_subdirectory(fiber)
 add_subdirectory(thread)
+add_subdirectory(scheduler)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
                  )
@@ -86,3 +88,5 @@ add_build_target(test_thread)
 add_build_target(test_util)
 
 add_build_target(test_fiber)
+
+add_build_target(test_scheduler)
