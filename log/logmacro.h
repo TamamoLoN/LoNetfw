@@ -4,11 +4,11 @@
 #define LON_LOG_LEVEL(logger, level)                                                               \
     if (logger != nullptr)                                                                         \
         if (logger->getLevel() <= level)                                                           \
-    lon::log::LoggerWrapper(logger,                                                                \
-                            std::make_shared<lon::log::LogEvent>(                                  \
-                                level, std::string(__FILE__), __LINE__, 0,                         \
-                                lon::util::getThreadId(), lon::fiber::Fiber::getFiberId(),         \
-                                lon::util::getCurrentDateTime(), lon::util::getThreadName()))      \
+    lon::log::LoggerWrapper(logger, std::make_shared<lon::log::LogEvent>(                          \
+                                        level, std::string(__FILE__), __LINE__, 0,                 \
+                                        lon::util::getThreadId(), lon::fiber::Fiber::getFiberId(), \
+                                        lon::util::getCurrentDateTime(),                           \
+                                        lon::thread::Thread::getNameStatic()))                     \
         .getMessageStream()
 #define LON_DEBUG(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::DEBUG)
 #define LON_INFO(logger) LON_LOG_LEVEL(logger, lon::log::LogLevel::Level::INFO)
@@ -19,11 +19,11 @@
 #define LON_LOG_LEVEL_FMT(logger, level, fmt, ...)                                                 \
     if (logger != nullptr)                                                                         \
         if (logger->getLevel() <= level)                                                           \
-    lon::log::LoggerWrapper(logger,                                                                \
-                            std::make_shared<lon::log::LogEvent>(                                  \
-                                level, std::string(__FILE__), __LINE__, 0,                         \
-                                lon::util::getThreadId(), lon::fiber::Fiber::getFiberId(),         \
-                                lon::util::getCurrentDateTime(), lon::util::getThreadName()))      \
+    lon::log::LoggerWrapper(logger, std::make_shared<lon::log::LogEvent>(                          \
+                                        level, std::string(__FILE__), __LINE__, 0,                 \
+                                        lon::util::getThreadId(), lon::fiber::Fiber::getFiberId(), \
+                                        lon::util::getCurrentDateTime(),                           \
+                                        lon::thread::Thread::getNameStatic()))                     \
         .getEvent()                                                                                \
         ->setMessageStream(fmt, __VA_ARGS__)
 

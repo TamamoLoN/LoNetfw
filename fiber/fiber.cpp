@@ -121,6 +121,8 @@ void Fiber::swapOut()
     }
 }
 
+void Fiber::setState(Fiber::State state) { m_state = state; }
+
 Fiber::State Fiber::getState() const { return m_state; }
 
 uint64_t Fiber::getId() const { return m_id; }

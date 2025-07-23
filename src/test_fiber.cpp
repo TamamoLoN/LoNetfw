@@ -69,11 +69,11 @@ void test_thread_fiber_()
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml("./.config/log.yaml");
-    test_fiber();
+    // test_fiber();
     /* FIXME - 这里用valgrind运行会出现报错，但是内存无泄漏
     Conditional jump or move depends on uninitialised value(s)
     ==15243== Use of uninitialised value of size 8*/
-    // test_thread_fiber();
+    test_thread_fiber();
     // test_thread_fiber_();
     return 0;
 }

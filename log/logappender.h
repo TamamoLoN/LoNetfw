@@ -3,7 +3,7 @@
 #include "log/logevent.h"
 #include "log/logformatter.h"
 #include "log/loglevel.h"
-#include "thread/mutex.h"
+#include "thread/thread.h"
 #include <fstream>
 #include <memory>
 #include <sstream>

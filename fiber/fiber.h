@@ -36,6 +36,7 @@ class Fiber : public std::enable_shared_from_this<Fiber>
 
     //把当前协程切换至后台执行
     void swapOut();
+    void setState(State state);
     State getState() const;
     uint64_t getId() const;
 

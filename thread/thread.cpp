@@ -5,7 +5,7 @@ namespace lon
 namespace thread
 {
 static thread_local Thread *t_thread          = nullptr;
-static thread_local std::string t_thread_name = "UNKNOWN";
+static thread_local std::string t_thread_name = util::getThreadName();
 
 Thread::Thread(std::function<void()> cb, const std::string &name) : m_cb(cb), m_name(name), m_id(-1)
 {
