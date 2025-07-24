@@ -33,9 +33,12 @@ class Fiber : public std::enable_shared_from_this<Fiber>
 
     //切换到当前协程执行
     void swapIn();
+    void swapIn(Fiber *fiber);
 
     //把当前协程切换至后台执行
     void swapOut();
+    void swapOut(Fiber *fiber);
+
     void setState(State state);
     State getState() const;
     uint64_t getId() const;

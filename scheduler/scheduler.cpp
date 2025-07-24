@@ -31,7 +31,7 @@ Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name)
 
 Scheduler::~Scheduler()
 {
-    LON_ASSERT(m_stopping);
+    LON_ASSERT_(m_stopping, "schedule never stop!");
     if (getThis() == this)
     {
         t_scheduler = nullptr;
@@ -56,6 +56,12 @@ void Scheduler::start()
             std::bind(&Scheduler::run, this), m_name + "_" + util::lexical_cast<std::string>(cnt)));
         m_threads_id.push_back(m_threads[cnt]->getId());
     }
+    lock.unlock();
+    if (m_root_fiber)
+    {
+        m_root_fiber->swapIn();
+    }
+    LON_INFO(LON_LOG_ROOT) << "scheduler[" << m_name << "]:" << this << " started";
 }
 
 void Scheduler::stop()
@@ -66,7 +72,7 @@ void Scheduler::stop()
         (m_root_fiber->getState() == fiber::Fiber::TERM ||
          m_root_fiber->getState() == fiber::Fiber::INIT))
     {
-        LON_INFO(LON_LOG_ROOT) << this << " stopped";
+        LON_INFO(LON_LOG_ROOT) << "scheduler[" << m_name << "]:" << this << " stopped";
         m_stopping = true;
         if (stopping())
         {
@@ -147,7 +153,7 @@ void Scheduler::run()
             tf.fiber->getState() != fiber::Fiber::ERROR)
         {
             ++m_active_threads_count;
-            tf.fiber->swapIn();
+            tf.fiber->swapIn(getMainFiber());
             --m_active_threads_count;
             if (tf.fiber->getState() == fiber::Fiber::READY)
             {
@@ -173,7 +179,7 @@ void Scheduler::run()
             }
             tf.reset();
             ++m_active_threads_count;
-            cb_fiber->swapIn();
+            cb_fiber->swapIn(getMainFiber());
             --m_active_threads_count;
             if (cb_fiber->getState() == fiber::Fiber::READY)
             {
@@ -201,7 +207,7 @@ void Scheduler::run()
                 break;
             }
             ++m_idle_threads_count;
-            idle_fiber->swapIn();
+            idle_fiber->swapIn(getMainFiber());
             --m_idle_threads_count;
             if (idle_fiber->getState() != fiber::Fiber::TERM &&
                 idle_fiber->getState() != fiber::Fiber::ERROR)

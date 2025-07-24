@@ -10,6 +10,7 @@ static std::atomic<uint64_t> s_fiber_count = ATOMIC_VAR_INIT(0);
 
 static thread_local Fiber *t_fiber            = nullptr;
 static thread_local Fiber::Ptr t_thread_fiber = nullptr; // 主协程
+static thread_local Fiber *t_schedule_fiber   = nullptr;
 
 //第一个协程为主协程，实现私有构造
 Fiber::Fiber() : m_id(0), m_state(EXEC), m_stack(nullptr)
@@ -112,10 +113,35 @@ void Fiber::swapIn()
     }
 }
 
+void Fiber::swapIn(Fiber *fiber)
+{
+    setThis(this);
+    t_schedule_fiber = fiber;
+    if (m_state == EXEC)
+    {
+        throw std::runtime_error("swapIn error: m_state is EXEC\n" + util::backtrace(100, 2, "\t"));
+    }
+    m_state = EXEC;
+    if (swapcontext(&(fiber->m_ctx), &m_ctx))
+    {
+        throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
+    }
+}
+
 void Fiber::swapOut()
 {
     setThis(t_thread_fiber.get());
     if (swapcontext(&m_ctx, &(t_thread_fiber->m_ctx)))
+    {
+        throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
+    }
+}
+
+void Fiber::swapOut(Fiber *fiber)
+{
+    setThis(fiber);
+    t_schedule_fiber = nullptr;
+    if (swapcontext(&m_ctx, &(fiber->m_ctx)))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
@@ -199,7 +225,17 @@ void Fiber::mainFunc()
     // cur.reset();
     // //函数执行完毕后需要手动切回主协程
     // cur_raw->swapOut();
-    cur->swapOut();
+    if (t_schedule_fiber != nullptr)
+    {
+        cur->swapOut(t_schedule_fiber);
+    }
+    else
+    {
+        cur->swapOut();
+    }
+
+    throw std::runtime_error("fiber=" + util::lexical_cast<std::string>(getThis()->m_id) +
+                             " can not execute here\n" + util::backtrace(100, 2, "\t"));
 }
 
 } // namespace fiber
