@@ -51,9 +51,11 @@ class Fiber : public std::enable_shared_from_this<Fiber>
 
     //协程切换到后台，并设置为Ready状态
     static void yieldToReady();
+    static void yieldToReady(Fiber *fiber);
 
     //协程切换到后台，并设置为Hold状态
     static void yieldToHold();
+    static void yieldToHold(Fiber *fiber);
 
     //获取总协程数
     static int64_t getFibers();

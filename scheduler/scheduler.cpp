@@ -10,7 +10,7 @@ static thread_local fiber::Fiber *t_fiber  = nullptr;
 Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name)
     : m_threads_count(threads_count), m_active_threads_count(0), m_idle_threads_count(0),
       m_root_thread_id(-1), m_stopping(true), m_auto_stop(false), m_use_caller(use_caller),
-      m_name(name)
+      m_name(name), m_threads({})
 {
     LON_ASSERT(m_threads_count > 0);
     if (m_use_caller)
@@ -24,7 +24,7 @@ Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name)
                              config::ConfigInitter::Instance().config_fiber->getData()));
         thread::Thread::setNameStatic(m_name);
         t_fiber          = m_root_fiber.get();
-        m_root_thread_id = thread::Thread::getIdStatic();
+        m_root_thread_id = util::getThreadId();
         m_threads_id.push_back(m_root_thread_id);
     }
 }
@@ -52,15 +52,15 @@ void Scheduler::start()
     m_threads.resize(m_threads_count);
     for (int cnt = 0; cnt < m_threads_count; cnt++)
     {
-        m_threads.push_back(std::make_shared<thread::Thread>(
+        m_threads[cnt].reset(new thread::Thread(
             std::bind(&Scheduler::run, this), m_name + "_" + util::lexical_cast<std::string>(cnt)));
         m_threads_id.push_back(m_threads[cnt]->getId());
     }
     lock.unlock();
-    if (m_root_fiber)
-    {
-        m_root_fiber->swapIn();
-    }
+    // if (m_root_fiber)
+    // {
+    //     m_root_fiber->swapIn();
+    // }
     LON_INFO(LON_LOG_ROOT) << "scheduler[" << m_name << "]:" << this << " started";
 }
 
@@ -98,9 +98,22 @@ void Scheduler::stop()
     {
         notify();
     }
-    if (stopping())
+    if (m_root_fiber)
     {
-        return;
+        if (!stopping())
+        {
+            m_root_fiber->swapIn();
+        }
+    }
+
+    std::vector<thread::Thread::Ptr> threads;
+    {
+        MutexType::Lock lock(m_mutex);
+        threads.swap(m_threads);
+    }
+    for (const auto &it : threads)
+    {
+        it->join();
     }
 }
 
@@ -109,7 +122,7 @@ void Scheduler::notify() { LON_DEBUG(LON_LOG_ROOT) << "notify"; }
 void Scheduler::run()
 {
     setThis();
-    if (thread::Thread::getIdStatic() != m_root_thread_id)
+    if (util::getThreadId() != m_root_thread_id)
     {
         t_fiber = fiber::Fiber::getThis().get();
     }
@@ -123,13 +136,14 @@ void Scheduler::run()
     while (true)
     {
         tf.reset();
+        bool is_active     = false;
         bool should_notify = false;
         {
             MutexType::Lock lock(m_mutex);
             auto it = m_fibers.begin();
             while (it != m_fibers.end())
             {
-                if (it->thread_id != -1 && it->thread_id != thread::Thread::getIdStatic())
+                if (it->thread_id != -1 && it->thread_id != util::getThreadId())
                 {
                     should_notify = true;
                     ++it;
@@ -143,6 +157,9 @@ void Scheduler::run()
                 }
                 tf = *it;
                 m_fibers.erase(it);
+                ++m_active_threads_count;
+                is_active = true;
+                break;
             }
         }
         if (should_notify)
@@ -152,7 +169,6 @@ void Scheduler::run()
         if (tf.fiber && tf.fiber->getState() != fiber::Fiber::TERM &&
             tf.fiber->getState() != fiber::Fiber::ERROR)
         {
-            ++m_active_threads_count;
             tf.fiber->swapIn(getMainFiber());
             --m_active_threads_count;
             if (tf.fiber->getState() == fiber::Fiber::READY)
@@ -178,7 +194,6 @@ void Scheduler::run()
                     tf.cb, config::ConfigInitter::Instance().config_fiber->getData()));
             }
             tf.reset();
-            ++m_active_threads_count;
             cb_fiber->swapIn(getMainFiber());
             --m_active_threads_count;
             if (cb_fiber->getState() == fiber::Fiber::READY)
@@ -190,7 +205,6 @@ void Scheduler::run()
                      cb_fiber->getState() == fiber::Fiber::ERROR)
             {
                 cb_fiber->reset(nullptr);
-                cb_fiber.reset();
             }
             // else if (cb_fiber->getState() != fiber::Fiber::TERM)
             else
@@ -201,6 +215,11 @@ void Scheduler::run()
         }
         else
         {
+            if (is_active)
+            {
+                --m_active_threads_count;
+                continue;
+            }
             if (idle_fiber->getState() == fiber::Fiber::TERM)
             {
                 LON_DEBUG(LON_LOG_ROOT) << "idle fiber terminate";
@@ -224,7 +243,14 @@ bool Scheduler::stopping()
     return m_stopping && m_auto_stop && m_fibers.empty() && m_active_threads_count == 0;
 }
 
-void Scheduler::idle() { LON_DEBUG(LON_LOG_ROOT) << "idle"; }
+void Scheduler::idle()
+{
+    LON_DEBUG(LON_LOG_ROOT) << "idle";
+    while (!stopping())
+    {
+        fiber::Fiber::yieldToHold(getMainFiber());
+    }
+}
 
 void Scheduler::setThis() { t_scheduler = this; }
 

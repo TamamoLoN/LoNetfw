@@ -179,11 +179,25 @@ void Fiber::yieldToReady()
     cur->swapOut();
 }
 
+void Fiber::yieldToReady(Fiber *fiber)
+{
+    Fiber::Ptr cur = getThis();
+    cur->m_state   = READY;
+    cur->swapOut(fiber);
+}
+
 void Fiber::yieldToHold()
 {
     Fiber::Ptr cur = getThis();
     cur->m_state   = HOLD;
     cur->swapOut();
+}
+
+void Fiber::yieldToHold(Fiber *fiber)
+{
+    Fiber::Ptr cur = getThis();
+    cur->m_state   = HOLD;
+    cur->swapOut(fiber);
 }
 
 int64_t Fiber::getFibers() { return s_fiber_count; }
