@@ -1,6 +1,5 @@
 #pragma once
 
-#include "config/config.h"
 #include "fiber/fiber.h"
 #include "log/logger.h"
 #include "thread/thread.h"
@@ -14,7 +13,8 @@ class Scheduler
   public:
     using Ptr       = std::shared_ptr<Scheduler>;
     using MutexType = thread::Mutex;
-    explicit Scheduler(size_t threads_count = 1, bool use_caller = true, std::string name = "");
+    explicit Scheduler(size_t threads_count = 1, bool use_caller = true, std::string name = "",
+                       size_t fiber_stack_size = 1024 * 1024);
     virtual ~Scheduler();
 
     std::string getName() const;
@@ -97,6 +97,7 @@ class Scheduler
     mutable MutexType m_mutex;
     bool m_use_caller;
     std::string m_name;
+    size_t m_fiber_stack_size;
 
   protected:
     std::vector<int> m_threads_id;

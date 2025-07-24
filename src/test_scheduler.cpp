@@ -26,7 +26,8 @@ void test_fiber1()
 
 void test_scheduler()
 {
-    auto worker = std::make_shared<lon::scheduler::Scheduler>(3, false, "main_worker");
+    auto worker = std::make_shared<lon::scheduler::Scheduler>(
+        3, false, "main_worker", lon::config::ConfigInitter::Instance().config_fiber->getData());
 
     worker->start();
     worker->schedule(test_fiber);
@@ -35,7 +36,8 @@ void test_scheduler()
 
 void test_scheduler_caller()
 {
-    auto worker = std::make_shared<lon::scheduler::Scheduler>(3, true, "main_worker");
+    auto worker = std::make_shared<lon::scheduler::Scheduler>(
+        3, true, "main_worker", lon::config::ConfigInitter::Instance().config_fiber->getData());
 
     worker->start();
     worker->schedule(test_fiber);
@@ -44,7 +46,8 @@ void test_scheduler_caller()
 
 void test_scheduler_set_thread()
 {
-    auto worker = std::make_shared<lon::scheduler::Scheduler>(3, false, "main_worker");
+    auto worker = std::make_shared<lon::scheduler::Scheduler>(
+        3, false, "main_worker", lon::config::ConfigInitter::Instance().config_fiber->getData());
 
     worker->start();
     worker->schedule(test_fiber1);

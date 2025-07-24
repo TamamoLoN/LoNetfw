@@ -7,10 +7,11 @@ namespace scheduler
 static thread_local Scheduler *t_scheduler = nullptr;
 static thread_local fiber::Fiber *t_fiber  = nullptr;
 
-Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name)
+Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name,
+                     size_t fiber_stack_size)
     : m_threads_count(threads_count), m_active_threads_count(0), m_idle_threads_count(0),
       m_root_thread_id(-1), m_stopping(true), m_auto_stop(false), m_use_caller(use_caller),
-      m_name(name), m_threads({})
+      m_name(name), m_threads({}), m_fiber_stack_size(fiber_stack_size)
 {
     LON_ASSERT(m_threads_count > 0);
     if (m_use_caller)
@@ -19,9 +20,7 @@ Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name)
         --m_threads_count;
         LON_ASSERT(getThis() == nullptr);
         t_scheduler = this;
-        m_root_fiber.reset(
-            new fiber::Fiber(std::bind(&Scheduler::run, this),
-                             config::ConfigInitter::Instance().config_fiber->getData()));
+        m_root_fiber.reset(new fiber::Fiber(std::bind(&Scheduler::run, this), m_fiber_stack_size));
         thread::Thread::setNameStatic(m_name);
         t_fiber          = m_root_fiber.get();
         m_root_thread_id = util::getThreadId();
@@ -127,8 +126,7 @@ void Scheduler::run()
         t_fiber = fiber::Fiber::getThis().get();
     }
     fiber::Fiber::Ptr idle_fiber(
-        new fiber::Fiber(std::bind(&Scheduler::idle, this),
-                         config::ConfigInitter::Instance().config_fiber->getData()));
+        new fiber::Fiber(std::bind(&Scheduler::idle, this), m_fiber_stack_size));
 
     fiber::Fiber::Ptr cb_fiber;
     TFWrapper tf;
@@ -190,8 +188,7 @@ void Scheduler::run()
             }
             else
             {
-                cb_fiber.reset(new fiber::Fiber(
-                    tf.cb, config::ConfigInitter::Instance().config_fiber->getData()));
+                cb_fiber.reset(new fiber::Fiber(tf.cb, m_fiber_stack_size));
             }
             tf.reset();
             cb_fiber->swapIn(getMainFiber());
