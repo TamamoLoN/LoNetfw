@@ -54,11 +54,24 @@ void test_scheduler_set_thread()
     worker->stop();
 }
 
+void test_scheduler_fiber()
+{
+    auto fiber = std::make_shared<lon::fiber::Fiber>(
+        test_fiber, lon::config::ConfigInitter::Instance().config_fiber->getData());
+    auto worker = std::make_shared<lon::scheduler::Scheduler>(
+        3, false, "main_worker", lon::config::ConfigInitter::Instance().config_fiber->getData());
+
+    worker->start();
+    worker->schedule(fiber);
+    worker->stop();
+}
+
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml("./.config/log.yaml");
     // test_scheduler();
-    test_scheduler_caller();
+    // test_scheduler_caller();
     // test_scheduler_set_thread();
+    test_scheduler_fiber();
     return 0;
 }
