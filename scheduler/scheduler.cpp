@@ -129,11 +129,11 @@ void Scheduler::run()
         new fiber::Fiber(std::bind(&Scheduler::idle, this), m_fiber_stack_size));
 
     fiber::Fiber::Ptr cb_fiber;
-    TFWrapper tf;
+    Task task;
 
     while (true)
     {
-        tf.reset();
+        task.reset();
         bool is_active     = false;
         bool should_notify = false;
         {
@@ -153,7 +153,7 @@ void Scheduler::run()
                     ++it;
                     continue;
                 }
-                tf = *it;
+                task = *it;
                 m_fibers.erase(it);
                 ++m_active_threads_count;
                 is_active = true;
@@ -164,33 +164,33 @@ void Scheduler::run()
         {
             notify();
         }
-        if (tf.fiber && tf.fiber->getState() != fiber::Fiber::TERM &&
-            tf.fiber->getState() != fiber::Fiber::ERROR)
+        if (task.fiber && task.fiber->getState() != fiber::Fiber::TERM &&
+            task.fiber->getState() != fiber::Fiber::ERROR)
         {
-            tf.fiber->swapIn(getMainFiber());
+            task.fiber->swapIn(getMainFiber());
             --m_active_threads_count;
-            if (tf.fiber->getState() == fiber::Fiber::READY)
+            if (task.fiber->getState() == fiber::Fiber::READY)
             {
-                schedule(tf.fiber);
+                schedule(task.fiber);
             }
-            else if (tf.fiber->getState() != fiber::Fiber::TERM &&
-                     tf.fiber->getState() != fiber::Fiber::ERROR)
+            else if (task.fiber->getState() != fiber::Fiber::TERM &&
+                     task.fiber->getState() != fiber::Fiber::ERROR)
             {
-                tf.fiber->setState(fiber::Fiber::HOLD);
+                task.fiber->setState(fiber::Fiber::HOLD);
             }
-            tf.reset();
+            task.reset();
         }
-        else if (tf.cb)
+        else if (task.cb)
         {
             if (cb_fiber)
             {
-                cb_fiber->reset(tf.cb);
+                cb_fiber->reset(task.cb);
             }
             else
             {
-                cb_fiber.reset(new fiber::Fiber(tf.cb, m_fiber_stack_size));
+                cb_fiber.reset(new fiber::Fiber(task.cb, m_fiber_stack_size));
             }
-            tf.reset();
+            task.reset();
             cb_fiber->swapIn(getMainFiber());
             --m_active_threads_count;
             if (cb_fiber->getState() == fiber::Fiber::READY)
@@ -206,7 +206,7 @@ void Scheduler::run()
             // else if (cb_fiber->getState() != fiber::Fiber::TERM)
             else
             {
-                tf.fiber->setState(fiber::Fiber::HOLD);
+                task.fiber->setState(fiber::Fiber::HOLD);
                 cb_fiber.reset();
             }
         }
@@ -256,30 +256,28 @@ Scheduler *Scheduler::getThis() { return t_scheduler; }
 
 fiber::Fiber *Scheduler::getMainFiber() { return t_fiber; }
 
-scheduler::Scheduler::TFWrapper::TFWrapper() : cb(nullptr), fiber(nullptr), thread_id(-1) {}
+scheduler::Scheduler::Task::Task() : cb(nullptr), fiber(nullptr), thread_id(-1) {}
 
-scheduler::Scheduler::TFWrapper::TFWrapper(fiber::Fiber::Ptr f, int t)
-    : cb(nullptr), fiber(f), thread_id(t)
+scheduler::Scheduler::Task::Task(fiber::Fiber::Ptr f, int t) : cb(nullptr), fiber(f), thread_id(t)
 {
 }
 
-scheduler::Scheduler::TFWrapper::TFWrapper(fiber::Fiber::Ptr *f, int t) : cb(nullptr), thread_id(t)
+scheduler::Scheduler::Task::Task(fiber::Fiber::Ptr *f, int t) : cb(nullptr), thread_id(t)
 {
     fiber.swap(*f);
 }
 
-scheduler::Scheduler::TFWrapper::TFWrapper(std::function<void()> f, int t)
+scheduler::Scheduler::Task::Task(std::function<void()> f, int t)
     : cb(f), fiber(nullptr), thread_id(t)
 {
 }
 
-scheduler::Scheduler::TFWrapper::TFWrapper(std::function<void()> *f, int t)
-    : fiber(nullptr), thread_id(t)
+scheduler::Scheduler::Task::Task(std::function<void()> *f, int t) : fiber(nullptr), thread_id(t)
 {
     cb.swap(*f);
 }
 
-void scheduler::Scheduler::TFWrapper::reset()
+void scheduler::Scheduler::Task::reset()
 {
     cb        = nullptr;
     fiber     = nullptr;

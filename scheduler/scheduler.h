@@ -65,13 +65,13 @@ class Scheduler
     void setThis();
 
   private:
-    struct TFWrapper
+    struct Task
     {
-        TFWrapper();
-        TFWrapper(fiber::Fiber::Ptr f, int t);
-        TFWrapper(fiber::Fiber::Ptr *f, int t); //使传入的智能指针f变为空指针
-        TFWrapper(std::function<void()> f, int t);
-        TFWrapper(std::function<void()> *f, int t);
+        Task();
+        Task(fiber::Fiber::Ptr f, int t);
+        Task(fiber::Fiber::Ptr *f, int t); //使传入的智能指针f变为空指针
+        Task(std::function<void()> f, int t);
+        Task(std::function<void()> *f, int t);
         void reset();
         std::function<void()> cb;
         fiber::Fiber::Ptr fiber;
@@ -82,17 +82,17 @@ class Scheduler
     template <typename FiberOrCB> bool mSchedule(FiberOrCB fc, int thread_id)
     {
         bool should_notify = m_fibers.empty();
-        TFWrapper tf(fc, thread_id);
-        if (tf.cb || tf.fiber)
+        Task task(fc, thread_id);
+        if (task.cb || task.fiber)
         {
-            m_fibers.push_back(tf);
+            m_fibers.push_back(task);
         }
         return should_notify;
     }
 
   private:
     std::vector<thread::Thread::Ptr> m_threads;
-    std::vector<TFWrapper> m_fibers;
+    std::vector<Task> m_fibers;
     fiber::Fiber::Ptr m_root_fiber;
     mutable MutexType m_mutex;
     bool m_use_caller;
