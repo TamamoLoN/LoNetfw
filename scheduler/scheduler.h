@@ -63,6 +63,7 @@ class Scheduler
     virtual bool stopping();
     virtual void idle();
     void setThis();
+    bool hasIdleThreads();
 
   private:
     struct Task

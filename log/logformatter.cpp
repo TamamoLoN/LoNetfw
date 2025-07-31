@@ -33,7 +33,7 @@ LogFormatter::LogFormatter(const std::string &format) : m_format(format), m_item
 #undef ITEM_FACTORY
     };
     auto vec = util::formatParser(m_format);
-    for (const auto map : vec)
+    for (const auto &map : vec)
     {
         for (const auto &it : map)
         {

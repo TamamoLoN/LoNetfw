@@ -67,10 +67,10 @@ class LoggerManager
 {
   public:
     using MutexType = thread::SpinLock;
-    LoggerManager(const Logger::Ptr logger_root = nullptr);
+    LoggerManager(const Logger::Ptr &logger_root = nullptr);
     ~LoggerManager() = default;
 
-    void setLogger(const std::string &name, const Logger::Ptr logger);
+    void setLogger(const std::string &name, const Logger::Ptr &logger);
     Logger::Ptr getLogger(const std::string &name);
     void delLogger(const std::string &name);
     Logger::Ptr getRoot();

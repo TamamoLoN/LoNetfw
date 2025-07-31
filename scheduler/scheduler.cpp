@@ -4,8 +4,10 @@ namespace lon
 {
 namespace scheduler
 {
+// 当前协程调度器
 static thread_local Scheduler *t_scheduler = nullptr;
-static thread_local fiber::Fiber *t_fiber  = nullptr;
+// 线程主协程
+static thread_local fiber::Fiber *t_fiber = nullptr;
 
 Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name,
                      size_t fiber_stack_size)
@@ -22,6 +24,8 @@ Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name,
         t_scheduler = this;
         m_root_fiber.reset(new fiber::Fiber(std::bind(&Scheduler::run, this), m_fiber_stack_size));
         thread::Thread::setNameStatic(m_name);
+        // 设置当前线程的主协程为m_rootFiber
+        // 这里的m_root_fiber是该线程的主协程（执行run任务的协程），只有默认构造出来的fiber才是主协程
         t_fiber          = m_root_fiber.get();
         m_root_thread_id = util::getThreadId();
         m_threads_id.push_back(m_root_thread_id);
@@ -55,7 +59,12 @@ void Scheduler::start()
             std::bind(&Scheduler::run, this), m_name + "_" + util::lexical_cast<std::string>(cnt)));
         m_threads_id.push_back(m_threads[cnt]->getId());
     }
-    lock.unlock();
+    /*
+     * 在这里切换线程时，swap的话会将线程的主协程与当前协程交换，当使用use_caller时，t_fiber =
+     * m_root_fiber，swapIn是将当前协程与主协程交换
+     * 为了确保在启动之后仍有任务加入任务队列中，所以在stop()中做该线程的启动，这样就不会漏掉任务队列中的任务
+     */
+    // lock.unlock();
     // if (m_root_fiber)
     // {
     //     m_root_fiber->swapIn();
@@ -67,6 +76,7 @@ void Scheduler::stop()
 {
     // MutexType::Lock lock(m_mutex);
     m_auto_stop = true;
+    // 使用use_caller,并且只有一个线程，并且主协程的状态为结束或者初始化
     if (m_root_fiber && m_threads_count == 0 &&
         (m_root_fiber->getState() == fiber::Fiber::TERM ||
          m_root_fiber->getState() == fiber::Fiber::INIT))
@@ -80,10 +90,12 @@ void Scheduler::stop()
     }
 
     // bool exit_on_this_fiber = false;
+    // use_caller线程, 当前调度器和t_secheduler相同
     if (m_root_thread_id != -1)
     {
         LON_ASSERT(this == getThis());
     }
+    // 非use_caller，此时的t_secheduler应该为nullptr
     else
     {
         LON_ASSERT(this != getThis());
@@ -121,6 +133,7 @@ void Scheduler::notify() { LON_DEBUG(LON_LOG_ROOT) << "notify"; }
 void Scheduler::run()
 {
     setThis();
+    // 非user_caller线程，设置主协程为线程主协程
     if (util::getThreadId() != m_root_thread_id)
     {
         t_fiber = fiber::Fiber::getThis().get();
@@ -250,6 +263,8 @@ void Scheduler::idle()
 }
 
 void Scheduler::setThis() { t_scheduler = this; }
+
+bool Scheduler::hasIdleThreads() { return m_idle_threads_count > 0; }
 
 //静态函数
 Scheduler *Scheduler::getThis() { return t_scheduler; }

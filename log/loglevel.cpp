@@ -22,7 +22,7 @@ const std::string LogLevel::getLevelName(LogLevel::Level level)
 #undef GET_STR
     return "UNKNOWN";
 }
-LogLevel::Level LogLevel::getLevelByName(const std::string level_name)
+LogLevel::Level LogLevel::getLevelByName(const std::string &level_name)
 {
 #define GET_LEVEL(t, v)                                                                            \
     if (util::toUpper(level_name) == #v)                                                           \

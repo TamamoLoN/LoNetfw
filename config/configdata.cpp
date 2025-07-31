@@ -4,7 +4,7 @@ namespace lon
 {
 namespace config
 {
-ConfigDataBase::ConfigDataBase(const std::string name, const std::string description)
+ConfigDataBase::ConfigDataBase(const std::string &name, const std::string &description)
     : m_name(util::toLower(name)), m_description(description)
 {
 }

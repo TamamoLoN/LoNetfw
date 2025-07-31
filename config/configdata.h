@@ -10,7 +10,7 @@ struct ConfigDataBase
 {
   public:
     using Ptr = std::shared_ptr<ConfigDataBase>;
-    explicit ConfigDataBase(const std::string name, const std::string description = "");
+    explicit ConfigDataBase(const std::string &name, const std::string &description = "");
     virtual ~ConfigDataBase()                       = default;
     virtual std::string toString()                  = 0;
     virtual bool fromString(const std::string &str) = 0;

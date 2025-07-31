@@ -19,7 +19,7 @@ class LogLevel
     };
 
     static const std::string getLevelName(LogLevel::Level level);
-    static LogLevel::Level getLevelByName(const std::string level_name);
+    static LogLevel::Level getLevelByName(const std::string &level_name);
 };
 } // namespace log
 } // namespace lon

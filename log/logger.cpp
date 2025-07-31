@@ -101,7 +101,7 @@ std::stringstream &LoggerWrapper::getMessageStream() { return m_event->getMessag
 
 LogEvent::Ptr LoggerWrapper::getEvent() const { return m_event; }
 
-LoggerManager::LoggerManager(const Logger::Ptr logger_root) : m_logger_root(logger_root)
+LoggerManager::LoggerManager(const Logger::Ptr &logger_root) : m_logger_root(logger_root)
 {
     if (m_logger_root == nullptr)
     {
@@ -113,7 +113,7 @@ LoggerManager::LoggerManager(const Logger::Ptr logger_root) : m_logger_root(logg
     m_loggers[logger_root->getName()] = logger_root;
 }
 
-void LoggerManager::setLogger(const std::string &name, const Logger::Ptr logger)
+void LoggerManager::setLogger(const std::string &name, const Logger::Ptr &logger)
 {
     MutexType::Lock lock(m_mutex);
     m_loggers[name] = logger;
