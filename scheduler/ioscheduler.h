@@ -16,8 +16,8 @@ class IOScheduler : public Scheduler
     enum Event
     {
         NONE  = 0x00,
-        READ  = 0x01,
-        WRITE = 0x04
+        READ  = 0x01, // EPOLLIN
+        WRITE = 0x04  // EPOLLOUT
     };
 
   public:

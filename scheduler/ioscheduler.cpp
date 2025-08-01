@@ -6,11 +6,12 @@ namespace scheduler
 {
 IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name,
                          size_t fiber_stack_size)
-    : Scheduler(threads_count, use_caller, name, fiber_stack_size)
+    : Scheduler(threads_count, use_caller, name, fiber_stack_size), m_waitting_events_count({0}),
+      m_epoll_fd(0)
 {
     memset(m_notify_pipe_fd, 0, sizeof(m_notify_pipe_fd));
     m_epoll_fd = epoll_create(5000);
-    LON_ASSERT(m_epoll_fd > 0);
+    LON_ASSERT(m_epoll_fd != -1);
 
     int rt = pipe(m_notify_pipe_fd);
     LON_ASSERT(!rt);
@@ -59,7 +60,7 @@ uint8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     {
         rlock.unlock();
         MutexType::WrLock wlock(m_mutex);
-        contextResize(m_fd_contexts.size() * 1.5f);
+        contextResize(fd * 1.5f);
         fd_ctx = m_fd_contexts[fd];
     }
     FdContext::MutexType::Lock fd_ctx_lock(fd_ctx->mutex);
@@ -223,6 +224,7 @@ void IOScheduler::notify()
     {
         return;
     }
+    LON_DEBUG(LON_LOG_ROOT) << "notify";
     int ret = write(m_notify_pipe_fd[1], "T", 1);
     LON_ASSERT(ret == 1);
 }
@@ -318,6 +320,7 @@ void IOScheduler::idle()
 
         auto &&cur = std::move(fiber::Fiber::getThis());
         cur->swapOut(Scheduler::getMainFiber());
+        // LON_WARN(LON_LOG_ROOT) << fiber::Fiber::getThis()->getFiberId();
     }
 }
 

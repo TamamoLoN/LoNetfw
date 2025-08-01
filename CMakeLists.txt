@@ -90,3 +90,5 @@ add_build_target(test_util)
 add_build_target(test_fiber)
 
 add_build_target(test_scheduler)
+
+add_build_target(test_ioscheduler)
