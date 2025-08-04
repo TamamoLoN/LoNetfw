@@ -206,6 +206,20 @@ std::string getCurrentDateTime(const std::string &format)
     return getDateTime(getCurrentDateTime(), format);
 }
 
+uint64_t getCurrentMs()
+{
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+uint64_t getCurrentUs()
+{
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return tv.tv_sec * 1000 * 1000ul + tv.tv_usec;
+}
+
 uint32_t getThreadId() { return syscall(SYS_gettid); }
 
 std::string getThreadName()

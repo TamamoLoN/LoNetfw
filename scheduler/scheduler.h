@@ -37,14 +37,14 @@ class Scheduler
     }
 
     //批量放入
-    template <typename Iterator> void schedule(Iterator begin, Iterator end)
+    template <typename Iterator> void schedule(Iterator begin, Iterator end, int thread_id = -1)
     {
         bool should_notify = false;
         {
             MutexType::Lock lock(m_mutex);
             for (auto it = begin; it != end; ++it)
             {
-                should_notify = mSchedule(&*it) || should_notify;
+                should_notify = mSchedule(&*it, thread_id) || should_notify;
             }
         }
         if (should_notify)

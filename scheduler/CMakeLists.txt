@@ -8,5 +8,5 @@ add_library(scheduler SHARED
             ${SCHEDULER_SRCS}
             )
 
-target_link_libraries(scheduler PRIVATE util thread fiber log config)
+target_link_libraries(scheduler PRIVATE util thread fiber log config timer)
 target_include_directories(scheduler PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)

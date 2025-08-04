@@ -82,8 +82,8 @@ void Fiber::reset(std::function<void()> cb)
     }
     if (m_state != TERM && m_state != INIT && m_state == ERROR)
     {
-        throw std::runtime_error("reset error: m_state not TERM or INIT\n" +
-                                 util::backtrace(100, 2, "\t"));
+        throw std::runtime_error("reset error: m_state not TERM or INIT:[" +
+                                 stateToString(m_state) + "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_cb = cb;
     if (getcontext(&m_ctx))
@@ -152,6 +152,25 @@ void Fiber::setState(Fiber::State state) { m_state = state; }
 Fiber::State Fiber::getState() const { return m_state; }
 
 uint64_t Fiber::getId() const { return m_id; }
+
+std::string Fiber::stateToString(State state) const
+{
+    switch (state)
+    {
+#define XX(str)                                                                                    \
+    case str:                                                                                      \
+        return #str;
+        XX(ERROR)
+        XX(INIT)
+        XX(HOLD)
+        XX(EXEC)
+        XX(TERM)
+        XX(READY)
+#undef XX
+    default:
+        return "UNKNOWN";
+    }
+}
 
 //静态函数
 void Fiber::setThis(Fiber *fiber) { t_fiber = fiber; }

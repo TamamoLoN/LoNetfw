@@ -42,6 +42,7 @@ class Fiber : public std::enable_shared_from_this<Fiber>
     void setState(State state);
     State getState() const;
     uint64_t getId() const;
+    std::string stateToString(State state) const;
 
     //设置当前协程
     static void setThis(Fiber *fiber);

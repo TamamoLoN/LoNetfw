@@ -21,11 +21,12 @@ void test_fiber()
 
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::READ,
                  []() { LON_FATAL(LON_LOG_ROOT) << "read cb"; });
-    io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [&fd]() {
+    io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [fd]() {
+        auto fd_ = fd;
         LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
         lon::scheduler::IOScheduler::getThis()->cancelEvent(
-            fd, lon::scheduler::IOScheduler::Event::READ);
-        close(fd);
+            fd_, lon::scheduler::IOScheduler::Event::READ);
+        close(fd_);
     });
     auto ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
     if (ret == 0)
@@ -43,18 +44,44 @@ void test_fiber()
         LON_FATAL(LON_LOG_ROOT) << "connect failed: " << strerror(errno);
     }
 }
-
-void test1()
+auto fiber = std::make_shared<lon::fiber::Fiber>(
+    test_fiber, lon::config::ConfigInitter::Instance().config_fiber->getData());
+void test_io_scheduler()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        2, false, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+    // io->schedule(fiber);
     io->schedule(test_fiber);
+}
+lon::timer::Timer::Ptr timer = nullptr;
+void test_timer()
+{
+    auto io = std::make_shared<lon::scheduler::IOScheduler>(
+        2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+    timer = io->addTimer(1000,
+                         []() {
+                             static int cnt = 0;
+                             LON_INFO(LON_LOG_ROOT)
+                                 << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
+
+                             if (++cnt > 1)
+                             {
+                                 // timer->cancel();
+                                 timer->reset(500, true);
+                             }
+                             if (cnt > 4)
+                             {
+                                 timer->cancel();
+                             }
+                         },
+                         true);
 }
 
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
 
-    test1();
+    // test_io_scheduler();
+    test_timer();
     return 0;
 }

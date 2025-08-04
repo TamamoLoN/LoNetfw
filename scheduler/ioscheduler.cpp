@@ -6,8 +6,8 @@ namespace scheduler
 {
 IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name,
                          size_t fiber_stack_size)
-    : Scheduler(threads_count, use_caller, name, fiber_stack_size), m_waitting_events_count({0}),
-      m_epoll_fd(0)
+    : Scheduler(threads_count, use_caller, name, fiber_stack_size), timer::TimerManager(),
+      m_waitting_events_count({0}), m_epoll_fd(0)
 {
     memset(m_notify_pipe_fd, 0, sizeof(m_notify_pipe_fd));
     m_epoll_fd = epoll_create(5000);
@@ -51,7 +51,7 @@ uint8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     //保证fd即是索引
     FdContext *fd_ctx = nullptr;
     MutexType::RdLock rlock(m_mutex);
-    if (m_fd_contexts.size() > fd)
+    if ((int)m_fd_contexts.size() > fd)
     {
         fd_ctx = m_fd_contexts[fd];
         rlock.unlock();
@@ -60,7 +60,7 @@ uint8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     {
         rlock.unlock();
         MutexType::WrLock wlock(m_mutex);
-        contextResize(fd * 1.5f);
+        contextResize(fd * 1.5);
         fd_ctx = m_fd_contexts[fd];
     }
     FdContext::MutexType::Lock fd_ctx_lock(fd_ctx->mutex);
@@ -72,7 +72,7 @@ uint8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
         return -1;
     }
 
-    int op = fd_ctx->event != 0 ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
+    int op = fd_ctx->event ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
     epoll_event epevent;
     memset(&epevent, 0, sizeof(epevent));
     epevent.events   = EPOLLET | fd_ctx->event | event;
@@ -106,7 +106,7 @@ uint8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
 bool IOScheduler::delEvent(int fd, Event event)
 {
     MutexType::RdLock rlock(m_mutex);
-    if (m_fd_contexts.size() <= fd)
+    if ((int)m_fd_contexts.size() <= fd)
     {
         return false;
     }
@@ -118,8 +118,8 @@ bool IOScheduler::delEvent(int fd, Event event)
     {
         return false;
     }
-    Event new_event = (Event)(fd_ctx->event & ~(event));
-    int op          = new_event != 0 ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
+    Event new_event = (Event)(fd_ctx->event & ~event);
+    int op          = new_event ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
     epoll_event epevent;
     memset(&epevent, 0, sizeof(epevent));
     epevent.events   = EPOLLET | new_event;
@@ -143,7 +143,7 @@ bool IOScheduler::delEvent(int fd, Event event)
 bool IOScheduler::cancelEvent(int fd, Event event)
 {
     MutexType::RdLock rlock(m_mutex);
-    if (m_fd_contexts.size() <= fd)
+    if ((int)m_fd_contexts.size() <= fd)
     {
         return false;
     }
@@ -155,8 +155,8 @@ bool IOScheduler::cancelEvent(int fd, Event event)
     {
         return false;
     }
-    Event new_event = (Event)(fd_ctx->event & ~(event));
-    int op          = new_event != 0 ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
+    Event new_event = (Event)(fd_ctx->event & ~event);
+    int op          = new_event ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
     epoll_event epevent;
     memset(&epevent, 0, sizeof(epevent));
     epevent.events   = EPOLLET | new_event;
@@ -178,7 +178,7 @@ bool IOScheduler::cancelEvent(int fd, Event event)
 bool IOScheduler::cancelAll(int fd)
 {
     MutexType::RdLock rlock(m_mutex);
-    if (m_fd_contexts.size() <= fd)
+    if ((int)m_fd_contexts.size() <= fd)
     {
         return false;
     }
@@ -186,7 +186,7 @@ bool IOScheduler::cancelAll(int fd)
     rlock.unlock();
 
     FdContext::MutexType::Lock fd_ctx_lock(fd_ctx->mutex);
-    if (!(fd_ctx->event))
+    if (!fd_ctx->event)
     {
         return false;
     }
@@ -229,7 +229,17 @@ void IOScheduler::notify()
     LON_ASSERT(ret == 1);
 }
 
-bool IOScheduler::stopping() { return Scheduler::stopping() && m_waitting_events_count == 0; }
+bool IOScheduler::stopping()
+{
+    uint64_t timeout = 0;
+    return stopping(timeout);
+}
+
+bool IOScheduler::stopping(uint64_t &timeout)
+{
+    timeout = getNextTimerTimeMs();
+    return timeout == ~0ull && m_waitting_events_count == 0 && Scheduler::stopping();
+}
 
 void IOScheduler::idle()
 {
@@ -241,17 +251,26 @@ void IOScheduler::idle()
 
     while (true)
     {
-        int ret = 0;
-        if (stopping())
+        uint64_t next_timeout = 0;
+        if (stopping(next_timeout))
         {
             LON_INFO(LON_LOG_ROOT) << "ioscheduler[" << getName() << "] idle stopping exit";
             break;
         }
 
+        int ret = 0;
         do
         {
-            static const int MAX_TIMEOUT = 5000; // ms
-            ret                          = epoll_wait(m_epoll_fd, events, 64, MAX_TIMEOUT);
+            static const int MAX_TIMEOUT = 3000; // ms
+            if (next_timeout != ~0ull)
+            {
+                next_timeout = (int)next_timeout > MAX_TIMEOUT ? MAX_TIMEOUT : (int)next_timeout;
+            }
+            else
+            {
+                next_timeout = MAX_TIMEOUT;
+            }
+            ret = epoll_wait(m_epoll_fd, events, 64, (int)next_timeout);
             if (ret < 0 && errno == EINTR)
             {
             }
@@ -260,6 +279,14 @@ void IOScheduler::idle()
                 break;
             }
         } while (true);
+
+        std::vector<std::function<void()>> cbs = {};
+        getExpiredCbsList(cbs);
+        if (!cbs.empty())
+        {
+            schedule(cbs.begin(), cbs.end());
+            cbs.clear();
+        }
 
         for (int cnt = 0; cnt < ret; cnt++)
         {
@@ -276,7 +303,7 @@ void IOScheduler::idle()
             FdContext::MutexType::Lock fd_ctx_lock(fd_ctx->mutex);
             if (event.events & (EPOLLERR | EPOLLHUP))
             {
-                event.events |= (EPOLLIN | EPOLLOUT);
+                event.events |= (EPOLLIN | EPOLLOUT) & fd_ctx->event;
             }
             int real_event = Event::NONE;
             if (event.events & EPOLLIN)
@@ -324,13 +351,18 @@ void IOScheduler::idle()
     }
 }
 
+void IOScheduler::onTimerInsertAtFront() { notify(); }
+
 void IOScheduler::contextResize(size_t size)
 {
     m_fd_contexts.resize(size);
-    for (int cnt = 0; cnt < m_fd_contexts.size(); cnt++)
+    for (size_t cnt = 0; cnt < m_fd_contexts.size(); cnt++)
     {
-        m_fd_contexts[cnt]     = new FdContext;
-        m_fd_contexts[cnt]->fd = cnt;
+        if (!m_fd_contexts[cnt])
+        {
+            m_fd_contexts[cnt]     = new FdContext;
+            m_fd_contexts[cnt]->fd = cnt;
+        }
     }
 }
 

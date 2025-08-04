@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <sstream>
 #include <sys/syscall.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -63,6 +64,8 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
 std::string getDateTime(const time_t &time, const std::string &format);
 time_t getCurrentDateTime();
 std::string getCurrentDateTime(const std::string &format);
+uint64_t getCurrentMs();
+uint64_t getCurrentUs();
 
 uint32_t getThreadId();
 std::string getThreadName();
