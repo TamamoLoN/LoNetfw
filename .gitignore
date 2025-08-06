@@ -5,5 +5,5 @@
 *.log
 */.vscode/*
 .vscode/*
-./a.out
-./test*.cpp
+*a.out
+test*.cpp
