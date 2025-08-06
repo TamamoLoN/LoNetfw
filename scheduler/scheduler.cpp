@@ -151,8 +151,8 @@ void Scheduler::run()
         bool should_notify = false;
         {
             MutexType::Lock lock(m_mutex);
-            auto it = m_fibers.begin();
-            while (it != m_fibers.end())
+            auto it = m_tasks.begin();
+            while (it != m_tasks.end())
             {
                 if (it->thread_id != -1 && it->thread_id != util::getThreadId())
                 {
@@ -167,7 +167,7 @@ void Scheduler::run()
                     continue;
                 }
                 task = *it;
-                m_fibers.erase(it);
+                m_tasks.erase(it);
                 ++m_active_threads_count;
                 is_active = true;
                 break;
@@ -250,7 +250,7 @@ void Scheduler::run()
 bool Scheduler::stopping()
 {
     MutexType::Lock lock(m_mutex);
-    return m_stopping && m_auto_stop && m_fibers.empty() && m_active_threads_count == 0;
+    return m_stopping && m_auto_stop && m_tasks.empty() && m_active_threads_count == 0;
 }
 
 void Scheduler::idle()

@@ -24,8 +24,9 @@ void test_fiber()
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [fd]() {
         auto fd_ = fd;
         LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
-        lon::scheduler::IOScheduler::getThis()->cancelEvent(
-            fd_, lon::scheduler::IOScheduler::Event::READ);
+        // lon::scheduler::IOScheduler::getThis()->cancelEvent(
+        //     fd_, lon::scheduler::IOScheduler::Event::READ);
+        lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
         close(fd_);
     });
     auto ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
@@ -49,7 +50,7 @@ auto fiber = std::make_shared<lon::fiber::Fiber>(
 void test_io_scheduler()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        2, false, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
     // io->schedule(fiber);
     io->schedule(test_fiber);
 }
@@ -58,23 +59,24 @@ void test_timer()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
         2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
-    timer = io->addTimer(1000,
+    timer = io->addTimer(50,
                          []() {
                              static int cnt = 0;
                              LON_INFO(LON_LOG_ROOT)
                                  << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
 
-                             if (++cnt > 1)
+                             if (++cnt > 10)
                              {
                                  // timer->cancel();
-                                 timer->reset(500, true);
+                                 timer->reset(200, true);
                              }
-                             if (cnt > 4)
+                             if (cnt > 40)
                              {
                                  timer->cancel();
                              }
                          },
                          true);
+    io->schedule(test_fiber);
 }
 
 int main(int argc, char const *argv[])

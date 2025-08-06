@@ -82,18 +82,18 @@ class Scheduler
   private:
     template <typename FiberOrCB> bool mSchedule(FiberOrCB fc, int thread_id)
     {
-        bool should_notify = m_fibers.empty();
+        bool should_notify = m_tasks.empty();
         Task task(fc, thread_id);
         if (task.cb || task.fiber)
         {
-            m_fibers.push_back(task);
+            m_tasks.push_back(task);
         }
         return should_notify;
     }
 
   private:
     std::vector<thread::Thread::Ptr> m_threads;
-    std::vector<Task> m_fibers;
+    std::vector<Task> m_tasks;
     fiber::Fiber::Ptr m_root_fiber;
     mutable MutexType m_mutex;
     bool m_use_caller;

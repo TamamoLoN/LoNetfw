@@ -68,8 +68,11 @@ class IOScheduler : public Scheduler, public timer::TimerManager
     };
 
   private:
+    // epoll文件句柄
     int m_epoll_fd;
+    // pipe文件句柄，其中[0]表示读端，[1]表示写端
     int m_notify_pipe_fd[2];
+    // 等待执行的事件数量
     std::atomic<size_t> m_waitting_events_count;
     MutexType m_mutex;
     std::vector<FdContext *> m_fd_contexts;
