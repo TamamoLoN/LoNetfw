@@ -2,6 +2,7 @@
 
 #include "util/lexicalcast.h"
 #include "util/noncopyable.h"
+#include "util/singleton.h"
 #include "yaml-cpp/yaml.h"
 #include <execinfo.h>
 #include <iostream>
@@ -81,6 +82,14 @@ class Allocator
   public:
     static void *allocate(size_t size);
     static void deallocate(void *ptr);
+};
+
+class HookState
+{
+  public:
+    static bool isEnable();
+    static void enable();
+    static void disable();
 };
 
 } // namespace util

@@ -132,6 +132,7 @@ void Scheduler::notify() { LON_DEBUG(LON_LOG_ROOT) << "notify"; }
 
 void Scheduler::run()
 {
+    util::HookState::enable();
     setThis();
     // 非user_caller线程，设置主协程为线程主协程
     if (util::getThreadId() != m_root_thread_id)
@@ -219,7 +220,7 @@ void Scheduler::run()
             // else if (cb_fiber->getState() != fiber::Fiber::TERM)
             else
             {
-                task.fiber->setState(fiber::Fiber::HOLD);
+                cb_fiber->setState(fiber::Fiber::HOLD);
                 cb_fiber.reset();
             }
         }

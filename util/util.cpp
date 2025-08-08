@@ -267,5 +267,13 @@ void *Allocator::allocate(size_t size) { return malloc(size); }
 
 void Allocator::deallocate(void *ptr) { free(ptr); }
 
+static thread_local bool t_is_hook_enabled = false;
+
+bool HookState::isEnable() { return t_is_hook_enabled; }
+
+void HookState::enable() { t_is_hook_enabled = true; }
+
+void HookState::disable() { t_is_hook_enabled = false; }
+
 } // namespace util
 } // namespace lon

@@ -46,7 +46,9 @@ function(add_build_target targetname)
                             config 
                             scheduler
                             timer
+                            hook
                             yaml-cpp
+                            dl
                             ) 
     # force_redefine_file_macro_for_sources(${targetname})
 endfunction()
@@ -59,6 +61,7 @@ add_subdirectory(fiber)
 add_subdirectory(thread)
 add_subdirectory(timer)
 add_subdirectory(scheduler)
+add_subdirectory(hook)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
                  )
@@ -94,3 +97,5 @@ add_build_target(test_fiber)
 add_build_target(test_scheduler)
 
 add_build_target(test_ioscheduler)
+
+add_build_target(test_hook)
