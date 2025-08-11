@@ -13,7 +13,7 @@ add_definitions(-g -LINUX_X86)
 # set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++-8")
 set(CMAKE_CXX_COMPILER "g++")
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
 
 function(force_redefine_file_macro_for_sources targetname)
     get_target_property (source_files "${targetname}" SOURCES)
@@ -64,11 +64,12 @@ add_subdirectory(scheduler)
 add_subdirectory(hook)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
+                ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp
                  )
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_SOURCE_DIR}/src
-                    # ${CMAKE_SOURCE_DIR}/third_party
+                    ${CMAKE_SOURCE_DIR}/third_party
                     )
 
 # find_library(YAML_CPP_LIB

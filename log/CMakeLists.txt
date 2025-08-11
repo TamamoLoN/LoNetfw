@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.1)
 
-include_directories(${CMAKE_SOURCE_DIR})
+link_directories(${CMAKE_SOURCE_DIR}/lib
+                ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp
+                 )
+
+include_directories(${CMAKE_SOURCE_DIR}
+                    ${CMAKE_SOURCE_DIR}/src
+                    ${CMAKE_SOURCE_DIR}/third_party
+                    )
 
 file(GLOB LOG_SRCS ${CMAKE_SOURCE_DIR}/log/*.cpp)
 
