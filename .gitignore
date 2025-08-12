@@ -6,4 +6,5 @@
 */.vscode/*
 .vscode/*
 *a.out
+.comate/*
 # test*.cpp

@@ -59,23 +59,24 @@ void test_timer()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
         2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
-    timer = io->addTimer(50,
-                         []() {
-                             static int cnt = 0;
-                             LON_INFO(LON_LOG_ROOT)
-                                 << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
+    timer = io->addTimer(
+        50,
+        []() {
+            static int cnt = 0;
+            LON_INFO(LON_LOG_ROOT)
+                << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
 
-                             if (++cnt > 10)
-                             {
-                                 // timer->cancel();
-                                 timer->reset(200, true);
-                             }
-                             if (cnt > 40)
-                             {
-                                 timer->cancel();
-                             }
-                         },
-                         true);
+            if (++cnt > 10)
+            {
+                // timer->cancel();
+                timer->reset(200, true);
+            }
+            if (cnt > 40)
+            {
+                timer->cancel();
+            }
+        },
+        true);
     io->schedule(test_fiber);
 }
 

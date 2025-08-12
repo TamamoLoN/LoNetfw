@@ -5,7 +5,7 @@ void test_fiber()
 {
     static int i = 5;
     LON_DEBUG(LON_LOG_ROOT) << "test_fiber cnt = " << i;
-    usleep(100000);
+    // usleep(100000);
     if (--i == 0)
     {
         return;
@@ -16,7 +16,7 @@ void test_fiber1()
 {
     static int i = 5;
     LON_DEBUG(LON_LOG_ROOT) << "test_fiber cnt = " << i;
-    usleep(100000);
+    // usleep(100000);
     if (--i == 0)
     {
         return;

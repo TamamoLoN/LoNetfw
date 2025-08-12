@@ -51,7 +51,8 @@ extern "C"
         }
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(seconds * 1000, [fiber, ios]() { ios->schedule(fiber); }, false);
+        ios->addTimer(
+            seconds * 1000, [fiber, ios]() { ios->schedule(fiber); }, false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -65,7 +66,8 @@ extern "C"
         }
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(usec / 1000, [fiber, ios]() { ios->schedule(fiber); }, false);
+        ios->addTimer(
+            usec / 1000, [fiber, ios]() { ios->schedule(fiber); }, false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;

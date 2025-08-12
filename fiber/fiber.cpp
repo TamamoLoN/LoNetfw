@@ -50,7 +50,8 @@ Fiber::~Fiber()
         StackAllocator::deallocate(m_stack);
         if (m_state != TERM && m_state != INIT && m_state == ERROR)
         {
-            throw std::runtime_error("m_state error: m_state not TERM or INIT\n" +
+            throw std::runtime_error("m_state error: m_state not TERM or INIT:[" +
+                                     stateToString(m_state) + "]\n" +
                                      util::backtrace(100, 2, "\t"));
         }
     }
@@ -104,7 +105,8 @@ void Fiber::swapIn()
     setThis(this);
     if (m_state == EXEC)
     {
-        throw std::runtime_error("swapIn error: m_state is EXEC\n" + util::backtrace(100, 2, "\t"));
+        throw std::runtime_error("swapIn error: m_state is EXEC:[" + stateToString(m_state) +
+                                 "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_state = EXEC;
     if (swapcontext(&(t_thread_fiber->m_ctx), &m_ctx))
@@ -119,7 +121,8 @@ void Fiber::swapIn(Fiber *fiber)
     t_schedule_fiber = fiber;
     if (m_state == EXEC)
     {
-        throw std::runtime_error("swapIn error: m_state is EXEC\n" + util::backtrace(100, 2, "\t"));
+        throw std::runtime_error("swapIn error: m_state is EXEC:[" + stateToString(m_state) +
+                                 "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_state = EXEC;
     if (swapcontext(&(fiber->m_ctx), &m_ctx))
