@@ -8,7 +8,7 @@ void test_sleep()
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
         1, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
     io->schedule([]() {
-        sleep(1);
+        sleep(10);
         LON_DEBUG(LON_LOG_ROOT) << "test sleep 10s";
     });
     io->schedule([&]() {
@@ -52,8 +52,8 @@ int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
 
-    // test_sleep();
-    test_ioscheduler_reschedule();
+    test_sleep();
+    // test_ioscheduler_reschedule();
     // sleep(1);
     // usleep(10000);
 
