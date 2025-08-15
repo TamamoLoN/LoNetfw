@@ -119,13 +119,22 @@ void LoggerManager::setLogger(const std::string &name, const Logger::Ptr &logger
     m_loggers[name] = logger;
 }
 
-Logger::Ptr LoggerManager::getLogger(const std::string &name)
+Logger::Ptr LoggerManager::getLogger(const std::string &name, bool auto_create)
 {
     MutexType::Lock lock(m_mutex);
     if (m_loggers.find(name) == m_loggers.end())
     {
-        LON_WARN(LON_LOG_ROOT) << "the logger has not been initialized: " << name;
-        return nullptr;
+        if (auto_create)
+        {
+            auto new_logger = std::make_shared<Logger>(name);
+            new_logger->addAppender(std::make_shared<StdoutLogAppender>(LogLevel::Level::DEBUG));
+            m_loggers[name] = new_logger;
+        }
+        else
+        {
+            LON_WARN(LON_LOG_ROOT) << "the logger has not been initialized: " << name;
+            return nullptr;
+        }
     }
     return m_loggers[name];
 }

@@ -71,7 +71,7 @@ class LoggerManager
     ~LoggerManager() = default;
 
     void setLogger(const std::string &name, const Logger::Ptr &logger);
-    Logger::Ptr getLogger(const std::string &name);
+    Logger::Ptr getLogger(const std::string &name, bool auto_create = false);
     void delLogger(const std::string &name);
     Logger::Ptr getRoot();
     std::string getYaml();

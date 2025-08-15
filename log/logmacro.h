@@ -40,7 +40,7 @@
 
 #define LON_LOG_MANAGER lon::util::Singleton<lon::log::LoggerManager>::Instance()
 #define LON_LOG_ROOT LON_LOG_MANAGER.getRoot()
-#define LON_LOG_NAME(name) LON_LOG_MANAGER.getLogger(name)
+#define LON_LOG_NAME(name) LON_LOG_MANAGER.getLogger(name, true)
 
 #define LON_ASSERT(arg)                                                                            \
     if (!(arg))                                                                                    \
