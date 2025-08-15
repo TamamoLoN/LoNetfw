@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scheduler/scheduler.h"
-#include "timer/timer.h"
+#include "scheduler/timer.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -11,7 +11,7 @@ namespace lon
 {
 namespace scheduler
 {
-class IOScheduler : public Scheduler, public timer::TimerManager
+class IOScheduler : public Scheduler, public TimerManager
 {
   public:
     enum Event

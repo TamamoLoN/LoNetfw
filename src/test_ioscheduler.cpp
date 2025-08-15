@@ -54,7 +54,7 @@ void test_io_scheduler()
     // io->schedule(fiber);
     io->schedule(test_fiber);
 }
-lon::timer::Timer::Ptr timer = nullptr;
+lon::scheduler::Timer::Ptr timer = nullptr;
 void test_timer()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(

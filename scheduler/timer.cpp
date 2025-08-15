@@ -1,8 +1,8 @@
-#include "timer/timer.h"
+#include "scheduler/timer.h"
 
 namespace lon
 {
-namespace timer
+namespace scheduler
 {
 Timer::Timer(uint64_t ms, std::function<void()> cb, bool is_loop, TimerManager *manager)
     : m_ms(ms), m_is_loop(is_loop), m_next(util::getCurrentMs() + m_ms), m_manager(manager),
@@ -232,5 +232,5 @@ bool TimerManager::detectTimeModified(uint64_t now_ms)
     return is_modified;
 }
 
-} // namespace timer
+} // namespace scheduler
 } // namespace lon

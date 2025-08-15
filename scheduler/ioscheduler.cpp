@@ -6,7 +6,7 @@ namespace scheduler
 {
 IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name,
                          size_t fiber_stack_size)
-    : Scheduler(threads_count, use_caller, name, fiber_stack_size), timer::TimerManager(),
+    : Scheduler(threads_count, use_caller, name, fiber_stack_size), TimerManager(),
       m_waitting_events_count({0}), m_epoll_fd(0)
 {
     memset(m_notify_pipe_fd, 0, sizeof(m_notify_pipe_fd));

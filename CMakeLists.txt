@@ -45,7 +45,6 @@ function(add_build_target targetname)
                             log 
                             config 
                             scheduler
-                            timer
                             hook
                             yaml-cpp
                             dl
@@ -59,7 +58,6 @@ add_subdirectory(log)
 add_subdirectory(config)
 add_subdirectory(fiber)
 add_subdirectory(thread)
-add_subdirectory(timer)
 add_subdirectory(scheduler)
 add_subdirectory(hook)
 
