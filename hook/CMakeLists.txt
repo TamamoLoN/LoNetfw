@@ -16,5 +16,5 @@ add_library(hook SHARED
             ${HOOK_SRCS}
             )
 
-target_link_libraries(hook PRIVATE util scheduler)
+target_link_libraries(hook PRIVATE util thread scheduler)
 target_include_directories(hook PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)

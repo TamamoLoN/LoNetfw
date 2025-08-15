@@ -5,23 +5,41 @@
 
 void test_sleep()
 {
+    auto durationWrapper = [](std::function<void()> cb) {
+        auto start = std::chrono::steady_clock::now();
+        cb();
+        auto end      = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        LON_DEBUG(LON_LOG_ROOT) << "test sleep duration=" << duration;
+    };
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
         1, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
-    io->schedule([]() {
-        sleep(10);
-        LON_DEBUG(LON_LOG_ROOT) << "test sleep 10s";
+    io->schedule([=]() {
+        durationWrapper([]() {
+            sleep(10);
+            LON_DEBUG(LON_LOG_ROOT) << "test sleep 10s";
+        });
     });
     io->schedule([&]() {
-        io->schedule([]() {
-            sleep(5);
-            LON_DEBUG(LON_LOG_ROOT) << "test sleep 5s";
+        io->schedule([=]() {
+            durationWrapper([]() {
+                usleep(5000000);
+                LON_DEBUG(LON_LOG_ROOT) << "test sleep 5s";
+            });
         });
-        sleep(2);
-        LON_DEBUG(LON_LOG_ROOT) << "test sleep 2s";
+        durationWrapper([]() {
+            sleep(2);
+            LON_DEBUG(LON_LOG_ROOT) << "test sleep 2s";
+        });
     });
-    io->schedule([]() {
-        sleep(3);
-        LON_DEBUG(LON_LOG_ROOT) << "test sleep 3s";
+    io->schedule([=]() {
+        durationWrapper([]() {
+            struct timespec ts;
+            ts.tv_sec  = 3;
+            ts.tv_nsec = 0;
+            nanosleep(&ts, nullptr);
+            LON_DEBUG(LON_LOG_ROOT) << "test sleep 3s";
+        });
     });
 
     sleep(1);
@@ -52,10 +70,12 @@ int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
 
-    test_sleep();
+    // test_sleep();
     // test_ioscheduler_reschedule();
     // sleep(1);
     // usleep(10000);
+
+    LON_WARN(LON_LOG_NAME("test")) << "1111";
 
     return 0;
 }
