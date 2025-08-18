@@ -34,3 +34,4 @@ fi
 cd $dir_name
 cmake ..
 make
+make install
