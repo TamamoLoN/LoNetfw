@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 set(PROJECT_NAME LoNetfw)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
 project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 11)
@@ -11,9 +12,10 @@ set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-g -LINUX_X86)
 
 # set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++-8")
-set(CMAKE_CXX_COMPILER "g++")
+#set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
+set(YAML_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp/include)
 
 function(force_redefine_file_macro_for_sources targetname)
     get_target_property (source_files "${targetname}" SOURCES)
@@ -52,7 +54,7 @@ function(add_build_target targetname)
     # force_redefine_file_macro_for_sources(${targetname})
 endfunction()
 
-
+add_subdirectory(third_party/yaml-cpp)
 add_subdirectory(util)
 add_subdirectory(log)
 add_subdirectory(config)
@@ -62,12 +64,12 @@ add_subdirectory(scheduler)
 add_subdirectory(hook)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
-                ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp
                  )
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_SOURCE_DIR}/src
                     ${CMAKE_SOURCE_DIR}/third_party
+		    ${YAML_INCLUDE_PATH}
                     )
 
 # find_library(YAML_CPP_LIB

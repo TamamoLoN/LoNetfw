@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
-                ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp
                  )
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_SOURCE_DIR}/src
-                    ${CMAKE_SOURCE_DIR}/third_party
+                    ${YAML_INCLUDE_PATH}
                     )
 
 file(GLOB UTIL_SRCS ${CMAKE_SOURCE_DIR}/util/*.cpp)

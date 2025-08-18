@@ -12,7 +12,9 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include <functional>
 #include <cxxabi.h>
+#include <assert.h>
 
 namespace lon
 {
