@@ -1,4 +1,4 @@
-*build*
+build/*
 */build*/
 */bin*/*
 bin/
@@ -7,4 +7,5 @@ bin/
 .vscode/*
 *a.out
 .comate/*
+install/*
 # test*.cpp

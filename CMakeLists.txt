@@ -14,6 +14,14 @@ add_definitions(-g -LINUX_X86)
 # set(CMAKE_CXX_COMPILER "aarch64-linux-gnu-g++-8")
 #set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
+### options ###
+option(USE_HIGH_PRECISION_TIME "Enable high precision time" ON)
+###############
+
+if(USE_HIGH_PRECISION_TIME)
+    add_definitions(-DUSE_HIGH_PRECISION_TIME)
+endif()
+
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
 set(YAML_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp/include)
 
@@ -71,19 +79,6 @@ include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_SOURCE_DIR}/third_party
 		    ${YAML_INCLUDE_PATH}
                     )
-
-# find_library(YAML_CPP_LIB
-#             NAMES yaml-cpp
-#             PATHS ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp
-#             NO_DEFAULT_PATH 
-#             )
-
-# add_executable(${PROJECT_NAME}
-#                ${CMAKE_SOURCE_DIR}/src/main.cpp
-#                )
-
-# target_link_libraries(${PROJECT_NAME} PRIVATE util thread log config) 
-# force_redefine_file_macro_for_sources(${PROJECT_NAME})
 
 add_build_target(test_log)
 
