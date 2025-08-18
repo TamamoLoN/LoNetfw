@@ -70,12 +70,10 @@ int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
 
-    // test_sleep();
+    test_sleep();
     // test_ioscheduler_reschedule();
     // sleep(1);
     // usleep(10000);
-
-    LON_WARN(LON_LOG_NAME("test")) << "1111";
 
     return 0;
 }
