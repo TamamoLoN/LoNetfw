@@ -1,5 +1,10 @@
 #pragma once
 #include "scheduler/ioscheduler.h"
+#include <dlfcn.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 namespace lon
 {
 namespace hook
@@ -7,7 +12,8 @@ namespace hook
 class Fd : public std::enable_shared_from_this<Fd>
 {
   public:
-    using Ptr = std::shared_ptr<Fd>;
+    using Ptr         = std::shared_ptr<Fd>;
+    using TimeoutType = scheduler::IOScheduler::Event;
     Fd();
     virtual ~Fd() = default;
     bool init();
@@ -20,8 +26,8 @@ class Fd : public std::enable_shared_from_this<Fd>
     void setUserNonBlock(bool is_user_nonblock);
     bool getSysNonBlock() const;
     bool getUserNonBlock() const;
-    void setTimeout(const scheduler::IOScheduler::Event &rs_type, uint64_t timeout);
-    uint64_t getTimeout(const scheduler::IOScheduler::Event &rs_type) const;
+    void setTimeout(const TimeoutType &rs_type, int64_t timeout);
+    int64_t getTimeout(const TimeoutType &rs_type) const;
 
   private:
     int m_fd;
@@ -30,8 +36,8 @@ class Fd : public std::enable_shared_from_this<Fd>
     bool m_is_sys_nonblock;
     bool m_is_user_nonblock;
     bool m_is_closed;
-    uint64_t m_recv_timeout;
-    uint64_t m_send_timeout;
+    int64_t m_recv_timeout;
+    int64_t m_send_timeout;
     // lon::scheduler::Scheduler *m_ioscheculer;
 };
 
@@ -39,15 +45,19 @@ class FdManager
 {
   public:
     using MutexType = thread::RWMutex;
-    FdManager();
+    FdManager(int size = 64);
     virtual ~FdManager();
 
     Fd::Ptr get(int fd, bool auto_create = false);
+    void del(int fd);
 
   private:
     MutexType m_mutex;
     std::vector<Fd::Ptr> m_fds;
+    int m_size;
 };
+
+#define FDMGR lon::util::Singleton<lon::hook::FdManager>::Instance()
 
 } // namespace hook
 } // namespace lon

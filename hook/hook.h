@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hook/fd.h"
 #include "scheduler/ioscheduler.h"
 #include "util/util.h"
 #include <dlfcn.h>
@@ -7,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 #include <unistd.h>
 
 namespace lon
@@ -27,6 +29,11 @@ class Hook
 
 extern "C"
 {
+#define CHECK_HOOK(funptr, ...)                                                                    \
+    if (!lon::util::HookState::isEnable())                                                         \
+    {                                                                                              \
+        return funptr(__VA_ARGS__);                                                                \
+    }
     // sleep相关api
     typedef unsigned int (*sleep_fun)(unsigned int seconds);
     extern sleep_fun sleep_f;

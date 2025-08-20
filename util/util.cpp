@@ -221,9 +221,15 @@ uint64_t getCurrentMs()
 
 uint64_t getCurrentUs()
 {
+#ifdef USE_HIGH_PRECISION_TIME
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec * 1000 * 1000ul + ts.tv_nsec / 1000;
+#else
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     return tv.tv_sec * 1000 * 1000ul + tv.tv_usec;
+#endif
 }
 
 uint32_t getThreadId() { return syscall(SYS_gettid); }
