@@ -21,3 +21,6 @@ logs:
             level: debug
 fiber:
       stack_size: 131072
+tcp:
+      connect:
+            timeout: 3000

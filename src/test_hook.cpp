@@ -1,6 +1,8 @@
 #include "config/config.h"
 #include "hook/hook.h"
+#include <arpa/inet.h>
 #include <chrono>
+#include <netinet/in.h>
 #include <thread>
 
 void test_sleep()
@@ -66,12 +68,59 @@ void test_ioscheduler_reschedule()
     // });
 }
 
+void test_socket()
+{
+    auto io = std::make_shared<lon::scheduler::IOScheduler>(
+        1, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+    io->schedule([]() {
+        int fd = socket(AF_INET, SOCK_STREAM, 0);
+        LON_INFO(LON_LOG_ROOT) << "socket fd = " << fd;
+        LON_ASSERT(fd != -1);
+        // fcntl(fd, F_SETFL, O_NONBLOCK);
+        sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port   = htons(80);
+        inet_pton(AF_INET, "182.61.201.211", &addr.sin_addr.s_addr);
+
+        int ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
+        LON_INFO(LON_LOG_ROOT) << "connect ret = " << ret << " ,errno=" << errno;
+        if (ret)
+        {
+            LON_ERROR(LON_LOG_ROOT) << "connect error";
+            return;
+        }
+
+        const char *data = "GET / HTTP/1.0\r\n\r\n";
+        ret              = send(fd, data, strlen(data), 0);
+        LON_INFO(LON_LOG_ROOT) << "send ret = " << ret << " ,errno=" << errno;
+        if (ret <= 0)
+        {
+            LON_ERROR(LON_LOG_ROOT) << "send error";
+            return;
+        }
+
+        std::string buf;
+        buf.resize(4096);
+        ret = recv(fd, &buf[0], buf.size(), 0);
+        LON_INFO(LON_LOG_ROOT) << "recv ret = " << ret << " ,errno=" << errno;
+        if (ret <= 0)
+        {
+            LON_ERROR(LON_LOG_ROOT) << "recv error";
+            return;
+        }
+        buf.resize(ret);
+        LON_INFO(LON_LOG_ROOT) << "recv = " << buf;
+    });
+}
+
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
 
-    test_sleep();
+    // test_sleep();
     // test_ioscheduler_reschedule();
+    test_socket();
     // sleep(1);
     // usleep(10000);
 

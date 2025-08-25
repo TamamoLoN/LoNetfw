@@ -63,6 +63,17 @@ struct timerinfo
     int canceled = 0;
 };
 
+/*
+ * 	fd 			 	文件描述符
+ * 	fun				原始函数
+ *	hook_name	    hook的函数名称
+ *	event			事件
+ *	timeout_type	超时时间类型
+ *	args			可变参数
+ *
+ * 	例如：return io(fd, read_f, "read", lon::scheduler::IOScheduler::Event::READ,
+ *                  lon::hook::Fd::TimeoutType::READ, buf, count);
+ */
 template <typename OrgFun, typename... Args>
 static ssize_t io(int fd, OrgFun fun, const char *hook_name,
                   lon::scheduler::IOScheduler::Event event, lon::hook::Fd::TimeoutType timeout_type,
@@ -105,7 +116,7 @@ retry:
         lon::scheduler::Timer::Ptr timer = nullptr;
         std::weak_ptr<timerinfo> w_tinfo(tinfo);
 
-        if (timeout != -1)
+        if (timeout >= 0)
         {
             timer = ios->addConditionTimer(
                 timeout,
@@ -125,7 +136,7 @@ retry:
         if (rt)
         {
 
-            LON_ERROR(LON_LOG_ROOT) << hook_name << "addEvent(" << fd << ", " << event << ")";
+            LON_ERROR(LON_LOG_ROOT) << hook_name << "io::addEvent(" << fd << ", " << event << ")";
 
             if (timer)
             {
@@ -218,14 +229,103 @@ extern "C"
         return fd;
     }
 
-    // int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
-    // {
-    //     if (!lon::util::HookState::isEnable())
-    //     {
-    //         return connect_f(sockfd, addr, addrlen);
-    //     }
-    //     return 0;
-    // }
+    int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
+                             int64_t timeout_ms)
+    {
+        CHECK_HOOK(connect_f, sockfd, addr, addrlen);
+        auto fd_obj = FDMGR.get(sockfd);
+        if (fd_obj == nullptr || fd_obj->isClose())
+        {
+            errno = EBADF;
+            return -1;
+        }
+        if (!fd_obj->isSocket())
+        {
+            return connect_f(sockfd, addr, addrlen);
+        }
+        if (fd_obj->getUserNonBlock())
+        {
+            return connect_f(sockfd, addr, addrlen);
+        }
+
+        int ret = connect_f(sockfd, addr, addrlen);
+        if (ret == 0)
+        {
+            return 0;
+        }
+        else if (ret != -1 || errno != EINPROGRESS)
+        {
+            return ret;
+        }
+
+        auto ios                         = lon::scheduler::IOScheduler::getThis();
+        lon::scheduler::Timer::Ptr timer = nullptr;
+        auto tinfo                       = std::make_shared<timerinfo>();
+        std::weak_ptr<timerinfo> w_tinfo(tinfo);
+
+        if (timeout_ms >= 0)
+        {
+            timer = ios->addConditionTimer(
+                timeout_ms,
+                [w_tinfo, sockfd, ios]() {
+                    auto t = w_tinfo.lock();
+                    if (!t || t->canceled)
+                    {
+                        return;
+                    }
+                    t->canceled = ETIMEDOUT;
+                    ios->cancelEvent(sockfd, lon::scheduler::IOScheduler::Event::WRITE);
+                },
+                w_tinfo);
+        }
+
+        int rt = ios->addEvent(sockfd, lon::scheduler::IOScheduler::Event::WRITE);
+        if (rt)
+        {
+            LON_ERROR(LON_LOG_ROOT) << "connect_with_timeout::addEvent(" << sockfd << ", WRITE)";
+
+            if (timer)
+            {
+                timer->cancel();
+            }
+            return -1;
+        }
+        else
+        {
+            lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
+            if (timer)
+            {
+                timer->cancel();
+            }
+            if (tinfo->canceled)
+            {
+                errno = tinfo->canceled;
+                return -1;
+            }
+        }
+        int error     = 0;
+        socklen_t len = sizeof(int);
+        if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
+        {
+            return -1;
+        }
+        if (!error)
+        {
+            return 0;
+        }
+        else
+        {
+            errno = error;
+            return -1;
+        }
+    }
+
+    int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+    {
+        return connect_with_timeout(
+            sockfd, addr, addrlen,
+            lon::config::ConfigInitter::Instance().config_tcp_timeout->getData());
+    }
 
     int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
     {
@@ -313,8 +413,8 @@ extern "C"
     int close(int fd)
     {
         CHECK_HOOK(close_f, fd)
-        auto fd_ptr = FDMGR.get(fd);
-        if (fd_ptr)
+        auto fd_obj = FDMGR.get(fd);
+        if (fd_obj)
         {
             auto ios = lon::scheduler::IOScheduler::getThis();
             ios->cancelAll(fd);
@@ -325,15 +425,53 @@ extern "C"
 
     int fcntl(int fd, int cmd, ... /* arg */)
     {
-        // CHECK_HOOK(fcntl_f, fd, cmd, )
         va_list args;
         va_start(args, cmd);
         switch (cmd)
         {
+        case F_SETFL:
+        {
+            int arg = va_arg(args, int);
+            va_end(args);
+            auto fd_obj = FDMGR.get(fd);
+            if (fd_obj == nullptr || !fd_obj->isSocket() || fd_obj->isClose())
+            {
+                return fcntl_f(fd, cmd, arg);
+            }
+            fd_obj->setUserNonBlock(arg & O_NONBLOCK);
+            if (fd_obj->getSysNonBlock())
+            {
+                arg |= O_NONBLOCK;
+            }
+            else
+            {
+                arg &= ~O_NONBLOCK;
+            }
+            return fcntl_f(fd, cmd, arg);
+        }
+        break;
+        case F_GETFL:
+        {
+            va_end(args);
+            int arg     = fcntl_f(fd, cmd);
+            auto fd_obj = FDMGR.get(fd);
+            if (fd_obj == nullptr || !fd_obj->isSocket() || fd_obj->isClose())
+            {
+                return arg;
+            }
+            if (fd_obj->getUserNonBlock())
+            {
+                return arg | O_NONBLOCK;
+            }
+            else
+            {
+                return arg & ~O_NONBLOCK;
+            }
+        }
+        break;
         case F_DUPFD:
         case F_DUPFD_CLOEXEC:
         case F_SETFD:
-        case F_SETFL:
         case F_SETOWN:
         case F_SETSIG:
         case F_SETLEASE:
@@ -346,7 +484,6 @@ extern "C"
         }
         break;
         case F_GETFD:
-        case F_GETFL:
         case F_GETOWN:
         case F_GETSIG:
         case F_GETLEASE:
@@ -382,30 +519,49 @@ extern "C"
         }
     }
 
-    // int ioctl(int fd, unsigned long request, ...)
-    // {
-    //     if (!lon::util::HookState::isEnable())
-    //     {
-    //         return ioctl_f(fd, request, ...);
-    //     }
-    //     return 0;
-    // }
+    int ioctl(int fd, unsigned long request, ...)
+    {
+        va_list args;
+        va_start(args, request);
+        void *arg = va_arg(args, void *);
+        va_end(args);
 
-    // int getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen)
-    // {
-    //     if (!lon::util::HookState::isEnable())
-    //     {
-    //         return getsockopt_f(sockfd, level, optname, optval, optlen);
-    //     }
-    //     return 0;
-    // }
+        if (request == FIONBIO)
+        {
+            bool is_user_nonblock = !!*(int *)arg;
+            auto fd_obj           = FDMGR.get(fd);
+            if (fd_obj == nullptr || !fd_obj->isSocket() || fd_obj->isClose())
+            {
+                return ioctl_f(fd, request, arg);
+            }
+            fd_obj->setUserNonBlock(is_user_nonblock);
+        }
+        return ioctl_f(fd, request, arg);
+    }
 
-    // int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)
-    // {
-    //     if (!lon::util::HookState::isEnable())
-    //     {
-    //         return setsockopt_f(sockfd, level, optname, optval, optlen);
-    //     }
-    //     return 0;
-    // }
+    int getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen)
+    {
+        return getsockopt_f(sockfd, level, optname, optval, optlen);
+    }
+
+    int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen)
+    {
+        CHECK_HOOK(setsockopt_f, sockfd, level, optname, optval, optlen);
+        if (level == SOL_SOCKET)
+        {
+            if (optname == SO_RCVTIMEO || optname == SO_SNDTIMEO)
+            {
+                auto fd_obj = FDMGR.get(sockfd);
+                if (fd_obj)
+                {
+                    const timeval *tv = (const timeval *)optval;
+                    lon::hook::Fd::TimeoutType type =
+                        (optname == SO_RCVTIMEO ? lon::hook::Fd::TimeoutType::READ
+                                                : lon::hook::Fd::TimeoutType::WRITE);
+                    fd_obj->setTimeout(type, tv->tv_sec * 1000 + tv->tv_usec / 1000);
+                }
+            }
+        }
+        return setsockopt_f(sockfd, level, optname, optval, optlen);
+    }
 }

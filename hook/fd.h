@@ -14,14 +14,14 @@ class Fd : public std::enable_shared_from_this<Fd>
   public:
     using Ptr         = std::shared_ptr<Fd>;
     using TimeoutType = scheduler::IOScheduler::Event;
-    Fd();
+    Fd(int fd);
     virtual ~Fd() = default;
     bool init();
     bool isInit() const;
     bool isSocket() const;
     bool isOpen() const;
     bool isClose() const;
-    bool close();
+    // bool close();
     void setSysNonBlock(bool is_sys_nonblock);
     void setUserNonBlock(bool is_user_nonblock);
     bool getSysNonBlock() const;
