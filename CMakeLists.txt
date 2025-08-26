@@ -56,6 +56,7 @@ function(add_build_target targetname)
                             config 
                             scheduler
                             hook
+                            socket
                             yaml-cpp
                             dl
                             ) 
@@ -70,6 +71,7 @@ add_subdirectory(fiber)
 add_subdirectory(thread)
 add_subdirectory(scheduler)
 add_subdirectory(hook)
+add_subdirectory(socket)
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
                  )
@@ -95,3 +97,5 @@ add_build_target(test_scheduler)
 add_build_target(test_ioscheduler)
 
 add_build_target(test_hook)
+
+add_build_target(test_socket)
