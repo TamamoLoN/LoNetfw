@@ -14,5 +14,5 @@ add_library(socket SHARED
             ${SOCKET_SRCS}
             )
 
-target_link_libraries(socket PRIVATE util)
+target_link_libraries(socket PRIVATE util log)
 target_include_directories(socket PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
