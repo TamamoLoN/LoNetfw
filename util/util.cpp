@@ -86,7 +86,7 @@ void printYamlString(const YAML::Node &node, int layer)
     }
     else if (node.IsSequence())
     {
-        for (int cnt = 0; cnt < node.size(); cnt++)
+        for (int cnt = 0; cnt < node.size(); ++cnt)
         {
             std::stringstream ss;
             ss << std::string(layer * 2, ' ') << cnt << "-" << node[cnt].Type() << "-" << layer
@@ -132,7 +132,7 @@ void getColorStr(std::string &str, Color color)
 std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::string &str)
 {
     std::vector<std::unordered_map<std::string, uint8_t>> res;
-    for (int i = 0; i < str.size(); i++)
+    for (int i = 0; i < str.size(); ++i)
     {
         if (str[i] != '%')
         {
@@ -140,7 +140,7 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
             while (str[i] != '%' && i < str.size())
             {
                 temp += str[i];
-                i++;
+                ++i;
             }
             std::unordered_map<std::string, uint8_t> m;
             m[temp] = 0;
@@ -158,7 +158,7 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
                     while (str[i] != '}' && i < str.size())
                     {
                         temp += str[i];
-                        i++;
+                        ++i;
                     }
                     if (i >= str.size())
                     {
@@ -176,7 +176,7 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
                     temp += str[i + 1];
                     m[temp] = 1;
                     res.push_back(m);
-                    i++;
+                    ++i;
                 }
             }
             else

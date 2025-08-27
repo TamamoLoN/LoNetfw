@@ -5,7 +5,7 @@
 void test_log()
 {
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 100000; i++)
+    for (int i = 0; i < 100000; ++i)
     {
         LON_INFO(LON_LOG_NAME("root")) << "test";
     }

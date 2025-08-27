@@ -42,17 +42,17 @@ void test_thread_mutex()
     lon::thread::Mutex mtx;
     lon::thread::RWMutex rwmtx;
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 5; ++i)
     {
         threads.push_back(std::make_shared<lon::thread::Thread>(
             [&]() {
-                for (int j = 0; j < 1000000; j++)
+                for (int j = 0; j < 1000000; ++j)
                 {
                     // lon::thread::Mutex::Lock lock(mtx);
                     // lon::thread::RWMutex::RdLock lock(rwmtx);
                     lon::thread::RWMutex::WrLock lock(rwmtx);
                     // LON_INFO(LON_LOG_ROOT) << cnt;
-                    cnt++;
+                    ++cnt;
                 }
             },
             "thread_" + std::to_string(i)));
@@ -72,7 +72,7 @@ void test_thread_mutex_log()
     auto start = std::chrono::high_resolution_clock::now();
 
     int k = 0;
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 1; ++i)
     {
         auto t1 = std::make_shared<lon::thread::Thread>(
             [&]() {
@@ -81,7 +81,7 @@ void test_thread_mutex_log()
                 {
                     // lon::thread::Mutex::Lock lock(mtx);
                     LON_INFO(LON_LOG_NAME("root")) << "*************************************";
-                    cnt++;
+                    ++cnt;
                 }
             },
             "thread_" + std::to_string(k++));

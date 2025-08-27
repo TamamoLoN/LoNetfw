@@ -53,7 +53,7 @@ void Scheduler::start()
     m_stopping = false;
     LON_ASSERT(m_threads.empty());
     m_threads.resize(m_threads_count);
-    for (int cnt = 0; cnt < m_threads_count; cnt++)
+    for (int cnt = 0; cnt < m_threads_count; ++cnt)
     {
         m_threads[cnt].reset(new thread::Thread(
             std::bind(&Scheduler::run, this), m_name + "_" + util::lexical_cast<std::string>(cnt)));
@@ -101,7 +101,7 @@ void Scheduler::stop()
         LON_ASSERT(this != getThis());
     }
     m_stopping = true;
-    for (size_t cnt = 0; cnt < m_threads_count; cnt++)
+    for (size_t cnt = 0; cnt < m_threads_count; ++cnt)
     {
         notify();
     }

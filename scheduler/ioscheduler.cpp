@@ -288,7 +288,7 @@ void IOScheduler::idle()
             cbs.clear();
         }
 
-        for (int cnt = 0; cnt < ret; cnt++)
+        for (int cnt = 0; cnt < ret; ++cnt)
         {
             epoll_event &event = events[cnt];
             if (event.data.fd == m_notify_pipe_fd[0])
@@ -356,7 +356,7 @@ void IOScheduler::onTimerInsertAtFront() { notify(); }
 void IOScheduler::contextResize(size_t size)
 {
     m_fd_contexts.resize(size);
-    for (size_t cnt = 0; cnt < m_fd_contexts.size(); cnt++)
+    for (size_t cnt = 0; cnt < m_fd_contexts.size(); ++cnt)
     {
         if (!m_fd_contexts[cnt])
         {

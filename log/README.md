@@ -60,7 +60,7 @@ LON_INFO(LON_LOG_ROOT) << "This is an info log";
 // 带性能测试的日志
 void test_log() {
     auto start = std::chrono::high_resolution_clock::now();
-    for(int i=0; i<100000; i++) {
+    for(int i=0; i<100000; ++i) {
         LON_INFO(LON_LOG_NAME("root")) << "test";
     }
     auto end = std::chrono::high_resolution_clock::now();

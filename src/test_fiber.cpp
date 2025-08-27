@@ -39,7 +39,7 @@ void test_fiber()
 void test_thread_fiber()
 {
     std::vector<lon::thread::Thread::Ptr> threads;
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; ++i)
     {
 
         threads.push_back(std::make_shared<lon::thread::Thread>([]() { test_fiber(); },

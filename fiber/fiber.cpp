@@ -20,7 +20,7 @@ Fiber::Fiber() : m_id(0), m_state(EXEC), m_stack(nullptr)
     {
         throw std::runtime_error("getcontext error\n" + util::backtrace(100, 2, "\t"));
     }
-    s_fiber_count++;
+    ++s_fiber_count;
     // std::cout << "Fiber create: " << m_id << std::endl;
 }
 
@@ -33,7 +33,7 @@ Fiber::Fiber(std::function<void()> cb, size_t stack_size)
         StackAllocator::deallocate(m_stack);
         throw std::runtime_error("getcontext error\n" + util::backtrace(100, 2, "\t"));
     }
-    s_fiber_count++;
+    ++s_fiber_count;
     m_ctx.uc_link          = nullptr;
     m_ctx.uc_stack.ss_sp   = m_stack;
     m_ctx.uc_stack.ss_size = m_stack_size;

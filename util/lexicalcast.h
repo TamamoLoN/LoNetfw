@@ -61,7 +61,7 @@ template <typename T> class LexicalCast<std::vector<T>, std::string>
     {
         YAML::Node node = YAML::Load(source);
         std::vector<T> res;
-        for (int cnt = 0; cnt < node.size(); cnt++)
+        for (int cnt = 0; cnt < node.size(); ++cnt)
         {
             std::stringstream ss;
             ss << node[cnt];
@@ -77,7 +77,7 @@ template <typename T> class LexicalCast<std::string, std::vector<T>>
     std::string operator()(const std::vector<T> &source) const
     {
         YAML::Node node;
-        for (int cnt = 0; cnt < source.size(); cnt++)
+        for (int cnt = 0; cnt < source.size(); ++cnt)
         {
             node.push_back(LexicalCast<std::string, T>()(source[cnt]));
         }
@@ -94,7 +94,7 @@ template <typename T> class LexicalCast<std::list<T>, std::string>
     {
         YAML::Node node = YAML::Load(source);
         std::list<T> res;
-        for (int cnt = 0; cnt < node.size(); cnt++)
+        for (int cnt = 0; cnt < node.size(); ++cnt)
         {
             std::stringstream ss;
             ss << node[cnt];
@@ -127,7 +127,7 @@ template <typename T> class LexicalCast<std::set<T>, std::string>
     {
         YAML::Node node = YAML::Load(source);
         std::set<T> res;
-        for (int cnt = 0; cnt < node.size(); cnt++)
+        for (int cnt = 0; cnt < node.size(); ++cnt)
         {
             std::stringstream ss;
             ss << node[cnt];
@@ -160,7 +160,7 @@ template <typename T> class LexicalCast<std::unordered_set<T>, std::string>
     {
         YAML::Node node = YAML::Load(source);
         std::unordered_set<T> res;
-        for (int cnt = 0; cnt < node.size(); cnt++)
+        for (int cnt = 0; cnt < node.size(); ++cnt)
         {
             std::stringstream ss;
             ss << node[cnt];
