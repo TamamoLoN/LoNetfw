@@ -25,6 +25,8 @@ class Hook
     static void enable();
     static void disable();
 };
+static auto s_hook = Hook::Instance();
+
 } // namespace hook
 } // namespace lon
 

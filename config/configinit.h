@@ -132,7 +132,7 @@ struct ConfigInitter
 
 //全局变量，使其在main函数之前初始化
 // static ConfigLogChanged __log_changed;//这样写会被初始化多次
-auto g_conifg_initter = ConfigInitter::Instance();
+static auto g_conifg_initter = ConfigInitter::Instance();
 
 } // namespace config
 template <> class util::LexicalCast<config::ConfigLogAppender, std::string>

@@ -53,8 +53,6 @@ void Hook::enable() { util::HookState::enable(); }
 
 void Hook::disable() { util::HookState::disable(); }
 
-auto s_hook = Hook::Instance();
-
 } // namespace hook
 } // namespace lon
 
