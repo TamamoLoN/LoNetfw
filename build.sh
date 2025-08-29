@@ -35,3 +35,11 @@ cd $dir_name
 cmake ..
 make
 # make install
+
+if [ $? -eq 0 ]; then
+    echo "编译成功"
+else
+    echo "编译失败"
+    exit -1
+fi
+clear
