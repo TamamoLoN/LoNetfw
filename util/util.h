@@ -2,6 +2,7 @@
 
 #include "util/endian.h"
 #include "util/lexicalcast.h"
+#include "util/macro.h"
 #include "util/noncopyable.h"
 #include "util/singleton.h"
 #include "yaml-cpp/yaml.h"

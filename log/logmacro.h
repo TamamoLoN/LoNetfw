@@ -43,7 +43,7 @@
 #define LON_LOG_NAME(name) LON_LOG_MANAGER.getLogger(name, true)
 
 #define LON_ASSERT(arg)                                                                            \
-    if (!(arg))                                                                                    \
+    if (LON_UNLIKELY(!(arg)))                                                                      \
     {                                                                                              \
         LON_ERROR(LON_LOG_ROOT) << "ASSERTATION: " << #arg << "\nbacktrace: \n"                    \
                                 << lon::util::backtrace(100, 2, "\t");                             \
@@ -51,7 +51,7 @@
     }
 
 #define LON_ASSERT_(arg, str)                                                                      \
-    if (!(arg))                                                                                    \
+    if ((LON_UNLIKELY(!(arg))))                                                                    \
     {                                                                                              \
         LON_ERROR(LON_LOG_ROOT) << "ASSERTATION: " << #arg << "\n"                                 \
                                 << str << "\nbacktrace: \n"                                        \

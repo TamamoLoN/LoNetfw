@@ -11,7 +11,7 @@
 
 namespace lon
 {
-namespace socket
+namespace net
 {
 template <typename T> static T createMask(uint32_t bits) { return (1 << sizeof(T) * 8 - bits) - 1; }
 
@@ -35,18 +35,19 @@ class Address
     virtual ~Address() = default;
 
     static Address::Ptr create(const sockaddr *addr, socklen_t addr_len);
+    // family = AF_UNSPEC为任意类型， 默认为IPV4
     static bool parse(std::vector<Address::Ptr> &addrs, const std::string &host,
-                      int family = AF_UNSPEC, int type = 0, int protocol = 0);
-    static bool parse(Address::Ptr &addr, const std::string &host, int family = AF_UNSPEC,
+                      int family = AF_INET, int type = 0, int protocol = 0);
+    static bool parse(Address::Ptr &addr, const std::string &host, int family = AF_INET,
                       int type = 0, int protocol = 0);
     static bool parseIPAddress(std::shared_ptr<IPAddress> &addr, const std::string &host,
-                               int family = AF_UNSPEC, int type = 0, int protocol = 0);
+                               int family = AF_INET, int type = 0, int protocol = 0);
     // getInterfaceAddresses： uint32_t:子网掩码长度
     static bool
     getInterfaceAddresses(std::multimap<std::string, std::pair<Address::Ptr, uint32_t>> &addrs,
-                          int family = AF_UNSPEC);
+                          int family = AF_INET);
     static bool getInterfaceAddresses(std::vector<std::pair<Address::Ptr, uint32_t>> &addrs,
-                                      const std::string &interface, int family = AF_UNSPEC);
+                                      const std::string &interface, int family = AF_INET);
 
     int getFamily() const;
     virtual sockaddr *getAddr() const                    = 0;
@@ -68,6 +69,7 @@ class UnixAddress : public Address
     virtual ~UnixAddress() = default;
 
     sockaddr *getAddr() const override;
+    void setAddrlen(socklen_t len);
     socklen_t getAddrLen() const override;
     std::ostream &insert(std::ostream &os) const override;
 
@@ -157,5 +159,5 @@ class IPv6Address : public IPAddress
     sockaddr_in6 m_addr;
 };
 
-} // namespace socket
+} // namespace net
 } // namespace lon

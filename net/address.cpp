@@ -1,8 +1,8 @@
-#include "socket/address.h"
+#include "net/address.h"
 
 namespace lon
 {
-namespace socket
+namespace net
 {
 Address::Ptr Address::create(const sockaddr *addr, socklen_t addr_len)
 {
@@ -147,6 +147,7 @@ bool Address::getInterfaceAddresses(
             Address::Ptr a      = nullptr;
             if (family != AF_UNSPEC && family != next->ifa_addr->sa_family)
             {
+                next = next->ifa_next;
                 continue;
             }
             switch (next->ifa_addr->sa_family)
@@ -317,6 +318,8 @@ UnixAddress::UnixAddress(const std::string &path)
 }
 
 sockaddr *UnixAddress::getAddr() const { return (sockaddr *)&m_addr; }
+
+void UnixAddress::setAddrlen(socklen_t len) { m_addr_len = len; }
 
 socklen_t UnixAddress::getAddrLen() const { return m_addr_len; }
 
@@ -528,5 +531,5 @@ uint16_t IPv6Address::getPort() const { return util::byteswapOnLittleEndian(m_ad
 
 void IPv6Address::setPort(uint16_t port) { m_addr.sin6_port = util::byteswapOnLittleEndian(port); }
 
-} // namespace socket
+} // namespace net
 } // namespace lon

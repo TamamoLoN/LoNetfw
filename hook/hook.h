@@ -50,6 +50,8 @@ extern "C"
     extern socket_fun socket_f;
 
     typedef int (*connect_fun)(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+    extern int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
+                                    int64_t timeout_ms);
     extern connect_fun connect_f;
 
     typedef int (*accept_fun)(int sockfd, struct sockaddr *addr, socklen_t *addrlen);

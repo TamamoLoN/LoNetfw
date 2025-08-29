@@ -35,9 +35,9 @@ IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name
 IOScheduler::~IOScheduler()
 {
     stop();
-    ::close(m_epoll_fd);
-    ::close(m_notify_pipe_fd[0]);
-    ::close(m_notify_pipe_fd[1]);
+    close(m_epoll_fd);
+    close(m_notify_pipe_fd[0]);
+    close(m_notify_pipe_fd[1]);
 
     for (auto &it : m_fd_contexts)
     {

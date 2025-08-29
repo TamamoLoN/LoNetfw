@@ -8,11 +8,11 @@ include_directories(${CMAKE_SOURCE_DIR}
                     ${YAML_INCLUDE_PATH}
                     )
 
-file(GLOB SOCKET_SRCS ${CMAKE_SOURCE_DIR}/socket/*.cpp)
+file(GLOB NET_SRCS ${CMAKE_SOURCE_DIR}/net/*.cpp)
 
-add_library(socket SHARED
-            ${SOCKET_SRCS}
+add_library(net SHARED
+            ${NET_SRCS}
             )
 
-target_link_libraries(socket PRIVATE util log)
-target_include_directories(socket PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+target_link_libraries(net PRIVATE util log hook dl)
+target_include_directories(net PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
