@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.1)
 set(PROJECT_NAME LoNetfw)
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/${PROJECT_NAME})
 project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -51,7 +53,7 @@ endfunction()
 
 function(add_build_target targetname)
     add_executable(${targetname}
-                ${CMAKE_SOURCE_DIR}/src/${targetname}.cpp
+                ${CMAKE_SOURCE_DIR}/tests/${targetname}.cpp
                 )
     if(MODULARIZATION)
         target_link_libraries(${targetname} PRIVATE 
@@ -68,7 +70,7 @@ function(add_build_target targetname)
                                 ) 
     else()
         target_link_libraries(${targetname} PRIVATE 
-                                    lonetfw
+                                    ${PROJECT_NAME}
                                     yaml-cpp
                                     dl
                                     ) 
@@ -102,11 +104,11 @@ else()
         hook/*.cpp
         net/*.cpp
     )
-    add_library(lonetfw SHARED ${MODULE_SRCS})
-    target_link_libraries(lonetfw PRIVATE pthread dl yaml-cpp) 
+    add_library(${PROJECT_NAME} SHARED ${MODULE_SRCS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE pthread dl yaml-cpp) 
     if(USE_ABSOLUTE_PATH)
     else()
-        force_redefine_file_macro_for_sources(lonetfw)
+        force_redefine_file_macro_for_sources(${PROJECT_NAME})
     endif()
 endif()
 
@@ -131,3 +133,26 @@ if(BUILT_TESTS)
     add_build_target(test_hook)
     add_build_target(test_socket)
 endif()
+
+install(TARGETS ${PROJECT_NAME}
+        ARCHIVE DESTINATION lib 
+        LIBRARY DESTINATION lib 
+        RUNTIME DESTINATION bin)
+
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin)
+
+install(DIRECTORY 
+        util
+        fiber
+        thread
+        log
+        config
+        scheduler
+        hook
+        net
+        DESTINATION include
+        FILES_MATCHING
+        PATTERN "*.h"
+        PATTERN "*.hpp"
+)
