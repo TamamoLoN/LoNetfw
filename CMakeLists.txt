@@ -16,6 +16,11 @@ add_definitions(-g -LINUX_X86)
 
 ### options ###
 option(USE_HIGH_PRECISION_TIME "Enable high precision time" ON)
+option(USE_ABSOLUTE_PATH "Enable show absolute path in log" OFF)
+option(MODULARIZATION 
+        "Enable modularization[module hook must be used in src or main, if not then some modules may can not be hooked sucessfully]" 
+        OFF)
+option(BUILT_TESTS "Enable to build tests" ON)
 ###############
 
 if(USE_HIGH_PRECISION_TIME)
@@ -48,30 +53,63 @@ function(add_build_target targetname)
     add_executable(${targetname}
                 ${CMAKE_SOURCE_DIR}/src/${targetname}.cpp
                 )
-    target_link_libraries(${targetname} PRIVATE 
-                            util 
-                            fiber
-                            thread
-                            log 
-                            config 
-                            scheduler
-                            hook
-                            net
-                            yaml-cpp
-                            dl
-                            ) 
-    # force_redefine_file_macro_for_sources(${targetname})
+    if(MODULARIZATION)
+        target_link_libraries(${targetname} PRIVATE 
+                                util 
+                                fiber
+                                thread
+                                log 
+                                config 
+                                scheduler
+                                hook
+                                net
+                                yaml-cpp
+                                dl
+                                ) 
+    else()
+        target_link_libraries(${targetname} PRIVATE 
+                                    lonetfw
+                                    yaml-cpp
+                                    dl
+                                    ) 
+    endif()
+    if(USE_ABSOLUTE_PATH)
+    else()
+        force_redefine_file_macro_for_sources(${targetname})
+    endif()
+    
 endfunction()
 
-add_subdirectory(third_party/yaml-cpp)
-add_subdirectory(util)
-add_subdirectory(log)
-add_subdirectory(config)
-add_subdirectory(fiber)
-add_subdirectory(thread)
-add_subdirectory(scheduler)
-add_subdirectory(hook)
-add_subdirectory(net)
+if(MODULARIZATION)
+    add_subdirectory(third_party/yaml-cpp)
+    add_subdirectory(util)
+    add_subdirectory(log)
+    add_subdirectory(config)
+    add_subdirectory(fiber)
+    add_subdirectory(thread)
+    add_subdirectory(scheduler)
+    add_subdirectory(hook)
+    add_subdirectory(net)
+else()
+    add_subdirectory(third_party/yaml-cpp)
+    file(GLOB MODULE_SRCS 
+        util/*.cpp
+        log/*.cpp
+        config/*.cpp
+        fiber/*.cpp
+        thread/*.cpp
+        scheduler/*.cpp
+        hook/*.cpp
+        net/*.cpp
+    )
+    add_library(lonetfw SHARED ${MODULE_SRCS})
+    target_link_libraries(lonetfw PRIVATE pthread dl yaml-cpp) 
+    if(USE_ABSOLUTE_PATH)
+    else()
+        force_redefine_file_macro_for_sources(lonetfw)
+    endif()
+endif()
+
 
 link_directories(${CMAKE_SOURCE_DIR}/lib
                  )
@@ -82,20 +120,14 @@ include_directories(${CMAKE_SOURCE_DIR}
 		    ${YAML_INCLUDE_PATH}
                     )
 
-add_build_target(test_log)
-
-add_build_target(test_config)
-
-add_build_target(test_thread)
-
-add_build_target(test_util)
-
-add_build_target(test_fiber)
-
-add_build_target(test_scheduler)
-
-add_build_target(test_ioscheduler)
-
-add_build_target(test_hook)
-
-add_build_target(test_socket)
+if(BUILT_TESTS)
+    add_build_target(test_log)
+    add_build_target(test_config)
+    add_build_target(test_thread)
+    add_build_target(test_util)
+    add_build_target(test_fiber)
+    add_build_target(test_scheduler)
+    add_build_target(test_ioscheduler)
+    add_build_target(test_hook)
+    add_build_target(test_socket)
+endif()

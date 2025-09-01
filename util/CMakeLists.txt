@@ -16,3 +16,8 @@ add_library(util SHARED
 
 target_include_directories(util PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(util PRIVATE yaml-cpp pthread dl)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(util)
+endif()

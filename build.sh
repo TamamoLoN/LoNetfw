@@ -13,6 +13,7 @@
 # mkdir build
 dir_name="build"
 bin_name="bin"
+cpu_core=$(nproc)
 
 # 检查目录是否存在，如果不存在则创建
 if [ -d "$dir_name" ]; then
@@ -32,8 +33,9 @@ else
 fi
 
 cd $dir_name
+echo "CPU核心数为"$cpu_core", 开始编译..."
 cmake ..
-make
+make -j$cpu_core
 # make install
 
 if [ $? -eq 0 ]; then

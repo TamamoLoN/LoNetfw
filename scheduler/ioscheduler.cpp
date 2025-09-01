@@ -243,6 +243,7 @@ bool IOScheduler::stopping(uint64_t &timeout)
 
 void IOScheduler::idle()
 {
+    LON_DEBUG(LON_LOG_ROOT) << "idle";
     epoll_event *events = new epoll_event[64]();
     std::shared_ptr<epoll_event> shared_events(events, [](epoll_event *ptr) {
         delete[] ptr;
@@ -344,9 +345,10 @@ void IOScheduler::idle()
                 --m_waitting_events_count;
             }
         }
-
+        //减少t_fiber引用计数，防止idle fiber退出时，持有太多t_fiber的引用
         auto &&cur = std::move(fiber::Fiber::getThis());
         cur->swapOut(Scheduler::getMainFiber());
+        // fiber::Fiber::yieldToHold(Scheduler::getMainFiber());
         // LON_WARN(LON_LOG_ROOT) << fiber::Fiber::getThis()->getFiberId();
     }
 }

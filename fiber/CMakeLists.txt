@@ -16,3 +16,8 @@ add_library(fiber SHARED
 
 target_link_libraries(fiber PRIVATE util)
 target_include_directories(fiber PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(fiber)
+endif()

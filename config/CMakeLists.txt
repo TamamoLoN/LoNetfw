@@ -16,3 +16,8 @@ add_library(config SHARED
 
 target_link_libraries(config PRIVATE util thread log)
 target_include_directories(config PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(config)
+endif()

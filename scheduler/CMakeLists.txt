@@ -16,3 +16,8 @@ add_library(scheduler SHARED
 
 target_link_libraries(scheduler PRIVATE util thread fiber log config)
 target_include_directories(scheduler PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(scheduler)
+endif()

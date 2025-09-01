@@ -16,3 +16,8 @@ add_library(hook SHARED
 
 target_link_libraries(hook PRIVATE util thread scheduler dl)
 target_include_directories(hook PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(hook)
+endif()

@@ -16,3 +16,8 @@ add_library(thread SHARED
 
 target_link_libraries(thread PRIVATE util pthread)
 target_include_directories(thread PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(thread)
+endif()

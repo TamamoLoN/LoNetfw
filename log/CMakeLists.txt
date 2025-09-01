@@ -16,3 +16,8 @@ add_library(log SHARED
 
 target_link_libraries(log PRIVATE util fiber thread)
 target_include_directories(log PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(log)
+endif()

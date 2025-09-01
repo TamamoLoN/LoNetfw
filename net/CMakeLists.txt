@@ -16,3 +16,8 @@ add_library(net SHARED
 
 target_link_libraries(net PRIVATE util log hook dl)
 target_include_directories(net PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
+if(USE_ABSOLUTE_PATH)
+else()
+    force_redefine_file_macro_for_sources(net)
+endif()
