@@ -1,5 +1,4 @@
-#include "config/config.h"
-#include "log/logger.h"
+#include "lonetfw/lonetfw.h"
 #include <chrono>
 
 void test_log()

@@ -1,7 +1,4 @@
-#include "config/config.h"
-#include "log/logger.h"
-#include "util/util.h"
-#include <assert.h>
+#include "lonetfw/lonetfw.h"
 
 void test_backtrace()
 {

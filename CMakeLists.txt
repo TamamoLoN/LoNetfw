@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-set(PROJECT_NAME LoNetfw)
+set(PROJECT_NAME lonetfw)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/${PROJECT_NAME})
 project(${PROJECT_NAME})
 
@@ -19,9 +19,10 @@ add_definitions(-g -LINUX_X86)
 ### options ###
 option(USE_HIGH_PRECISION_TIME "Enable high precision time" ON)
 option(USE_ABSOLUTE_PATH "Enable show absolute path in log" OFF)
+#当使用MODULARIZATION模块化后，如果想要函数被hook住，请在使用处添加hook/hook.h头文件
 option(MODULARIZATION 
         "Enable modularization[module hook must be used in src or main, if not then some modules may can not be hooked sucessfully]" 
-        OFF)
+        ON)
 option(BUILT_TESTS "Enable to build tests" ON)
 ###############
 
@@ -134,13 +135,25 @@ if(BUILT_TESTS)
     add_build_target(test_socket)
 endif()
 
-install(TARGETS ${PROJECT_NAME}
-        ARCHIVE DESTINATION lib 
-        LIBRARY DESTINATION lib 
-        RUNTIME DESTINATION bin)
-
-install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION bin)
+if(MODULARIZATION)
+    install(TARGETS 
+            util
+            fiber
+            thread
+            log
+            config
+            scheduler
+            hook
+            net
+            ARCHIVE DESTINATION lib 
+            LIBRARY DESTINATION lib 
+            RUNTIME DESTINATION bin)
+else()
+    install(TARGETS ${PROJECT_NAME}
+            ARCHIVE DESTINATION lib 
+            LIBRARY DESTINATION lib 
+            RUNTIME DESTINATION bin)
+endif()
 
 install(DIRECTORY 
         util
@@ -156,3 +169,5 @@ install(DIRECTORY
         PATTERN "*.h"
         PATTERN "*.hpp"
 )
+
+install(FILES lonetfw/lonetfw.h DESTINATION include)

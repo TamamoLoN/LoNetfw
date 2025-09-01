@@ -1,6 +1,4 @@
-#include "config/config.h"
-#include "fiber/fiber.h"
-#include "thread/thread.h"
+#include "lonetfw/lonetfw.h"
 
 void test_fiber()
 {

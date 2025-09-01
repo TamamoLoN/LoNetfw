@@ -1,5 +1,4 @@
-#include "config/config.h"
-#include "scheduler/scheduler.h"
+#include "lonetfw/lonetfw.h"
 
 void test_fiber()
 {
