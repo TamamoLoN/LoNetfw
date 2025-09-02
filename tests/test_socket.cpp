@@ -81,11 +81,11 @@ void test_socket()
     ios->schedule([]() {
         // usleep(1);
         IPAddress::Ptr addr = nullptr;
-        Address::parseIPAddress(addr, "www.baidu.com:80");
+        Address::parseIPAddress(addr, "ifconfig.me:80");
         LON_INFO(LON_LOG_ROOT) << "addr:" << addr->toString();
 
         auto sockfd = Socket::create(addr);
-        if (!sockfd->connect(addr, 1000))
+        if (!sockfd->connect(addr))
         {
             LON_ERROR(LON_LOG_ROOT) << "connect error";
         }
@@ -93,8 +93,11 @@ void test_socket()
         {
             LON_INFO(LON_LOG_ROOT) << "connect ok";
         }
-        std::string buf = "GET / HTTP/1.1\r\n\r\n";
-        int ret         = sockfd->send(buf.data(), buf.size());
+        sockfd->setRecvTimeout(
+            lon::config::ConfigInitter::Instance().config_tcp_timeout->getData());
+        std::string buf =
+            "GET / HTTP/1.1\r\nHost: ifconfig.me\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n";
+        int ret = sockfd->send(buf.data(), buf.size());
         if (ret <= 0)
         {
             LON_ERROR(LON_LOG_ROOT) << "send error";
@@ -105,7 +108,7 @@ void test_socket()
         ret = sockfd->recv(&buf[0], buf.size());
         if (ret <= 0)
         {
-            LON_ERROR(LON_LOG_ROOT) << "recv error";
+            LON_ERROR(LON_LOG_ROOT) << "recv error, ret = " << ret;
             return;
         }
         buf.resize(ret);

@@ -83,7 +83,7 @@ void Socket::setSendTimeout(int64_t timeout)
     struct timeval tv;
     tv.tv_sec  = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
-    setOption(SOL_SOCKET, SO_SNDTIMEO, &tv);
+    setOption(SOL_SOCKET, SO_SNDTIMEO, tv);
 }
 
 int64_t Socket::getRecvTimeout() const
@@ -101,7 +101,7 @@ void Socket::setRecvTimeout(int64_t timeout)
     struct timeval tv;
     tv.tv_sec  = timeout / 1000;
     tv.tv_usec = (timeout % 1000) * 1000;
-    setOption(SOL_SOCKET, SO_RCVTIMEO, &tv);
+    setOption(SOL_SOCKET, SO_RCVTIMEO, tv);
 }
 
 bool Socket::getOption(int level, int optname, void *optval, socklen_t *optlen)
@@ -514,10 +514,10 @@ bool Socket::cancelAll() { return scheduler::IOScheduler::getThis()->cancelAll(m
 void Socket::initSocket()
 {
     int val = 1;
-    setOption(SOL_SOCKET, SO_REUSEADDR, &val);
+    setOption(SOL_SOCKET, SO_REUSEADDR, val);
     if (m_type == SOCK_STREAM)
     {
-        setOption(IPPROTO_TCP, TCP_NODELAY, &val);
+        setOption(IPPROTO_TCP, TCP_NODELAY, val);
     }
 }
 
