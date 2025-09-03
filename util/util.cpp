@@ -287,5 +287,17 @@ void HookState::enable() { t_is_hook_enabled = true; }
 
 void HookState::disable() { t_is_hook_enabled = false; }
 
+uint16_t ZigZag::encode16(int16_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 1)); }
+
+int16_t ZigZag::decode16(uint16_t n) { return (n >> 1) ^ -(n & 1); }
+
+uint32_t ZigZag::encode32(int32_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 1)); }
+
+int32_t ZigZag::decode32(uint32_t n) { return (n >> 1) ^ -(n & 1); }
+
+uint64_t ZigZag::encode64(int64_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 1)); }
+
+int64_t ZigZag::decode64(uint64_t n) { return (n >> 1) ^ -(n & 1); }
+
 } // namespace util
 } // namespace lon

@@ -6,7 +6,7 @@ void test_log()
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 100000; ++i)
     {
-        LON_INFO(LON_LOG_NAME("root")) << "test";
+        LON_DEBUG(LON_LOG_NAME("root")) << "test";
     }
     auto end = std::chrono::high_resolution_clock::now();
 

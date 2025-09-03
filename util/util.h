@@ -97,6 +97,24 @@ class HookState
     static void disable();
 };
 
+class ZigZag
+{
+  public:
+    static uint16_t encode16(int16_t n);
+    static int16_t decode16(uint16_t n);
+    static uint32_t encode32(int32_t n);
+    static int32_t decode32(uint32_t n);
+    static uint64_t encode64(int64_t n);
+    static int64_t decode64(uint64_t n);
+};
+
+class Varint
+{
+  public:
+    static uint32_t encode(int32_t n);
+    static int32_t decode(uint32_t n);
+};
+
 } // namespace util
 
 } // namespace lon

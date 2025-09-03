@@ -150,7 +150,18 @@ void LoggerManager::delLogger(const std::string &name)
     m_loggers.erase(it);
 }
 
-Logger::Ptr LoggerManager::getRoot() { return m_logger_root; }
+Logger::Ptr LoggerManager::getRoot()
+{
+    MutexType::Lock lock(m_mutex);
+    if (m_loggers.find("root") == m_loggers.end())
+    {
+        return m_logger_root;
+    }
+    else
+    {
+        return m_loggers["root"];
+    }
+}
 
 std::string LoggerManager::getYaml()
 {

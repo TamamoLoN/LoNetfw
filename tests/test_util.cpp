@@ -38,6 +38,15 @@ void test_backtrace()
 
 void test_assert() { LON_ASSERT_(1 == 1, "hello world"); }
 
+void test_zigzag()
+{
+    int16_t a         = -1;
+    uint16_t a_encode = lon::util::ZigZag::encode16(a);
+    LON_INFO(LON_LOG_ROOT) << "a: " << a;
+    LON_INFO(LON_LOG_ROOT) << "a_encode: " << a_encode;
+    LON_INFO(LON_LOG_ROOT) << "a_encode decode: " << lon::util::ZigZag::decode16(a_encode);
+}
+
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml("./.config/log.yaml");
@@ -45,5 +54,6 @@ int main(int argc, char const *argv[])
     // test_assert();
     test_parse_log_format();
     test_lexical_cast();
+    test_zigzag();
     return 0;
 }
