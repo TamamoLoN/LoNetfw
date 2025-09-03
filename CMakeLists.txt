@@ -132,7 +132,7 @@ if(BUILT_TESTS)
     add_build_target(test_scheduler)
     add_build_target(test_ioscheduler)
     add_build_target(test_hook)
-    add_build_target(test_socket)
+    add_build_target(test_net)
 endif()
 
 if(MODULARIZATION)
