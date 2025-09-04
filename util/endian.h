@@ -36,11 +36,11 @@ typename std::enable_if<sizeof(T) == sizeof(uint16_t), T>::type byteswap(T value
 #endif
 
 #if LON_ENDIAN == LON_LITTLE_ENDIAN
-template <typename T> T byteswapOnLittleEndian(T t) { return byteswap(t); }
-template <typename T> T byteswapOnBigEndian(T t) { return t; }
+template <typename T> T byteswapToBigEndian(T t) { return byteswap(t); }
+template <typename T> T byteswapToLittleEndian(T t) { return t; }
 #else
-template <typename T> T byteswapOnLittleEndian(T t) { return t; }
-template <typename T> T byteswapOnBigEndian(T t) { return byteswap(t); }
+template <typename T> T byteswapToBigEndian(T t) { return t; }
+template <typename T> T byteswapToLittleEndian(T t) { return byteswap(t); }
 #endif
 
 } // namespace util
