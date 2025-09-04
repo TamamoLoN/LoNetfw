@@ -9,4 +9,5 @@ bin/
 .comate/*
 install/*
 .tmp
+*test*.cpp
 # test*.cpp
