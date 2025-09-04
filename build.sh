@@ -44,4 +44,4 @@ else
     echo "编译失败"
     exit -1
 fi
-clear
+# clear

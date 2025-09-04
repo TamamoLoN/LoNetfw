@@ -2,6 +2,7 @@
 #include "fiber/fiber.h"
 #include "hook/hook.h"
 #include "log/logger.h"
+#include "net/serializer.h"
 #include "net/socket.h"
 #include "scheduler/ioscheduler.h"
 #include "scheduler/scheduler.h"

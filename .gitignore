@@ -8,4 +8,5 @@ bin/
 *a.out
 .comate/*
 install/*
+.tmp
 # test*.cpp

@@ -299,5 +299,58 @@ uint64_t ZigZag::encode64(int64_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 
 
 int64_t ZigZag::decode64(uint64_t n) { return (n >> 1) ^ -(n & 1); }
 
+int8_t Varint::encode16(uint8_t *buf, uint16_t n)
+{
+    uint8_t cnt = 0;
+    if (!buf)
+    {
+        return -1;
+    }
+    while (n > 0b01111111)
+    {
+        //从字节流末尾取出 7 bit 并在最高位增加 1 构成一个字节
+        buf[cnt] = (n & 0b01111111) | 0b10000000;
+        n >>= 7;
+        ++cnt;
+    }
+    // 如果是最后一个字节增加 0
+    buf[cnt] = n;
+    return cnt + 1;
+}
+
+int8_t Varint::encode32(uint8_t *buf, uint32_t n)
+{
+    uint8_t cnt = 0;
+    if (!buf)
+    {
+        return -1;
+    }
+    while (n > 0b01111111)
+    {
+        buf[cnt] = (n & 0b01111111) | 0b10000000;
+        n >>= 7;
+        ++cnt;
+    }
+    buf[cnt] = n;
+    return cnt + 1;
+}
+
+int8_t Varint::encode64(uint8_t *buf, uint64_t n)
+{
+    uint8_t cnt = 0;
+    if (!buf)
+    {
+        return -1;
+    }
+    while (n > 0b01111111)
+    {
+        buf[cnt] = (n & 0b01111111) | 0b10000000;
+        n >>= 7;
+        ++cnt;
+    }
+    buf[cnt] = n;
+    return cnt + 1;
+}
+
 } // namespace util
 } // namespace lon

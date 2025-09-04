@@ -116,6 +116,104 @@ void test_socket()
     });
 }
 
+void test_bytearray()
+{
+    srand(time(nullptr));
+    ByteArray ba;
+    LON_INFO(LON_LOG_ROOT) << "dev endian: "
+                           << ((LON_ENDIAN == LON_LITTLE_ENDIAN) ? "little" : "big");
+    LON_INFO(LON_LOG_ROOT) << "ba endian: " << (ba.isLittleEndian() ? "little" : "big");
+#define XX(type, len, readfun, writefun, node_size)                                                \
+    {                                                                                              \
+        ByteArray ba(node_size);                                                                   \
+        std::vector<type> datas;                                                                   \
+        for (int i = 0; i < len; ++i)                                                              \
+        {                                                                                          \
+            datas.push_back(rand());                                                               \
+        }                                                                                          \
+        for (const auto &it : datas)                                                               \
+        {                                                                                          \
+            ba.writefun(it);                                                                       \
+        }                                                                                          \
+        ba.setPosition(0);                                                                         \
+        for (int i = 0; i < datas.size(); ++i)                                                     \
+        {                                                                                          \
+            auto data = ba.readfun();                                                              \
+            std::stringstream ss;                                                                  \
+            ss << i << " - " << (int)data << " - " << (int)datas[i];                               \
+            LON_ASSERT_(data == datas[i], ss.str());                                               \
+            /*LON_INFO(LON_LOG_ROOT) << i << " - " << (int)data << " - " << (int)datas[i]; */      \
+        }                                                                                          \
+        LON_ASSERT(ba.getReadSize() == 0);                                                         \
+        LON_INFO(LON_LOG_ROOT) << #readfun "/" #writefun << "(" #type ") len=" << len              \
+                               << ", node_size=" << node_size << ", count=" << ba.count()          \
+                               << ", size=" << ba.size();                                          \
+    }
+    XX(int8_t, 100, readFInt8, writeFInt8, 100)
+    XX(uint8_t, 100, readFUInt8, writeFUInt8, 100)
+    XX(int16_t, 100, readFInt16, writeFInt16, 100)
+    XX(uint16_t, 100, readFUInt16, writeFUInt16, 100)
+    XX(int32_t, 100, readFInt32, writeFInt32, 100)
+    XX(uint32_t, 100, readFUInt32, writeFUInt32, 100)
+    XX(int64_t, 100, readFInt64, writeFInt64, 100)
+    XX(uint64_t, 100, readFUInt64, writeFUInt64, 100)
+
+    XX(int32_t, 100, readInt32, writeInt32, 100)
+    XX(uint32_t, 100, readUInt32, writeUInt32, 100)
+    XX(int64_t, 100, readInt64, writeInt64, 100)
+    XX(uint64_t, 100, readUInt64, writeUInt64, 100)
+#undef XX
+
+#define XX(type, len, readfun, writefun, node_size, path)                                          \
+    {                                                                                              \
+        ByteArray ba(node_size);                                                                   \
+        std::vector<type> datas;                                                                   \
+        for (int i = 0; i < len; ++i)                                                              \
+        {                                                                                          \
+            datas.push_back(rand());                                                               \
+        }                                                                                          \
+        for (const auto &it : datas)                                                               \
+        {                                                                                          \
+            ba.writefun(it);                                                                       \
+        }                                                                                          \
+        ba.setPosition(0);                                                                         \
+        for (int i = 0; i < datas.size(); ++i)                                                     \
+        {                                                                                          \
+            auto data = ba.readfun();                                                              \
+            std::stringstream ss;                                                                  \
+            ss << i << " - " << (int)data << " - " << (int)datas[i];                               \
+            LON_ASSERT_(data == datas[i], ss.str());                                               \
+            /*LON_INFO(LON_LOG_ROOT) << i << " - " << (int)data << " - " << (int)datas[i]; */      \
+        }                                                                                          \
+        LON_ASSERT(ba.getReadSize() == 0);                                                         \
+        LON_INFO(LON_LOG_ROOT) << #readfun "/" #writefun << "(" #type ") len=" << len              \
+                               << ", node_size=" << node_size << ", count=" << ba.count()          \
+                               << ", size=" << ba.size();                                          \
+        ba.setPosition(0);                                                                         \
+        ba.writeToFile(path "/" #readfun "-" #writefun "-" #type ".data");                         \
+        ByteArray ba1(node_size * 2);                                                              \
+        ba1.readFromFile(path "/" #readfun "-" #writefun "-" #type ".data");                       \
+        ba1.setPosition(0);                                                                        \
+        LON_ASSERT(ba1.toString() == ba.toString());                                               \
+        LON_ASSERT(ba.getPosition() == 0);                                                         \
+        LON_ASSERT(ba1.getPosition() == 0);                                                        \
+    }
+    XX(int8_t, 100, readFInt8, writeFInt8, 100, "./.tmp")
+    XX(uint8_t, 100, readFUInt8, writeFUInt8, 100, "./.tmp")
+    XX(int16_t, 100, readFInt16, writeFInt16, 100, "./.tmp")
+    XX(uint16_t, 100, readFUInt16, writeFUInt16, 100, "./.tmp")
+    XX(int32_t, 100, readFInt32, writeFInt32, 100, "./.tmp")
+    XX(uint32_t, 100, readFUInt32, writeFUInt32, 100, "./.tmp")
+    XX(int64_t, 100, readFInt64, writeFInt64, 100, "./.tmp")
+    XX(uint64_t, 100, readFUInt64, writeFUInt64, 100, "./.tmp")
+
+    XX(int32_t, 100, readInt32, writeInt32, 100, "./.tmp")
+    XX(uint32_t, 100, readUInt32, writeUInt32, 100, "./.tmp")
+    XX(int64_t, 100, readInt64, writeInt64, 100, "./.tmp")
+    XX(uint64_t, 100, readUInt64, writeUInt64, 100, "./.tmp")
+#undef XX
+}
+
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
@@ -123,6 +221,8 @@ int main(int argc, char const *argv[])
     // test_interface();
     // test_ipv4();
     // test_ipv6();
-    test_socket();
+    // test_socket();
+    test_bytearray();
+
     return 0;
 }

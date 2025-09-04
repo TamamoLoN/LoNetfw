@@ -126,8 +126,9 @@ class ZigZag
 class Varint
 {
   public:
-    static uint32_t encode(int32_t n);
-    static int32_t decode(uint32_t n);
+    static int8_t encode16(uint8_t *buf, uint16_t n);
+    static int8_t encode32(uint8_t *buf, uint32_t n);
+    static int8_t encode64(uint8_t *buf, uint64_t n);
 };
 
 } // namespace util
