@@ -83,6 +83,11 @@ function(add_build_target targetname)
     
 endfunction()
 
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+
 if(MODULARIZATION)
     add_subdirectory(thirdparty/yaml-cpp)
     add_subdirectory(util)
