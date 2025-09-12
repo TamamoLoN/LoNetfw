@@ -214,7 +214,7 @@ int64_t ByteArray::readInt64() { return util::ZigZag::decode64(readUInt64()); }
 
 uint64_t ByteArray::readUInt64()
 {
-    uint32_t data = 0;
+    uint64_t data = 0;
     for (uint8_t cnt = 0; cnt < 64; cnt += 7)
     {
         uint8_t tmp = readFUInt8();

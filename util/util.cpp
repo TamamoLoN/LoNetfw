@@ -232,6 +232,13 @@ uint64_t getCurrentUs()
 #endif
 }
 
+uint64_t getDurationUs(std::function<void()> func)
+{
+    uint64_t start = getCurrentUs();
+    func();
+    return getCurrentUs() - start;
+}
+
 uint32_t getThreadId() { return syscall(SYS_gettid); }
 
 std::string getThreadName()

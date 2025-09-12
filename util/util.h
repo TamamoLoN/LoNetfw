@@ -72,6 +72,7 @@ time_t getCurrentDateTime();
 std::string getCurrentDateTime(const std::string &format);
 uint64_t getCurrentMs();
 uint64_t getCurrentUs();
+uint64_t getDurationUs(std::function<void()> func);
 
 uint32_t getThreadId();
 std::string getThreadName();

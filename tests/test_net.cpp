@@ -58,6 +58,7 @@ void test_ipv4()
     auto test = IPAddress::create("sdsad1", 1);
     auto ipv4 = IPAddress::create("www.baidu.com", 8080);
     LON_INFO(LON_LOG_ROOT) << "ipv4 addr:" << ipv4->toString();
+    LON_INFO(LON_LOG_ROOT) << "ipv4 port:" << ipv4->getPort();
     LON_INFO(LON_LOG_ROOT) << "ipv4 broadcast:" << ipv4->broadcastAddress(24)->toString();
     LON_INFO(LON_LOG_ROOT) << "ipv4 network:" << ipv4->networkAddress(24)->toString();
     LON_INFO(LON_LOG_ROOT) << "ipv4 netmask:" << ipv4->subnetMask(24)->toString();
@@ -217,11 +218,11 @@ void test_bytearray()
 int main(int argc, char const *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
-    // test_address();
-    // test_interface();
-    // test_ipv4();
-    // test_ipv6();
-    // test_socket();
+    test_address();
+    test_interface();
+    test_ipv4();
+    test_ipv6();
+    test_socket();
     test_bytearray();
 
     return 0;
