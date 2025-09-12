@@ -31,7 +31,7 @@ if(USE_HIGH_PRECISION_TIME)
 endif()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
-set(YAML_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp/include)
+set(YAML_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/thirdparty/yaml-cpp/include)
 
 function(force_redefine_file_macro_for_sources targetname)
     get_target_property (source_files "${targetname}" SOURCES)
@@ -84,7 +84,7 @@ function(add_build_target targetname)
 endfunction()
 
 if(MODULARIZATION)
-    add_subdirectory(third_party/yaml-cpp)
+    add_subdirectory(thirdparty/yaml-cpp)
     add_subdirectory(util)
     add_subdirectory(log)
     add_subdirectory(config)
@@ -94,7 +94,7 @@ if(MODULARIZATION)
     add_subdirectory(hook)
     add_subdirectory(net)
 else()
-    add_subdirectory(third_party/yaml-cpp)
+    add_subdirectory(thirdparty/yaml-cpp)
     file(GLOB MODULE_SRCS 
         util/*.cpp
         log/*.cpp
@@ -119,7 +119,7 @@ link_directories(${CMAKE_SOURCE_DIR}/lib
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_SOURCE_DIR}/src
-                    ${CMAKE_SOURCE_DIR}/third_party
+                    ${CMAKE_SOURCE_DIR}/thirdparty
 		    ${YAML_INCLUDE_PATH}
                     )
 
