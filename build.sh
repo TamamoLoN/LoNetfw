@@ -15,6 +15,8 @@ dir_name="build"
 bin_name="bin"
 cpu_core=$(nproc)
 
+git submodule update --init --recursive
+
 # 检查目录是否存在，如果不存在则创建
 if [ -d "$dir_name" ]; then
     echo "目录 $dir_name 存在。"
