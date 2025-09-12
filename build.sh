@@ -15,8 +15,6 @@ dir_name="build"
 bin_name="bin"
 cpu_core=$(nproc)
 
-git submodule update --init --recursive
-
 # 检查目录是否存在，如果不存在则创建
 if [ -d "$dir_name" ]; then
     echo "目录 $dir_name 存在。"
@@ -33,6 +31,9 @@ else
     mkdir "$bin_name"
     echo "目录 $bin_name 创建成功。"
 fi
+
+git submodule sync --recursive
+git submodule update --init --recursive
 
 cd $dir_name
 echo "CPU核心数为"$cpu_core", 开始编译..."
