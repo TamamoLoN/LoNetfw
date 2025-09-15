@@ -72,8 +72,6 @@ function(add_build_target targetname)
     else()
         target_link_libraries(${targetname} PRIVATE 
                                     ${PROJECT_NAME}
-                                    yaml-cpp
-                                    dl
                                     ) 
     endif()
     if(USE_ABSOLUTE_PATH)
@@ -111,7 +109,7 @@ else()
         net/*.cpp
     )
     add_library(${PROJECT_NAME} SHARED ${MODULE_SRCS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE pthread dl yaml-cpp) 
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl yaml-cpp) 
     if(USE_ABSOLUTE_PATH)
     else()
         force_redefine_file_macro_for_sources(${PROJECT_NAME})

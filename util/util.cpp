@@ -117,6 +117,11 @@ void convertYamlToVector(const std::string &prefix, const YAML::Node &node,
     }
 }
 
+bool InsensitiveStringCompare::operator()(const std::string &lhs, const std::string &rhs) const
+{
+    return toLower(lhs) < toLower(rhs);
+}
+
 void getColorStr(std::string &str, Color color)
 {
     auto color_num = (int)color;

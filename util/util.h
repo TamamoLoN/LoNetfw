@@ -44,6 +44,11 @@ template <class T> std::string getTypeStr()
     return res;
 }
 
+struct InsensitiveStringCompare
+{
+    bool operator()(const std::string &lhs, const std::string &rhs) const;
+};
+
 enum Color
 {
     UNKNOWN = -1,
