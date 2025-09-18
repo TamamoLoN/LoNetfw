@@ -40,11 +40,11 @@ void test_fiber()
     }
 }
 auto fiber = std::make_shared<lon::fiber::Fiber>(
-    test_fiber, lon::config::ConfigInitter::Instance().config_fiber->getData());
+    test_fiber, lon::config::GlobalConfig::Instance().config_fiber->getData());
 void test_io_scheduler()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        2, false, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        2, false, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     // io->schedule(fiber);
     io->schedule(test_fiber);
 }
@@ -52,7 +52,7 @@ lon::scheduler::Timer::Ptr timer = nullptr;
 void test_timer()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        2, true, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     timer = io->addTimer(
         50,
         []() {

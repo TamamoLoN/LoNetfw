@@ -11,7 +11,7 @@ void test_sleep()
         LON_DEBUG(LON_LOG_ROOT) << "test sleep duration=" << duration;
     };
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        1, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        1, true, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     io->schedule([=]() {
         durationWrapper([]() {
             sleep(10);
@@ -47,7 +47,7 @@ void test_sleep()
 void test_ioscheduler_reschedule()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        2, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        2, true, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     io->schedule([]() {
         LON_DEBUG(LON_LOG_ROOT) << "test sleep 1s";
         auto fiber = lon::fiber::Fiber::getThis();
@@ -67,7 +67,7 @@ void test_ioscheduler_reschedule()
 void test_socket()
 {
     auto io = std::make_shared<lon::scheduler::IOScheduler>(
-        1, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        1, true, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     io->schedule([]() {
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         LON_INFO(LON_LOG_ROOT) << "socket fd = " << fd;

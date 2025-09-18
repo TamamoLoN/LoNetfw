@@ -322,7 +322,7 @@ extern "C"
     {
         return connect_with_timeout(
             sockfd, addr, addrlen,
-            lon::config::ConfigInitter::Instance().config_tcp_timeout->getData());
+            lon::config::GlobalConfig::Instance().config_tcp_timeout->getData());
     }
 
     int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
