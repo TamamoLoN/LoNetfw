@@ -19,7 +19,7 @@
 - 封装配置值、名称和描述
 - 支持类型安全的配置访问
 
-### 2.3 GlobalConfig (configinit.h)
+### 2.3 GlobalConfig (globalconfig.h)
 - 配置初始化工具类
 - 提供配置数据的便捷注册方式
 
