@@ -78,7 +78,7 @@ void test_socket()
 {
     LON_WARN(LON_LOG_ROOT) << "===test_socket===";
     auto ios = std::make_shared<lon::scheduler::IOScheduler>(
-        1, true, "io_scheduler", lon::config::ConfigInitter::Instance().config_fiber->getData());
+        1, true, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     ios->schedule([]() {
         // usleep(1);
         IPAddress::Ptr addr = nullptr;
@@ -94,8 +94,7 @@ void test_socket()
         {
             LON_INFO(LON_LOG_ROOT) << "connect ok";
         }
-        sockfd->setRecvTimeout(
-            lon::config::ConfigInitter::Instance().config_tcp_timeout->getData());
+        sockfd->setRecvTimeout(lon::config::GlobalConfig::Instance().config_tcp_timeout->getData());
         std::string buf =
             "GET / HTTP/1.1\r\nHost: ifconfig.me\r\nUser-Agent: curl/7.68.0\r\nAccept: */*\r\n\r\n";
         int ret = sockfd->send(buf.data(), buf.size());

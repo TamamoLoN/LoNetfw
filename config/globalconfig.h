@@ -45,9 +45,9 @@ struct ConfigLog
     std::vector<ConfigLogAppender> appenders;
 };
 
-struct ConfigInitter
+struct GlobalConfig
 {
-    explicit ConfigInitter()
+    explicit GlobalConfig()
     {
         config_log = Config::setData("logs", std::set<ConfigLog>({}), "logs config");
         config_log->addConfigDataChangeCB([](const std::set<ConfigLog> &old_data,
@@ -120,9 +120,9 @@ struct ConfigInitter
                 LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
             });
     }
-    static ConfigInitter &Instance()
+    static GlobalConfig &Instance()
     {
-        static ConfigInitter instance;
+        static GlobalConfig instance;
         return instance;
     }
     ConfigData<std::set<ConfigLog>>::Ptr config_log;
@@ -132,7 +132,7 @@ struct ConfigInitter
 
 //全局变量，使其在main函数之前初始化
 // static ConfigLogChanged __log_changed;//这样写会被初始化多次
-static auto g_conifg_initter = ConfigInitter::Instance();
+static auto global_config = GlobalConfig::Instance();
 
 } // namespace config
 template <> class util::LexicalCast<config::ConfigLogAppender, std::string>

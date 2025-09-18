@@ -15,7 +15,7 @@ void test_fiber()
                     LON_INFO(LON_LOG_ROOT) << "run in fiber end";
                     lon::fiber::Fiber::yieldToHold();
                 },
-                lon::config::ConfigInitter::Instance().config_fiber->getData());
+                lon::config::GlobalConfig::Instance().config_fiber->getData());
             fiber->swapIn();
             LON_INFO(LON_LOG_ROOT) << "main after swapIn";
             fiber->swapIn();
