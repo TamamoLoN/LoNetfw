@@ -31,7 +31,7 @@ if(USE_HIGH_PRECISION_TIME)
 endif()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
-set(YAML_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/thirdparty/yaml-cpp/include)
+set(YAML_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/yaml-cpp/include)
 
 function(force_redefine_file_macro_for_sources targetname)
     get_target_property (source_files "${targetname}" SOURCES)
@@ -54,7 +54,7 @@ endfunction()
 
 function(add_build_target targetname)
     add_executable(${targetname}
-                ${CMAKE_SOURCE_DIR}/tests/${targetname}.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/tests/${targetname}.cpp
                 )
     if(MODULARIZATION)
         target_link_libraries(${targetname} PRIVATE 
@@ -72,8 +72,6 @@ function(add_build_target targetname)
     else()
         target_link_libraries(${targetname} PRIVATE 
                                     ${PROJECT_NAME}
-                                    yaml-cpp
-                                    dl
                                     ) 
     endif()
     if(USE_ABSOLUTE_PATH)
@@ -111,7 +109,7 @@ else()
         net/*.cpp
     )
     add_library(${PROJECT_NAME} SHARED ${MODULE_SRCS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE pthread dl yaml-cpp) 
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl yaml-cpp) 
     if(USE_ABSOLUTE_PATH)
     else()
         force_redefine_file_macro_for_sources(${PROJECT_NAME})
@@ -119,12 +117,12 @@ else()
 endif()
 
 
-link_directories(${CMAKE_SOURCE_DIR}/lib
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib
                  )
 
-include_directories(${CMAKE_SOURCE_DIR}
-                    ${CMAKE_SOURCE_DIR}/src
-                    ${CMAKE_SOURCE_DIR}/thirdparty
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/src
+                    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
 		    ${YAML_INCLUDE_PATH}
                     )
 
