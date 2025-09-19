@@ -8,3 +8,5 @@
 #define LON_LIKELY(x) (x)
 #define LON_UNLIKELY(x) (x)
 #endif
+
+#define LONETFW_VERSION "1.0.0"

@@ -66,6 +66,7 @@ function(add_build_target targetname)
                                 scheduler
                                 hook
                                 net
+                                server
                                 yaml-cpp
                                 dl
                                 ) 
@@ -96,6 +97,7 @@ if(MODULARIZATION)
     add_subdirectory(scheduler)
     add_subdirectory(hook)
     add_subdirectory(net)
+    add_subdirectory(server)
 else()
     add_subdirectory(thirdparty/yaml-cpp)
     file(GLOB MODULE_SRCS 
@@ -107,6 +109,7 @@ else()
         scheduler/*.cpp
         hook/*.cpp
         net/*.cpp
+        server/*.cpp
     )
     add_library(${PROJECT_NAME} SHARED ${MODULE_SRCS})
     target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl yaml-cpp) 
@@ -148,6 +151,7 @@ if(MODULARIZATION)
             scheduler
             hook
             net
+            server
             ARCHIVE DESTINATION lib 
             LIBRARY DESTINATION lib 
             RUNTIME DESTINATION bin)
@@ -167,6 +171,7 @@ install(DIRECTORY
         scheduler
         hook
         net
+        server
         DESTINATION include
         FILES_MATCHING
         PATTERN "*.h"

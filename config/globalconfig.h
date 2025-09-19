@@ -119,6 +119,15 @@ struct GlobalConfig
                 LON_INFO(LON_LOG_ROOT) << "on config tcp connect timeout data changed";
                 LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
             });
+
+        config_tcp_server_client_timeout =
+            Config::setData("tcp.server.client_timeout", (uint32_t)(1000 * 60 * 2),
+                            "tcp server client timeout ms(default 2min)");
+        config_tcp_server_client_timeout->addConfigDataChangeCB(
+            [](const size_t &old_data, const size_t &new_data) {
+                LON_INFO(LON_LOG_ROOT) << "on config tcp server client timeout data changed";
+                LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+            });
     }
     static GlobalConfig &Instance()
     {
@@ -128,6 +137,7 @@ struct GlobalConfig
     ConfigData<std::set<ConfigLog>>::Ptr config_log;
     ConfigData<size_t>::Ptr config_fiber;
     ConfigData<uint32_t>::Ptr config_tcp_timeout;
+    ConfigData<uint32_t>::Ptr config_tcp_server_client_timeout;
 };
 
 //全局变量，使其在main函数之前初始化
