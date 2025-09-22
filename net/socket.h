@@ -79,8 +79,8 @@ class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
     bool isValid() const;
     int getError();
 
-    std::ostream &dump(std::ostream &os);
-    std::string toString();
+    std::ostream &dump(std::ostream &os) const;
+    std::string toString() const;
     int getSocket() const;
 
     bool cancelRead();

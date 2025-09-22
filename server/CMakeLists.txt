@@ -14,7 +14,7 @@ add_library(server SHARED
             ${SERVER_SRCS}
             )
 
-target_link_libraries(server PRIVATE util scheduler)
+target_link_libraries(server PRIVATE util scheduler net)
 target_include_directories(server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 
 if(USE_ABSOLUTE_PATH)

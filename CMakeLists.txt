@@ -139,6 +139,7 @@ if(BUILT_TESTS)
     add_build_target(test_ioscheduler)
     add_build_target(test_hook)
     add_build_target(test_net)
+    add_build_target(test_server)
 endif()
 
 if(MODULARIZATION)

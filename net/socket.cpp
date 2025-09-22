@@ -476,7 +476,7 @@ int Socket::getError()
     return error;
 }
 
-std::ostream &Socket::dump(std::ostream &os)
+std::ostream &Socket::dump(std::ostream &os) const
 {
     os << "Socket( sockfd=" << m_sockfd << ", isconnected=" << m_is_connected
        << ", family=" << m_family << ", type=" << m_type << ", protocol=" << m_protocol;
@@ -492,7 +492,7 @@ std::ostream &Socket::dump(std::ostream &os)
     return os;
 }
 
-std::string Socket::toString()
+std::string Socket::toString() const
 {
     std::stringstream ss;
     dump(ss);

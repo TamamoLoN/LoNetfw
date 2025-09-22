@@ -33,35 +33,31 @@ bool TcpServer::bind(const std::vector<net::Address::Ptr> &addrs,
 {
     for (const auto &addr : addrs)
     {
-        bool should_push = false;
-        auto socket      = net::Socket::create(addr, net::Socket::Type::TCP);
+        auto socket = net::Socket::create(addr, net::Socket::Type::TCP);
         if (!socket->bind(addr))
         {
             LON_ERROR(LON_LOG_ROOT) << "bind failed: " << addr->toString();
-            should_push = true;
+            bind_failed_addrs.push_back(addr);
             continue;
         }
         if (!socket->listen())
         {
             LON_ERROR(LON_LOG_ROOT) << "listen failed: " << addr->toString();
+            bind_failed_addrs.push_back(addr);
             continue;
         }
-        should_push ? bind_failed_addrs.push_back(addr) : m_sockets.push_back(socket);
+        m_sockets.push_back(socket);
     }
-    // if (!bind_failed_addrs.empty())
-    // {
-    //     m_sockets.clear();
-    //     return false;
-    // }
+    if (!bind_failed_addrs.empty())
+    {
+        m_sockets.clear();
+        return false;
+    }
     for (const auto &socket : m_sockets)
     {
         LON_INFO(LON_LOG_ROOT) << "bind success: " << socket->toString();
     }
-    for (const auto &addr : bind_failed_addrs)
-    {
-        LON_ERROR(LON_LOG_ROOT) << "bind failed: " << addr->toString();
-    }
-    return bind_failed_addrs.empty();
+    return true;
 }
 
 bool TcpServer::start()
@@ -128,6 +124,7 @@ void TcpServer::startAccept(const net::Socket::Ptr &socket)
         }
         else
         {
+            client->setRecvTimeout(m_client_timeout);
             m_scheduler->schedule(std::bind(&TcpServer::handleClient, shared_from_this(), client));
         }
     }
