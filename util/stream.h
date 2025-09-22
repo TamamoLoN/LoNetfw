@@ -9,7 +9,7 @@ class Stream
 {
   public:
     using Ptr = std::shared_ptr<Stream>;
-    Stream();
+    explicit Stream();
     virtual ~Stream();
 
     virtual size_t read(void *buf, size_t len)                 = 0;
