@@ -432,13 +432,17 @@ size_t ByteArray::getPosition() { return m_position; }
 
 void ByteArray::setPosition(size_t pos)
 {
-    if (pos > m_data_size)
+    if (pos > m_total_size)
     {
         throw std::runtime_error("ByteArray::setPosition: pos out of range, m_data_size: " +
                                  std::to_string(m_data_size) + ", pos: " + std::to_string(pos));
     }
     m_position = pos;
     m_cur      = m_root;
+    if (m_position > m_data_size)
+    {
+        m_data_size = m_position;
+    }
     while (pos > m_cur->size)
     {
         m_cur = m_cur->next;

@@ -25,4 +25,4 @@ tcp:
       connect:
             timeout: 3000
       server:
-            client_timeout: 5000
+            client_timeout: 120000

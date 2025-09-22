@@ -251,6 +251,7 @@ void Fiber::mainFunc()
     }
     catch (std::exception &ex)
     {
+        std::cout << "fiber=" << cur->m_id << " error:" << ex.what() << std::endl;
         cur->m_state = ERROR;
     }
     catch (...)
