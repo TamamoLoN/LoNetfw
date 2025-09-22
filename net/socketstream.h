@@ -18,7 +18,7 @@ class SocketStream : public util::Stream
      * @note 默认代理，即使用代理套接字进行读写操作,并且析构函数会关闭套接字
      */
     SocketStream(const Socket::Ptr &socket, bool proxy = true);
-    ~SocketStream();
+    virtual ~SocketStream();
 
     size_t read(void *buf, size_t len) override;
     size_t read(const util::ByteArray::Ptr &buf, size_t len) override;
