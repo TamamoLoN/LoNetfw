@@ -41,7 +41,7 @@ class EchoServer : public lon::server::TcpServer
     void handleClient(const lon::net::Socket::Ptr &client) override
     {
         LON_INFO(LON_LOG_ROOT) << "handleClient: " << client->toString();
-        lon::net::ByteArray::Ptr buffer = std::make_shared<lon::net::ByteArray>();
+        lon::util::ByteArray::Ptr buffer = std::make_shared<lon::util::ByteArray>();
         while (true)
         {
             buffer->clear();

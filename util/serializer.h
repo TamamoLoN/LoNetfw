@@ -1,17 +1,54 @@
 #pragma once
 
-#include "log/logger.h"
-#include "util/util.h"
+#include "util/endian.h"
 #include <fstream>
 #include <iomanip>
 #include <math.h>
+#include <memory>
+#include <sstream>
 #include <string.h>
 #include <sys/uio.h>
+#include <vector>
 
 namespace lon
 {
-namespace net
+namespace util
 {
+
+class ZigZag
+{
+    /**
+     * 编码
+     * 2:     00000000 00000010
+     * -2:    11111111 11111110
+     * -2<<1  11111111 11111100
+     * -2>>15 11111111 11111111
+     *  ^     00000000 00000011
+     *
+     * 解码
+     * 2encode:       00000000 00000011
+     * (2encode)>>1   00000000 00000001
+     * -((2encode)&1) 11111111 11111111
+     * ^              11111111 11111110
+     * -2:            11111111 11111110
+     */
+  public:
+    static uint16_t encode16(int16_t n);
+    static int16_t decode16(uint16_t n);
+    static uint32_t encode32(int32_t n);
+    static int32_t decode32(uint32_t n);
+    static uint64_t encode64(int64_t n);
+    static int64_t decode64(uint64_t n);
+};
+
+class Varint
+{
+  public:
+    static int8_t encode16(uint8_t *buf, uint16_t n);
+    static int8_t encode32(uint8_t *buf, uint32_t n);
+    static int8_t encode64(uint8_t *buf, uint64_t n);
+};
+
 struct ByteArrayNode
 {
     ByteArrayNode();
@@ -134,5 +171,5 @@ class Serializer
     Serializer();
     ~Serializer();
 };
-} // namespace net
+} // namespace util
 } // namespace lon

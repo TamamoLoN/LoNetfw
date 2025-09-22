@@ -1,9 +1,74 @@
-#include "net/serializer.h"
+#include "util/serializer.h"
 
 namespace lon
 {
-namespace net
+namespace util
 {
+uint16_t ZigZag::encode16(int16_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 1)); }
+
+int16_t ZigZag::decode16(uint16_t n) { return (n >> 1) ^ -(n & 1); }
+
+uint32_t ZigZag::encode32(int32_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 1)); }
+
+int32_t ZigZag::decode32(uint32_t n) { return (n >> 1) ^ -(n & 1); }
+
+uint64_t ZigZag::encode64(int64_t n) { return (n << 1) ^ (n >> (sizeof(n) * 8 - 1)); }
+
+int64_t ZigZag::decode64(uint64_t n) { return (n >> 1) ^ -(n & 1); }
+
+int8_t Varint::encode16(uint8_t *buf, uint16_t n)
+{
+    uint8_t cnt = 0;
+    if (!buf)
+    {
+        return -1;
+    }
+    while (n > 0b01111111)
+    {
+        //从字节流末尾取出 7 bit 并在最高位增加 1 构成一个字节
+        buf[cnt] = (n & 0b01111111) | 0b10000000;
+        n >>= 7;
+        ++cnt;
+    }
+    // 如果是最后一个字节增加 0
+    buf[cnt] = n;
+    return cnt + 1;
+}
+
+int8_t Varint::encode32(uint8_t *buf, uint32_t n)
+{
+    uint8_t cnt = 0;
+    if (!buf)
+    {
+        return -1;
+    }
+    while (n > 0b01111111)
+    {
+        buf[cnt] = (n & 0b01111111) | 0b10000000;
+        n >>= 7;
+        ++cnt;
+    }
+    buf[cnt] = n;
+    return cnt + 1;
+}
+
+int8_t Varint::encode64(uint8_t *buf, uint64_t n)
+{
+    uint8_t cnt = 0;
+    if (!buf)
+    {
+        return -1;
+    }
+    while (n > 0b01111111)
+    {
+        buf[cnt] = (n & 0b01111111) | 0b10000000;
+        n >>= 7;
+        ++cnt;
+    }
+    buf[cnt] = n;
+    return cnt + 1;
+}
+
 ByteArrayNode::ByteArrayNode() : data(nullptr), next(nullptr), size(0) {}
 
 ByteArrayNode::ByteArrayNode(size_t s) : data(new char[s]), next(nullptr), size(s) {}
@@ -478,7 +543,7 @@ bool ByteArray::writeToFile(const std::string &path)
     out.open(path, std::ios::trunc | std::ios::binary);
     if (!out.is_open())
     {
-        LON_ERROR(LON_LOG_ROOT) << "ByteArray::writeToFile: open file failed, path: " << path;
+        throw std::runtime_error("ByteArray::writeToFile: open file failed, path: " + path);
         return false;
     }
     size_t read_size = getReadSize();
@@ -503,7 +568,7 @@ bool ByteArray::readFromFile(const std::string &path)
     in.open(path, std::ios::binary);
     if (!in.is_open())
     {
-        LON_ERROR(LON_LOG_ROOT) << "ByteArray::readFromFile: open file failed, path: " << path;
+        throw std::runtime_error("ByteArray::readFromFile: open file failed, path: " + path);
         return false;
     }
     std::shared_ptr<char> buf(new char[m_node_size], [](char *p) { delete[] p; });
@@ -697,5 +762,5 @@ void ByteArray::addTotalSize(size_t size)
 
 size_t ByteArray::getRemainSize() { return m_total_size - m_position; }
 
-} // namespace net
+} // namespace util
 } // namespace lon

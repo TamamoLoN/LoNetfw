@@ -1,6 +1,7 @@
 #include "lonetfw/lonetfw.h"
 
 using namespace lon::net;
+using namespace lon::util;
 
 void test_address()
 {
