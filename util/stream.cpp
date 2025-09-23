@@ -8,7 +8,7 @@ Stream::Stream::Stream() {}
 
 Stream::~Stream() {}
 
-size_t Stream::readF(void *buf, size_t len)
+ssize_t Stream::readF(void *buf, size_t len)
 {
     size_t offset = 0;
     size_t left   = len;
@@ -25,7 +25,7 @@ size_t Stream::readF(void *buf, size_t len)
     return len;
 }
 
-size_t Stream::readF(const ByteArray::Ptr &buf, size_t len)
+ssize_t Stream::readF(const ByteArray::Ptr &buf, size_t len)
 {
     size_t left = len;
     while (left > 0)
@@ -40,7 +40,7 @@ size_t Stream::readF(const ByteArray::Ptr &buf, size_t len)
     return len;
 }
 
-size_t Stream::writeF(const void *buf, size_t len)
+ssize_t Stream::writeF(const void *buf, size_t len)
 {
     size_t offset = 0;
     size_t left   = len;
@@ -57,7 +57,7 @@ size_t Stream::writeF(const void *buf, size_t len)
     return len;
 }
 
-size_t Stream::writeF(const ByteArray::Ptr &buf, size_t len)
+ssize_t Stream::writeF(const ByteArray::Ptr &buf, size_t len)
 {
     size_t left = len;
     while (left > 0)
