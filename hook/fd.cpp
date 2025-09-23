@@ -130,8 +130,12 @@ Fd::Ptr FdManager::get(int fd, bool auto_create)
     rlock.unlock();
     MutexType::WrLock wlock(m_mutex);
     auto new_fd = std::make_shared<Fd>(fd);
-    m_fds[fd]   = new_fd;
-    return m_fds[fd];
+    if (fd >= m_fds.size())
+    {
+        m_fds.resize(fd * 1.5);
+    }
+    m_fds[fd] = new_fd;
+    return new_fd;
 }
 
 void FdManager::del(int fd)
