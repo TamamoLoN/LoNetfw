@@ -29,7 +29,7 @@ class IOScheduler : public Scheduler, public TimerManager
     ~IOScheduler();
 
     // 0: success -1: error
-    uint8_t addEvent(int fd, Event event, std::function<void()> cb = nullptr);
+    int8_t addEvent(int fd, Event event, std::function<void()> cb = nullptr);
     bool delEvent(int fd, Event event);
     bool cancelEvent(int fd, Event event);
     bool cancelAll(int fd);

@@ -16,7 +16,7 @@ SocketStream::~SocketStream()
     }
 }
 
-size_t SocketStream::read(void *buf, size_t len)
+ssize_t SocketStream::read(void *buf, size_t len)
 {
     if (!isConnected())
     {
@@ -25,7 +25,7 @@ size_t SocketStream::read(void *buf, size_t len)
     return m_socket->recv(buf, len);
 }
 
-size_t SocketStream::read(const util::ByteArray::Ptr &buf, size_t len)
+ssize_t SocketStream::read(const util::ByteArray::Ptr &buf, size_t len)
 {
     if (!isConnected())
     {
@@ -41,7 +41,7 @@ size_t SocketStream::read(const util::ByteArray::Ptr &buf, size_t len)
     return ret;
 }
 
-size_t SocketStream::write(const void *buf, size_t len)
+ssize_t SocketStream::write(const void *buf, size_t len)
 {
     if (!isConnected())
     {
@@ -50,7 +50,7 @@ size_t SocketStream::write(const void *buf, size_t len)
     return m_socket->send(buf, len);
 }
 
-size_t SocketStream::write(const util::ByteArray::Ptr &buf, size_t len)
+ssize_t SocketStream::write(const util::ByteArray::Ptr &buf, size_t len)
 {
     if (!isConnected())
     {

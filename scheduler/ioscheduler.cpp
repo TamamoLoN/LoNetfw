@@ -46,7 +46,7 @@ IOScheduler::~IOScheduler()
     }
 }
 
-uint8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
+int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
 {
     //保证fd即是索引
     FdContext *fd_ctx = nullptr;
