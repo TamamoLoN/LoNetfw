@@ -173,10 +173,11 @@ install(DIRECTORY
         hook
         net
         server
+        lonetfw
         DESTINATION include
         FILES_MATCHING
         PATTERN "*.h"
         PATTERN "*.hpp"
 )
 
-install(FILES lonetfw/lonetfw.h DESTINATION include)
+# install(FILES lonetfw/lonetfw.h DESTINATION include)
