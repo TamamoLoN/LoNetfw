@@ -10934,7 +10934,7 @@ const in_port_t Uri::getPort() const
 
 void Uri::setPort(in_port_t port) { m_port = port; }
 
-const std::string Uri::getPath() const { return m_path; }
+const std::string Uri::getPath() const { return m_path.empty() ? "/" : m_path; }
 
 void Uri::setPath(const std::string &path) { m_path = path; }
 
