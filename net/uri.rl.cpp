@@ -10919,7 +10919,18 @@ const std::string Uri::getHost() const { return m_host; }
 
 void Uri::setHost(const std::string &host) { m_host = host; }
 
-const in_port_t Uri::getPort() const { return m_port; }
+const in_port_t Uri::getPort() const
+{
+    if (m_port)
+    {
+        return m_port;
+    }
+#define XX(scheme, default_port)                                                                   \
+    else if (m_scheme == #scheme) { return default_port; }
+    PROTOCAL_MAP(XX)
+#undef XX
+    return m_port;
+}
 
 void Uri::setPort(in_port_t port) { m_port = port; }
 
@@ -10941,22 +10952,10 @@ bool Uri::isDefaultPort() const
     {
         return true;
     }
-    if (m_scheme == "http")
-    {
-        return m_port == 80;
-    }
-    else if (m_scheme == "https")
-    {
-        return m_port == 443;
-    }
-    else if (m_scheme == "rtsp")
-    {
-        return m_port == 554;
-    }
-    else if (m_scheme == "mqtt")
-    {
-        return m_port == 1883;
-    }
+#define XX(scheme, default_port)                                                                   \
+    else if (m_scheme == #scheme) { return m_port == default_port; }
+    PROTOCAL_MAP(XX)
+#undef XX
     return false;
 }
 }
