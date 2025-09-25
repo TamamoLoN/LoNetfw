@@ -4,7 +4,8 @@ namespace lon
 {
 namespace net
 {
-SocketStream::SocketStream(const Socket::Ptr &socket, bool proxy) : m_socket(socket), m_proxy(proxy)
+SocketStream::SocketStream(const Socket::Ptr &socket, bool proxy)
+    : m_socket(socket), m_proxy(proxy), m_eof(false)
 {
 }
 
@@ -77,6 +78,8 @@ void SocketStream::close()
 Socket::Ptr SocketStream::getSocket() const { return m_socket; }
 
 bool SocketStream::isConnected() const { return m_socket && m_socket->isConnected(); }
+
+bool SocketStream::isEof() const { return m_eof; }
 
 } // namespace net
 } // namespace lon

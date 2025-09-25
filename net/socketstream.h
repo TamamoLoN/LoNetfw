@@ -30,10 +30,12 @@ class SocketStream : public util::Stream
 
     Socket::Ptr getSocket() const;
     bool isConnected() const;
+    bool isEof() const;
 
   protected:
     Socket::Ptr m_socket;
     bool m_proxy;
+    bool m_eof;
 
   private:
 };
