@@ -133,6 +133,7 @@ Fd::Ptr FdManager::get(int fd, bool auto_create)
     if (fd >= m_fds.size())
     {
         m_fds.resize(fd * 1.5);
+        m_size = m_fds.size();
     }
     m_fds[fd] = new_fd;
     return new_fd;
