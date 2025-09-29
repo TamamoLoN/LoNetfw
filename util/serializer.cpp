@@ -307,7 +307,7 @@ float ByteArray::readFloat()
 double ByteArray::readDouble()
 {
     uint64_t data = readFUInt64();
-    float res     = 0.0;
+    double res     = 0.0;
     memcpy(&res, &data, sizeof(data));
     return res;
 }

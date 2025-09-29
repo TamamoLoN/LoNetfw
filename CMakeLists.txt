@@ -30,7 +30,7 @@ if(USE_HIGH_PRECISION_TIME)
     add_definitions(-DUSE_HIGH_PRECISION_TIME)
 endif()
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -Wno-builtin-macro-redefined -Wno-terminate -Wno-deprecated-declarations")
 set(YAML_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/yaml-cpp/include)
 
 function(force_redefine_file_macro_for_sources targetname)
