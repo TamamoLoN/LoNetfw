@@ -82,13 +82,13 @@ void FileLogAppender::log(std::string logger_name, LogLevel::Level level, LogEve
     {
         return;
     }
-    if (!m_file.is_open())
+    if (LON_UNLIKELY(!m_file.is_open()))
     {
         return;
     }
     MutexType::Lock lock(m_mutex);
     m_file << m_formatter->format(logger_name, level, event);
-    m_file.flush();
+    // m_file.flush();
 }
 
 std::string FileLogAppender::getYaml()
