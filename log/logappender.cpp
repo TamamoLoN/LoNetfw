@@ -1,5 +1,4 @@
 #include "log/logappender.h"
-#include "logappender.h"
 
 namespace lon
 {
@@ -63,9 +62,9 @@ std::string StdoutLogAppender::getYaml()
 }
 
 FileLogAppender::FileLogAppender(const std::string &filename, LogLevel::Level level)
-    : LogAppender(level), m_filename(filename)
+    : LogAppender(level), m_filename(filename), m_last_time(0)
 {
-    m_file.open(filename, std::ios::app);
+    reopen();
 }
 
 FileLogAppender::~FileLogAppender()
@@ -82,9 +81,11 @@ void FileLogAppender::log(std::string logger_name, LogLevel::Level level, LogEve
     {
         return;
     }
-    if (LON_UNLIKELY(!m_file.is_open()))
+    uint64_t now = time(0);
+    if (now != m_last_time)
     {
-        return;
+        reopen();
+        m_last_time = now;
     }
     MutexType::Lock lock(m_mutex);
     m_file << m_formatter->format(logger_name, level, event);
@@ -102,6 +103,17 @@ std::string FileLogAppender::getYaml()
     std::stringstream ss;
     ss << node;
     return ss.str();
+}
+
+bool FileLogAppender::reopen()
+{
+    MutexType::Lock lock(m_mutex);
+    if (m_file)
+    {
+        m_file.close();
+    }
+    m_file.open(m_filename, std::ios::app);
+    return !!m_file;
 }
 
 } // namespace log

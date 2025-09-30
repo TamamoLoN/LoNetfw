@@ -50,8 +50,12 @@ class FileLogAppender : public LogAppender
     std::string getYaml() override;
 
   private:
+    bool reopen();
+
+  private:
     std::string m_filename;
     std::ofstream m_file;
+    uint64_t m_last_time;
 };
 
 } // namespace log
