@@ -100,6 +100,8 @@ class Config
     static void parseFromYaml(const std::string &yaml_path);
     static void parseFromYaml(YAML::Node node);
     static void visit(std::function<void(config::ConfigDataBase::Ptr)> cb);
+    static std::ostream &toString(std::ostream &os);
+    static std::string toString();
 
   private:
     //使静态变量s_datas必须先初始化

@@ -18,6 +18,7 @@ class Scheduler
     virtual ~Scheduler();
 
     std::string getName() const;
+    size_t getTaskCount() const;
 
     void start();
     void stop();

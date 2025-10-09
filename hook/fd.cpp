@@ -149,5 +149,19 @@ void FdManager::del(int fd)
     m_fds[fd].reset();
 }
 
+size_t FdManager::size()
+{
+    MutexType::RdLock lock(m_mutex);
+    size_t count = 0;
+    for (auto &fd : m_fds)
+    {
+        if (fd)
+        {
+            ++count;
+        }
+    }
+    return count;
+}
+
 } // namespace hook
 } // namespace lon

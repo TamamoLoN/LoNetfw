@@ -68,5 +68,22 @@ void Config::visit(std::function<void(config::ConfigDataBase::Ptr)> cb)
     }
 }
 
+std::ostream &Config::toString(std::ostream &os)
+{
+    thread::RWMutex::RdLock lock(getMutex());
+    for (const auto &it : getDatas())
+    {
+        os << it.first << ":\n\t" << it.second->toString() << "\n";
+    }
+    return os;
+}
+
+std::string Config::toString()
+{
+    std::stringstream ss;
+    toString(ss);
+    return ss.str();
+}
+
 } // namespace config
 } // namespace lon

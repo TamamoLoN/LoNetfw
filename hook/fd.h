@@ -50,6 +50,8 @@ class FdManager
 
     Fd::Ptr get(int fd, bool auto_create = false);
     void del(int fd);
+    // 获取当前管理中的fd数量(非空指针)
+    size_t size();
 
   private:
     MutexType m_mutex;

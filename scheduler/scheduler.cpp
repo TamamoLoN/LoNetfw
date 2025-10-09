@@ -267,6 +267,12 @@ void Scheduler::setThis() { t_scheduler = this; }
 
 bool Scheduler::hasIdleThreads() { return m_idle_threads_count > 0; }
 
+size_t Scheduler::getTaskCount() const
+{
+    MutexType::Lock lock(m_mutex);
+    return m_tasks.size();
+}
+
 //静态函数
 Scheduler *Scheduler::getThis() { return t_scheduler; }
 
