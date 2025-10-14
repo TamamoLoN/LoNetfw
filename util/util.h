@@ -15,6 +15,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <sstream>
+#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <time.h>
@@ -29,9 +30,15 @@ char toLower(const char &ch);
 std::string toLower(const std::string &str);
 char toUpper(const char &ch);
 std::string toUpper(const std::string &str);
+std::vector<std::string> split(const std::string &s, const std::string &delimiter);
+std::string trim(const std::string &str);
+
+//文件相关
+bool isFileExist(const std::string &path);
+size_t getFileSize(const std::string &path);
+
 // yaml风格的格式参数名验证规则
 bool isValidParamName(const std::string &str);
-
 void printYamlString(const YAML::Node &node, int layer = 0);
 void convertYamlToVector(const std::string &prefix, const YAML::Node &node,
                          std::vector<std::pair<std::string, YAML::Node>> &vec);

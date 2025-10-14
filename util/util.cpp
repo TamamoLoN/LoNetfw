@@ -48,6 +48,56 @@ std::string toUpper(const std::string &str)
     return res;
 }
 
+std::vector<std::string> split(const std::string &s, const std::string &delimiter)
+{
+    std::vector<std::string> tokens;
+    size_t start = 0;
+    size_t end   = 0;
+
+    while ((end = s.find(delimiter, start)) != std::string::npos)
+    {
+        tokens.push_back(s.substr(start, end - start));
+        start = end + delimiter.length();
+    }
+
+    tokens.push_back(s.substr(start));
+    return tokens;
+}
+
+std::string trim(const std::string &str)
+{
+    size_t start = 0;
+    size_t end   = str.size();
+    while (start < end && std::isspace(static_cast<unsigned char>(str[start])))
+    {
+        ++start;
+    }
+    while (end > start && std::isspace(static_cast<unsigned char>(str[end - 1])))
+    {
+        --end;
+    }
+    return str.substr(start, end - start);
+}
+
+bool isFileExist(const std::string &path)
+{
+    struct stat buffer;
+    return (stat(path.c_str(), &buffer) == 0);
+}
+
+size_t getFileSize(const std::string &path)
+{
+    struct stat st;
+    if (stat(path.c_str(), &st) == 0)
+    {
+        return st.st_size;
+    }
+    else
+    {
+        throw std::runtime_error("getFileSize: stat file failed, path: " + path);
+    }
+}
+
 bool isValidParamName(const std::string &str)
 {
     if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.") !=
