@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
     // test_scheduler();
     // test_scheduler_caller();
     // test_scheduler_set_thread();
-    // test_scheduler_fiber();
+    test_scheduler_fiber();
     test_scheduler_yield();
     return 0;
 }

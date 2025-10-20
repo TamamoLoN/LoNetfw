@@ -8,9 +8,9 @@ namespace fiber
 static std::atomic<uint64_t> s_fiber_id    = ATOMIC_VAR_INIT(0);
 static std::atomic<uint64_t> s_fiber_count = ATOMIC_VAR_INIT(0);
 
-static thread_local Fiber *t_fiber            = nullptr;
-static thread_local Fiber::Ptr t_thread_fiber = nullptr; // 主协程
-static thread_local Fiber *t_schedule_fiber   = nullptr;
+static thread_local Fiber *t_cur_fiber      = nullptr; // 当前线程的协程
+static thread_local Fiber::Ptr t_main_fiber = nullptr; // 主协程
+static thread_local Fiber *t_schedule_fiber = nullptr; // 当前调度期协程
 
 //第一个协程为主协程，实现私有构造
 Fiber::Fiber() : m_id(0), m_state(EXEC), m_stack(nullptr)
@@ -66,7 +66,7 @@ Fiber::~Fiber()
             throw std::runtime_error("");
         }
 
-        Fiber *cur = t_fiber;
+        Fiber *cur = t_cur_fiber;
         if (cur == this)
         {
             setThis(nullptr);
@@ -109,23 +109,23 @@ void Fiber::swapIn()
                                  "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_state = EXEC;
-    if (swapcontext(&(t_thread_fiber->m_ctx), &m_ctx))
+    if (swapcontext(&(t_main_fiber->m_ctx), &m_ctx))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
 }
 
-void Fiber::swapIn(Fiber *fiber)
+void Fiber::swapIn(Fiber *main_fiber)
 {
     setThis(this);
-    t_schedule_fiber = fiber;
+    t_schedule_fiber = main_fiber;
     if (m_state == EXEC)
     {
         throw std::runtime_error("swapIn error: m_state is EXEC:[" + stateToString(m_state) +
                                  "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_state = EXEC;
-    if (swapcontext(&(fiber->m_ctx), &m_ctx))
+    if (swapcontext(&(main_fiber->m_ctx), &m_ctx))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
@@ -133,18 +133,18 @@ void Fiber::swapIn(Fiber *fiber)
 
 void Fiber::swapOut()
 {
-    setThis(t_thread_fiber.get());
-    if (swapcontext(&m_ctx, &(t_thread_fiber->m_ctx)))
+    setThis(t_main_fiber.get());
+    if (swapcontext(&m_ctx, &(t_main_fiber->m_ctx)))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
 }
 
-void Fiber::swapOut(Fiber *fiber)
+void Fiber::swapOut(Fiber *main_fiber)
 {
-    setThis(fiber);
+    setThis(main_fiber);
     t_schedule_fiber = nullptr;
-    if (swapcontext(&m_ctx, &(fiber->m_ctx)))
+    if (swapcontext(&m_ctx, &(main_fiber->m_ctx)))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
@@ -176,22 +176,22 @@ std::string Fiber::stateToString(State state) const
 }
 
 //静态函数
-void Fiber::setThis(Fiber *fiber) { t_fiber = fiber; }
+void Fiber::setThis(Fiber *fiber) { t_cur_fiber = fiber; }
 
 Fiber::Ptr Fiber::getThis()
 {
-    if (t_fiber)
+    if (t_cur_fiber)
     {
-        return t_fiber->shared_from_this();
+        return t_cur_fiber->shared_from_this();
     }
     Fiber::Ptr main_fiber(new Fiber);
-    if (t_fiber != main_fiber.get())
+    if (t_cur_fiber != main_fiber.get())
     {
         throw std::runtime_error("getThis create main_fiber error\n" +
                                  util::backtrace(100, 2, "\t"));
     }
-    t_thread_fiber = main_fiber;
-    return t_fiber->shared_from_this();
+    t_main_fiber = main_fiber;
+    return t_cur_fiber->shared_from_this();
 }
 
 void Fiber::yieldToReady()
@@ -201,11 +201,11 @@ void Fiber::yieldToReady()
     cur->swapOut();
 }
 
-void Fiber::yieldToReady(Fiber *fiber)
+void Fiber::yieldToReady(Fiber *main_fiber)
 {
     Fiber::Ptr cur = getThis();
     cur->m_state   = READY;
-    cur->swapOut(fiber);
+    cur->swapOut(main_fiber);
 }
 
 void Fiber::yieldToHold()
@@ -215,11 +215,11 @@ void Fiber::yieldToHold()
     cur->swapOut();
 }
 
-void Fiber::yieldToHold(Fiber *fiber)
+void Fiber::yieldToHold(Fiber *main_fiber)
 {
     Fiber::Ptr cur = getThis();
     cur->m_state   = HOLD;
-    cur->swapOut(fiber);
+    cur->swapOut(main_fiber);
 }
 
 int64_t Fiber::getFibers() { return s_fiber_count; }
@@ -232,9 +232,9 @@ void Fiber::setStateError()
 
 uint64_t Fiber::getFiberId()
 {
-    if (t_fiber)
+    if (t_cur_fiber)
     {
-        return t_fiber->getId();
+        return t_cur_fiber->getId();
     }
     return 0;
 }

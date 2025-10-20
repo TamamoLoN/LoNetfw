@@ -33,11 +33,11 @@ class Fiber : public std::enable_shared_from_this<Fiber>
 
     //切换到当前协程执行
     void swapIn();
-    void swapIn(Fiber *fiber);
+    void swapIn(Fiber *main_fiber);
 
     //把当前协程切换至后台执行
     void swapOut();
-    void swapOut(Fiber *fiber);
+    void swapOut(Fiber *main_fiber);
 
     void setState(State state);
     State getState() const;
@@ -52,11 +52,11 @@ class Fiber : public std::enable_shared_from_this<Fiber>
 
     //协程切换到后台，并设置为Ready状态
     static void yieldToReady();
-    static void yieldToReady(Fiber *fiber);
+    static void yieldToReady(Fiber *main_fiber);
 
     //协程切换到后台，并设置为Hold状态
     static void yieldToHold();
-    static void yieldToHold(Fiber *fiber);
+    static void yieldToHold(Fiber *main_fiber);
 
     //获取总协程数
     static int64_t getFibers();

@@ -5,9 +5,9 @@ namespace lon
 namespace scheduler
 {
 // 当前协程调度器
-static thread_local Scheduler *t_scheduler = nullptr;
-// 线程主协程
-static thread_local fiber::Fiber *t_fiber = nullptr;
+static thread_local Scheduler *t_cur_scheduler = nullptr;
+// 调度器协程
+static thread_local fiber::Fiber *t_scheduler_fiber = nullptr;
 
 Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name,
                      size_t fiber_stack_size)
@@ -21,13 +21,13 @@ Scheduler::Scheduler(size_t threads_count, bool use_caller, std::string name,
         fiber::Fiber::getThis();
         --m_threads_count;
         LON_ASSERT(getThis() == nullptr);
-        t_scheduler = this;
+        t_cur_scheduler = this;
         m_root_fiber.reset(new fiber::Fiber(std::bind(&Scheduler::run, this), m_fiber_stack_size));
         thread::Thread::setNameStatic(m_name);
-        // 设置当前线程的主协程为m_rootFiber
-        // 这里的m_root_fiber是该线程的主协程（执行run任务的协程），只有默认构造出来的fiber才是主协程
-        t_fiber          = m_root_fiber.get();
-        m_root_thread_id = util::getThreadId();
+        // 设置当前调度器协程为m_root_fiber
+        // 这里的m_root_fiber是该调度器协程并非线程主协程（执行run任务的协程），只有默认构造出来的fiber才是主协程
+        t_scheduler_fiber = m_root_fiber.get();
+        m_root_thread_id  = util::getThreadId();
         m_threads_id.push_back(m_root_thread_id);
     }
 }
@@ -37,7 +37,7 @@ Scheduler::~Scheduler()
     LON_ASSERT_(m_stopping, "schedule never stop!");
     if (getThis() == this)
     {
-        t_scheduler = nullptr;
+        t_cur_scheduler = nullptr;
     }
 }
 
@@ -134,10 +134,10 @@ void Scheduler::run()
 {
     util::HookState::enable();
     setThis();
-    // 非user_caller线程，设置主协程为线程主协程
+    // 非user_caller线程，设置调度器协程为线程主协程
     if (util::getThreadId() != m_root_thread_id)
     {
-        t_fiber = fiber::Fiber::getThis().get();
+        t_scheduler_fiber = fiber::Fiber::getThis().get();
     }
     fiber::Fiber::Ptr idle_fiber(
         new fiber::Fiber(std::bind(&Scheduler::idle, this), m_fiber_stack_size));
@@ -263,7 +263,7 @@ void Scheduler::idle()
     }
 }
 
-void Scheduler::setThis() { t_scheduler = this; }
+void Scheduler::setThis() { t_cur_scheduler = this; }
 
 bool Scheduler::hasIdleThreads() { return m_idle_threads_count > 0; }
 
@@ -274,9 +274,9 @@ size_t Scheduler::getTaskCount() const
 }
 
 //静态函数
-Scheduler *Scheduler::getThis() { return t_scheduler; }
+Scheduler *Scheduler::getThis() { return t_cur_scheduler; }
 
-fiber::Fiber *Scheduler::getMainFiber() { return t_fiber; }
+fiber::Fiber *Scheduler::getMainFiber() { return t_scheduler_fiber; }
 
 scheduler::Scheduler::Task::Task() : cb(nullptr), fiber(nullptr), thread_id(-1) {}
 
