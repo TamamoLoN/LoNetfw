@@ -7,8 +7,18 @@
 #include <memory>
 #include <sstream>
 #include <string.h>
-#include <sys/uio.h>
 #include <vector>
+#ifdef _WIN32
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+struct iovec
+{
+    void *iov_base;
+    size_t iov_len;
+};
+#else
+#include <sys/uio.h>
+#endif
 
 namespace lon
 {
@@ -83,12 +93,12 @@ class ByteArray
     void writeFloat(float data);
     void writeDouble(double data);
 
-    //长度: int16，以下同理
+    // 长度: int16，以下同理
     void writeStringFInt16(const std::string &data);
     void writeStringFInt32(const std::string &data);
     void writeStringFInt64(const std::string &data);
     void writeStringVInt(const std::string &data);
-    //长度: 可变
+    // 长度: 可变
     void writeString(const std::string &data);
 
     int8_t readFInt8();

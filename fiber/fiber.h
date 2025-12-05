@@ -4,7 +4,11 @@
 #include "util/util.h"
 #include <atomic>
 #include <memory>
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <ucontext.h>
+#endif
 
 namespace lon
 {
@@ -21,12 +25,8 @@ class Fiber : public std::enable_shared_from_this<Fiber>
 
     enum State
     {
-#ifdef _WIN32
-        ERROR_ = -1,
-#else
         ERROR = -1,
-#endif
-        INIT = 0,
+        INIT  = 0,
         HOLD,
         EXEC,
         TERM,

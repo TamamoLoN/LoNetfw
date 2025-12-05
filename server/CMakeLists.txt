@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB SERVER_SRCS ${CMAKE_SOURCE_DIR}/server/*.cpp)
 
-add_library(server SHARED
+add_library(server ${LIB_TYPE}
             ${SERVER_SRCS}
             )
 

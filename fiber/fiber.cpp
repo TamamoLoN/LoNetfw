@@ -301,11 +301,7 @@ std::string Fiber::stateToString(State state) const
 #define XX(str)                                                                                    \
     case str:                                                                                      \
         return #str;
-#ifdef _WIN32
-        XX(ERROR_)
-#else
         XX(ERROR)
-#endif
         XX(INIT)
         XX(HOLD)
         XX(EXEC)
@@ -382,11 +378,7 @@ int64_t Fiber::getFibers() { return s_fiber_count; }
 void Fiber::setStateError()
 {
     Fiber::Ptr cur = getThis();
-#ifdef _WIN32
-    cur->m_state = ERROR_;
-#else
-    cur->m_state = ERROR;
-#endif
+    cur->m_state   = ERROR;
 }
 
 uint64_t Fiber::getFiberId()
@@ -411,19 +403,11 @@ void Fiber::mainFunc()
     catch (std::exception &ex)
     {
         std::cout << "fiber=" << cur->m_id << " error:" << ex.what() << std::endl;
-#ifdef _WIN32
-        cur->m_state = ERROR_;
-#else
         cur->m_state = ERROR;
-#endif
     }
     catch (...)
     {
-#ifdef _WIN32
-        cur->m_state = ERROR_;
-#else
         cur->m_state = ERROR;
-#endif
     }
     // auto cur_raw = cur.get();
     // cur.reset();

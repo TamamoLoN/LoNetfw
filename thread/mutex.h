@@ -1,13 +1,19 @@
 #pragma once
 #include "thread/scopedlock.h"
 #include <atomic>
-#include <pthread.h>
 #include <sstream>
+#ifdef _WIN32
+#define _TIMESPEC_DEFINED
+#include <pthread.h>
+#else
+#include <pthread.h>
+#endif
+
 namespace lon
 {
 namespace thread
 {
-//普通锁
+// 普通锁
 class MutexNull : public util::Nonecopyable
 {
   public:
@@ -31,7 +37,7 @@ class Mutex : public util::Nonecopyable
     mutable pthread_mutex_t m_lock;
 };
 
-//读写锁
+// 读写锁
 class RWMutexNull : public util::Nonecopyable
 {
   public:

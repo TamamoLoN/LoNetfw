@@ -16,12 +16,16 @@ Thread::Thread(std::function<void()> cb, const std::string &name) : m_cb(cb), m_
         ss << "pthread create failed, rt = " << rt << ", name=" << m_name;
         throw std::runtime_error(ss.str());
     }
-    //等待线程运行起来，目的是让线程创建成功后，保证函数可以运行(保证线程执行函数顺序)
+    // 等待线程运行起来，目的是让线程创建成功后，保证函数可以运行(保证线程执行函数顺序)
     m_semaphore.wait();
 }
 Thread::~Thread()
 {
+#ifdef _WIN32
+    if (!pthread_equal(m_thread, pthread_t{}))
+#else
     if (m_thread)
+#endif
     {
         pthread_detach(m_thread);
     }
@@ -37,7 +41,11 @@ void Thread::setName(const std::string &name) { m_name = name; }
 
 void Thread::join()
 {
+#ifdef _WIN32
+    if (!pthread_equal(m_thread, pthread_t{}))
+#else
     if (m_thread)
+#endif
     {
         int rt = pthread_join(m_thread, nullptr);
         if (rt != 0)
@@ -46,11 +54,15 @@ void Thread::join()
             ss << "pthread join failed, rt = " << rt << ", name=" << m_name;
             throw std::runtime_error(ss.str());
         }
+#ifdef _WIN32
+        m_thread = pthread_t{};
+#else
         m_thread = 0;
+#endif
     }
 }
 
-//静态成员函数
+// 静态成员函数
 Thread *Thread::getThis() { return t_thread; }
 const std::string &Thread::getNameStatic() { return t_thread_name; }
 
@@ -86,7 +98,19 @@ void *Thread::run(void *arg)
     t_thread       = thread;
     thread->setId(util::getThreadId());
     thread->setNameStatic(thread->getName());
+#ifdef _WIN32
+    {
+        std::string name = thread->getName();
+        std::wstring wname(name.begin(), name.end());
+        if (wname.size() > 15)
+        {
+            wname = wname.substr(0, 15);
+        }
+        SetThreadDescription(GetCurrentThread(), wname.c_str());
+    }
+#else
     pthread_setname_np(pthread_self(), thread->getName().substr(0, 15).c_str());
+#endif
     std::function<void()> cb;
     // swap不会改变智能指针的引用次数
     cb.swap(thread->m_cb);

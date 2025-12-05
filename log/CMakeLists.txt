@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB LOG_SRCS ${CMAKE_SOURCE_DIR}/log/*.cpp)
 
-add_library(log SHARED
+add_library(log ${LIB_TYPE}
             ${LOG_SRCS}
             )
 

@@ -9,23 +9,36 @@
 #include "util/stream.h"
 #include "yaml-cpp/yaml.h"
 #include <assert.h>
-#include <cxxabi.h>
-#include <execinfo.h>
 #include <functional>
 #include <iostream>
-#include <pthread.h>
 #include <sstream>
 #include <sys/stat.h>
+#include <time.h>
+
+#ifdef _WIN32
+#define _TIMESPEC_DEFINED
+#include <Windows.h>
+#include <profileapi.h>
+#include <pthread.h>
+#include <sysinfoapi.h>
+#undef ERROR
+#include <DbgHelp.h>
+#pragma comment(lib, "Dbghelp.lib")
+int vasprintf(char **buf, const char *fmt, va_list ap);
+#else
+#include <cxxabi.h>
+#include <execinfo.h>
+#include <pthread.h>
 #include <sys/syscall.h>
 #include <sys/time.h>
-#include <time.h>
 #include <unistd.h>
+#endif
 
 namespace lon
 {
 namespace util
 {
-//字符串
+// 字符串
 char toLower(const char &ch);
 std::string toLower(const std::string &str);
 char toUpper(const char &ch);
@@ -33,7 +46,7 @@ std::string toUpper(const std::string &str);
 std::vector<std::string> split(const std::string &s, const std::string &delimiter);
 std::string trim(const std::string &str);
 
-//文件相关
+// 文件相关
 bool isFileExist(const std::string &path);
 size_t getFileSize(const std::string &path);
 
@@ -45,12 +58,23 @@ void convertYamlToVector(const std::string &prefix, const YAML::Node &node,
 
 template <class T> std::string getTypeStr()
 {
+#ifdef _WIN32
+    const char *name = typeid(T).name(); // 已经是 MSVC 装饰名
+    char undec[1024];
+    if (UnDecorateSymbolName(name, undec, sizeof(undec), UNDNAME_COMPLETE))
+    {
+        return std::string(undec);
+    }
+    // 解码失败就返回原名
+    return std::string(name);
+#else
     // abi::__cxa_demangle 获取的字符串需要手动释放内存
     char *type_str  = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr);
     std::string res = type_str;
     free(type_str);
     type_str = nullptr;
     return res;
+#endif
 }
 
 struct InsensitiveStringCompare
@@ -80,7 +104,7 @@ void getColorStr(std::string &str, Color color);
  */
 std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::string &str);
 
-//日期时间
+// 日期时间
 std::string getDateTime(const time_t &time, const std::string &format);
 time_t getCurrentDateTime();
 std::string getCurrentDateTime(const std::string &format);
@@ -92,11 +116,11 @@ uint32_t getThreadId();
 std::string getThreadName();
 uint32_t getFiberId();
 
-//打印堆栈信息
+// 打印堆栈信息
 void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip);
 const std::string backtrace(int32_t size = 10, int32_t skip = 0, const std::string &prefix = "");
 
-//内存分配
+// 内存分配
 class Allocator
 {
   public:

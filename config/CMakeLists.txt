@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB CONFIG_SRCS ${CMAKE_SOURCE_DIR}/config/*.cpp)
 
-add_library(config SHARED
+add_library(config ${LIB_TYPE}
             ${CONFIG_SRCS}
             )
 

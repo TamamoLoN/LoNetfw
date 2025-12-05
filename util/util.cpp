@@ -1,5 +1,36 @@
 #include "util/util.h"
 
+#ifdef _WIN32
+int vasprintf(char **buf, const char *fmt, va_list ap)
+{
+    va_list ap_copy;
+    va_copy(ap_copy, ap);
+
+    int len = _vscprintf(fmt, ap_copy);
+    va_end(ap_copy);
+
+    if (len < 0)
+    {
+        return -1;
+    }
+
+    *buf = (char *)malloc(len + 1);
+    if (!*buf)
+    {
+        return -1;
+    }
+
+    int written = vsnprintf(*buf, len + 1, fmt, ap);
+    if (written < 0)
+    {
+        free(*buf);
+        return -1;
+    }
+
+    return written;
+}
+#endif
+
 namespace lon
 {
 namespace util
@@ -248,7 +279,11 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
 std::string getDateTime(const time_t &time, const std::string &format)
 {
     struct tm tm;
+#ifdef _WIN32
+    localtime_s(&tm, &time);
+#else
     localtime_r(&time, &tm);
+#endif
     char buf[64] = {0};
     strftime(buf, sizeof(buf), format.c_str(), &tm);
     return std::string(buf);
@@ -263,6 +298,14 @@ std::string getCurrentDateTime(const std::string &format)
 
 uint64_t getCurrentMs()
 {
+#ifdef _WIN32
+    static LARGE_INTEGER freq;
+    static BOOL inited = QueryPerformanceFrequency(&freq);
+
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    return now.QuadPart * 1000 / freq.QuadPart;
+#else
 #ifdef USE_HIGH_PRECISION_TIME
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -272,10 +315,19 @@ uint64_t getCurrentMs()
     gettimeofday(&tv, nullptr);
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 #endif
+#endif
 }
 
 uint64_t getCurrentUs()
 {
+#ifdef _WIN32
+    static LARGE_INTEGER freq;
+    static BOOL inited = QueryPerformanceFrequency(&freq);
+
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+    return now.QuadPart * 1000000 / freq.QuadPart;
+#else
 #ifdef USE_HIGH_PRECISION_TIME
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -284,6 +336,7 @@ uint64_t getCurrentUs()
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     return tv.tv_sec * 1000 * 1000ul + tv.tv_usec;
+#endif
 #endif
 }
 
@@ -294,13 +347,32 @@ uint64_t getDurationUs(std::function<void()> func)
     return getCurrentUs() - start;
 }
 
-uint32_t getThreadId() { return syscall(SYS_gettid); }
+uint32_t getThreadId()
+{
+#ifdef _WIN32
+    return GetCurrentThreadId();
+#else
+    return syscall(SYS_gettid);
+#endif;
+}
 
 std::string getThreadName()
 {
+#ifdef _WIN32
+    PWSTR wname = nullptr;
+    HRESULT hr  = GetThreadDescription(GetCurrentThread(), &wname);
+    if (FAILED(hr) || !wname)
+        return "Thread-" + lexical_cast<std::string>(getThreadId());
+    // 转 UTF-16 → UTF-8
+    std::string name;
+    WideCharToMultiByte(CP_UTF8, 0, wname, -1, &name[0], sizeof(name), NULL, NULL);
+    LocalFree(wname);
+    return name.empty() ? "Thread-" + lexical_cast<std::string>(getThreadId()) : name;
+#else
     char buf[16] = {0};
     pthread_getname_np(pthread_self(), buf, sizeof(buf));
     return std::string(buf);
+#endif
 }
 
 // TODO - 实现获取协程id
@@ -308,7 +380,18 @@ uint32_t getFiberId() { return 0; }
 
 void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip)
 {
-    //协程会使用（栈设置的很小），尽量不在栈上分配内存，防止栈溢出
+#ifdef _WIN32
+    void *stack[64];
+    USHORT frames = CaptureStackBackTrace(skip, size, stack, NULL);
+
+    for (USHORT i = 0; i < frames; i++)
+    {
+        char buf[64];
+        sprintf_s(buf, "0x%p", stack[i]);
+        bt.push_back(buf);
+    }
+#else
+    // 协程会使用（栈设置的很小），尽量不在栈上分配内存，防止栈溢出
     void **array   = (void **)malloc(sizeof(void *) * size);
     int32_t s      = ::backtrace(array, size);
     char **strings = backtrace_symbols(array, s);
@@ -323,6 +406,7 @@ void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip)
     }
     free(array);
     free(strings);
+#endif
 }
 
 const std::string backtrace(int32_t size, int32_t skip, const std::string &prefix)

@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB FIBER_SRCS ${CMAKE_SOURCE_DIR}/fiber/*.cpp)
 
-add_library(fiber SHARED
+add_library(fiber ${LIB_TYPE}
             ${FIBER_SRCS}
             )
 

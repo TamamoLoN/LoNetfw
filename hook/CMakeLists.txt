@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB HOOK_SRCS ${CMAKE_SOURCE_DIR}/hook/*.cpp)
 
-add_library(hook SHARED
+add_library(hook ${LIB_TYPE}
             ${HOOK_SRCS}
             )
 

@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB NET_SRCS ${CMAKE_SOURCE_DIR}/net/*.cpp)
 
-add_library(net SHARED
+add_library(net ${LIB_TYPE}
             ${NET_SRCS}
             )
 

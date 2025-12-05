@@ -10,12 +10,17 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB UTIL_SRCS ${CMAKE_SOURCE_DIR}/util/*.cpp)
 
-add_library(util SHARED
+add_library(util ${LIB_TYPE}
             ${UTIL_SRCS}
             )
 
 target_include_directories(util PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(WIN32)
+target_link_libraries(util PRIVATE yaml-cpp pthreadVC2)
+else()
 target_link_libraries(util PRIVATE yaml-cpp pthread dl)
+endif()
 
 if(USE_ABSOLUTE_PATH)
 else()

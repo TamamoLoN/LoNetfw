@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}
 
 file(GLOB SCHEDULER_SRCS ${CMAKE_SOURCE_DIR}/scheduler/*.cpp)
 
-add_library(scheduler SHARED
+add_library(scheduler ${LIB_TYPE}
             ${SCHEDULER_SRCS}
             )
 
