@@ -4,7 +4,7 @@ namespace lon
 {
 namespace fiber
 {
-//主协程分配子协程，子协程执行完毕后控制权回归主协程
+// 主协程分配子协程，子协程执行完毕后控制权回归主协程
 static std::atomic<uint64_t> s_fiber_id    = ATOMIC_VAR_INIT(0);
 static std::atomic<uint64_t> s_fiber_count = ATOMIC_VAR_INIT(0);
 
@@ -12,39 +12,117 @@ static thread_local Fiber *t_cur_fiber      = nullptr; // 当前线程的协程
 static thread_local Fiber::Ptr t_main_fiber = nullptr; // 主协程
 static thread_local Fiber *t_schedule_fiber = nullptr; // 当前调度期协程
 
-//第一个协程为主协程，实现私有构造
-Fiber::Fiber() : m_id(0), m_state(EXEC), m_stack(nullptr)
+// forward for WinAPI wrapper
+#ifdef _WIN32
+static VOID CALLBACK FiberProc(LPVOID lpParameter)
+{
+    Fiber *f = static_cast<Fiber *>(lpParameter);
+    // call instance mainFunc
+    try
+    {
+        f->mainFunc();
+    }
+    catch (...)
+    {
+        // exceptions should already be handled in mainFunc; ensure fiber doesn't fall off
+    }
+    // If mainFunc returns, just exit fiber by switching back to main fiber if any
+    // But mainFunc is expected to throw if returns here, similar to your original implementation.
+}
+#endif
+
+// 第一个协程为主协程，实现私有构造
+Fiber::Fiber()
+    : m_id(0), m_state(EXEC), m_stack_size(0)
+#ifdef _WIN32
+      ,
+      m_fiber(nullptr)
+#else
+      ,
+      m_stack(nullptr)
+#endif
 {
     setThis(this);
+#ifdef _WIN32
+#else
     if (getcontext(&m_ctx))
     {
         throw std::runtime_error("getcontext error\n" + util::backtrace(100, 2, "\t"));
     }
+#endif
     ++s_fiber_count;
     // std::cout << "Fiber create: " << m_id << std::endl;
 }
 
 Fiber::Fiber(std::function<void()> cb, size_t stack_size)
-    : m_id(++s_fiber_id), m_cb(cb), m_stack_size(stack_size), m_state(INIT), m_stack(nullptr)
+    : m_id(++s_fiber_id), m_cb(cb), m_stack_size(stack_size), m_state(INIT)
+#ifdef _WIN32
+      ,
+      m_fiber(nullptr)
+#else
+      ,
+      m_stack(nullptr)
+#endif
 {
+#ifdef _WIN32
+    // Ensure the thread has a main fiber
+    if (!t_main_fiber)
+    {
+        // Convert thread to fiber if not already
+        LPVOID mainFiber = ConvertThreadToFiber(nullptr);
+        if (!mainFiber)
+        {
+            throw std::runtime_error("ConvertThreadToFiber failed");
+        }
+        // Create a Fiber object to represent the main fiber
+        // Note: We create a Fiber via private ctor to indicate it's the main fiber
+        Fiber *main_f   = new Fiber(); // will setThis in ctor
+        main_f->m_fiber = mainFiber;
+        t_main_fiber    = Ptr(main_f);
+    }
+
+    // Create a new fiber. CreateFiber accepts stack size; if 0, system decides
+    m_fiber = CreateFiber((SIZE_T)m_stack_size, FiberProc, this);
+    if (!m_fiber)
+    {
+        throw std::runtime_error("CreateFiber failed");
+    }
+#else
+    // original ucontext creation...
     m_stack = StackAllocator::allocate(m_stack_size);
     if (getcontext(&m_ctx))
     {
         StackAllocator::deallocate(m_stack);
         throw std::runtime_error("getcontext error\n" + util::backtrace(100, 2, "\t"));
     }
-    ++s_fiber_count;
+
     m_ctx.uc_link          = nullptr;
     m_ctx.uc_stack.ss_sp   = m_stack;
     m_ctx.uc_stack.ss_size = m_stack_size;
 
     makecontext(&m_ctx, &Fiber::mainFunc, 0);
     // std::cout << "Fiber create: " << m_id << std::endl;
+#endif
+    ++s_fiber_count;
 }
 
 Fiber::~Fiber()
 {
     --s_fiber_count;
+#ifdef _WIN32
+    // windows不能delete主协程
+    if (m_fiber && this != t_main_fiber.get())
+    {
+        DeleteFiber(m_fiber);
+        m_fiber = nullptr;
+        if (m_state != TERM && m_state != INIT && m_state == ERROR)
+        {
+            throw std::runtime_error("m_state error: m_state not TERM or INIT:[" +
+                                     stateToString(m_state) + "]\n" +
+                                     util::backtrace(100, 2, "\t"));
+        }
+    }
+#else
     if (m_stack)
     {
         StackAllocator::deallocate(m_stack);
@@ -55,6 +133,7 @@ Fiber::~Fiber()
                                      util::backtrace(100, 2, "\t"));
         }
     }
+#endif
     else
     {
         if (m_cb)
@@ -77,6 +156,30 @@ Fiber::~Fiber()
 
 void Fiber::reset(std::function<void()> cb)
 {
+#ifdef _WIN32
+    if (this == t_main_fiber.get())
+    {
+        throw std::runtime_error("cannot reset main fiber " + util::backtrace(100, 2, "\t"));
+    }
+    if (m_state != TERM && m_state != INIT && m_state == ERROR)
+    {
+        throw std::runtime_error("reset error: m_state not TERM or INIT:[" +
+                                 stateToString(m_state) + "]\n" + util::backtrace(100, 2, "\t"));
+    }
+    m_cb = std::move(cb);
+    if (m_fiber)
+    {
+        DeleteFiber(m_fiber);
+        m_fiber = nullptr;
+    }
+    m_fiber = CreateFiber((SIZE_T)m_stack_size, FiberProc, this);
+    if (!m_fiber)
+    {
+        throw std::runtime_error("CreateFiber error\n" + util::backtrace(100, 2, "\t"));
+    }
+
+    m_state = INIT;
+#else
     if (m_stack == nullptr)
     {
         throw std::runtime_error("reset error: m_stack is null\n" + util::backtrace(100, 2, "\t"));
@@ -98,6 +201,7 @@ void Fiber::reset(std::function<void()> cb)
 
     makecontext(&m_ctx, &Fiber::mainFunc, 0);
     m_state = INIT;
+#endif
 }
 
 void Fiber::swapIn()
@@ -109,10 +213,16 @@ void Fiber::swapIn()
                                  "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_state = EXEC;
+#ifdef _WIN32
+    // Switch to this fiber. current fiber pointer must be set by ConvertThreadToFiber or prior
+    // Switch
+    SwitchToFiber(m_fiber);
+#else
     if (swapcontext(&(t_main_fiber->m_ctx), &m_ctx))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
+#endif
 }
 
 void Fiber::swapIn(Fiber *main_fiber)
@@ -125,29 +235,57 @@ void Fiber::swapIn(Fiber *main_fiber)
                                  "]\n" + util::backtrace(100, 2, "\t"));
     }
     m_state = EXEC;
+#ifdef _WIN32
+    // Switch from schedule fiber to this fiber
+    SwitchToFiber(m_fiber);
+#else
     if (swapcontext(&(main_fiber->m_ctx), &m_ctx))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
+#endif
 }
 
 void Fiber::swapOut()
 {
     setThis(t_main_fiber.get());
+#ifdef _WIN32
+    // switch back to thread's main fiber
+    if (t_main_fiber && t_main_fiber->m_fiber)
+    {
+        SwitchToFiber(t_main_fiber->m_fiber);
+    }
+    else
+    {
+        throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
+    }
+#else
     if (swapcontext(&m_ctx, &(t_main_fiber->m_ctx)))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
+#endif
 }
 
 void Fiber::swapOut(Fiber *main_fiber)
 {
     setThis(main_fiber);
     t_schedule_fiber = nullptr;
+#ifdef _WIN32
+    if (main_fiber && main_fiber->m_fiber)
+    {
+        SwitchToFiber(main_fiber->m_fiber);
+    }
+    else
+    {
+        throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
+    }
+#else
     if (swapcontext(&m_ctx, &(main_fiber->m_ctx)))
     {
         throw std::runtime_error("swapcontext error\n" + util::backtrace(100, 2, "\t"));
     }
+#endif
 }
 
 void Fiber::setState(Fiber::State state) { m_state = state; }
@@ -163,7 +301,11 @@ std::string Fiber::stateToString(State state) const
 #define XX(str)                                                                                    \
     case str:                                                                                      \
         return #str;
+#ifdef _WIN32
+        XX(ERROR_)
+#else
         XX(ERROR)
+#endif
         XX(INIT)
         XX(HOLD)
         XX(EXEC)
@@ -175,7 +317,7 @@ std::string Fiber::stateToString(State state) const
     }
 }
 
-//静态函数
+// 静态函数
 void Fiber::setThis(Fiber *fiber) { t_cur_fiber = fiber; }
 
 Fiber::Ptr Fiber::getThis()
@@ -184,6 +326,18 @@ Fiber::Ptr Fiber::getThis()
     {
         return t_cur_fiber->shared_from_this();
     }
+#ifdef _WIN32
+    // create main fiber object if missing
+    // ConvertThreadToFiber must be called before CreateFiber; ensure main fiber exists
+    LPVOID mainFiber = ConvertThreadToFiber(nullptr);
+    if (!mainFiber)
+    {
+        throw std::runtime_error("ConvertThreadToFiber failed in getThis");
+    }
+    Fiber *main_f   = new Fiber(); // uses private ctor -> sets this
+    main_f->m_fiber = mainFiber;
+    t_main_fiber    = Ptr(main_f);
+#else
     Fiber::Ptr main_fiber(new Fiber);
     if (t_cur_fiber != main_fiber.get())
     {
@@ -191,6 +345,7 @@ Fiber::Ptr Fiber::getThis()
                                  util::backtrace(100, 2, "\t"));
     }
     t_main_fiber = main_fiber;
+#endif
     return t_cur_fiber->shared_from_this();
 }
 
@@ -227,7 +382,11 @@ int64_t Fiber::getFibers() { return s_fiber_count; }
 void Fiber::setStateError()
 {
     Fiber::Ptr cur = getThis();
-    cur->m_state   = ERROR;
+#ifdef _WIN32
+    cur->m_state = ERROR_;
+#else
+    cur->m_state = ERROR;
+#endif
 }
 
 uint64_t Fiber::getFiberId()
@@ -252,11 +411,19 @@ void Fiber::mainFunc()
     catch (std::exception &ex)
     {
         std::cout << "fiber=" << cur->m_id << " error:" << ex.what() << std::endl;
+#ifdef _WIN32
+        cur->m_state = ERROR_;
+#else
         cur->m_state = ERROR;
+#endif
     }
     catch (...)
     {
+#ifdef _WIN32
+        cur->m_state = ERROR_;
+#else
         cur->m_state = ERROR;
+#endif
     }
     // auto cur_raw = cur.get();
     // cur.reset();
