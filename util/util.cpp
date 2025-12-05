@@ -353,7 +353,7 @@ uint32_t getThreadId()
     return GetCurrentThreadId();
 #else
     return syscall(SYS_gettid);
-#endif;
+#endif
 }
 
 std::string getThreadName()
