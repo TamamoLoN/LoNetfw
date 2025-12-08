@@ -381,15 +381,62 @@ uint32_t getFiberId() { return 0; }
 void backtrace(std::vector<std::string> &bt, int32_t size, int32_t skip)
 {
 #ifdef _WIN32
+    static HANDLE process           = GetCurrentProcess();
+    static bool dbghelp_initialized = false;
+    static CRITICAL_SECTION cs;
+
+    if (!dbghelp_initialized)
+    {
+        InitializeCriticalSection(&cs);
+        EnterCriticalSection(&cs);
+
+        SymInitialize(process, NULL, TRUE);
+        SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
+        dbghelp_initialized = true;
+
+        LeaveCriticalSection(&cs);
+    }
+
     void *stack[64];
     USHORT frames = CaptureStackBackTrace(skip, size, stack, NULL);
 
+    EnterCriticalSection(&cs);
+
     for (USHORT i = 0; i < frames; i++)
     {
-        char buf[64];
-        sprintf_s(buf, "0x%p", stack[i]);
-        bt.push_back(buf);
+        DWORD64 addr = (DWORD64)stack[i];
+
+        // --- 解析符号名 ---
+        char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
+        SYMBOL_INFO *symbol  = (SYMBOL_INFO *)buffer;
+        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+        symbol->MaxNameLen   = MAX_SYM_NAME;
+
+        DWORD64 displacement = 0;
+        BOOL has_symbol      = SymFromAddr(process, addr, &displacement, symbol);
+
+        // --- 解析模块名 ---
+        IMAGEHLP_MODULE64 module_info;
+        memset(&module_info, 0, sizeof(module_info));
+        module_info.SizeOfStruct = sizeof(module_info);
+        SymGetModuleInfo64(process, addr, &module_info);
+
+        char line[512];
+        if (has_symbol)
+        {
+            snprintf(line, sizeof(line), "%s!%s + 0x%llx",
+                     module_info.ImageName ? module_info.ImageName : "unknown", symbol->Name,
+                     displacement);
+        }
+        else
+        {
+            snprintf(line, sizeof(line), "0x%llx", addr);
+        }
+
+        bt.push_back(line);
     }
+
+    LeaveCriticalSection(&cs);
 #else
     // 协程会使用（栈设置的很小），尽量不在栈上分配内存，防止栈溢出
     void **array   = (void **)malloc(sizeof(void *) * size);
