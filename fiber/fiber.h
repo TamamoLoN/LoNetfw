@@ -5,7 +5,6 @@
 #include <atomic>
 #include <memory>
 #ifdef _WIN32
-#include <windows.h>
 #else
 #include <ucontext.h>
 #endif

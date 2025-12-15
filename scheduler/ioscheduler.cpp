@@ -4,12 +4,64 @@ namespace lon
 {
 namespace scheduler
 {
+#ifdef _WIN32
+static int pipe(SOCKET sv[2])
+{
+    SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (listener == INVALID_SOCKET)
+        return -1;
+
+    sockaddr_in addr{};
+    addr.sin_family      = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    addr.sin_port        = 0;
+
+    if (bind(listener, (sockaddr *)&addr, sizeof(addr)) != 0)
+        return -1;
+
+    if (listen(listener, 1) != 0)
+        return -1;
+
+    int len = sizeof(addr);
+    getsockname(listener, (sockaddr *)&addr, &len);
+
+    sv[0] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (connect(sv[0], (sockaddr *)&addr, sizeof(addr)) != 0)
+        return -1;
+
+    sv[1] = accept(listener, nullptr, nullptr);
+    closesocket(listener);
+
+    return (sv[1] != INVALID_SOCKET) ? 0 : -1;
+}
+
+#endif
+
 IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name,
                          size_t fiber_stack_size)
     : Scheduler(threads_count, use_caller, name, fiber_stack_size), TimerManager(),
       m_waitting_events_count({0}), m_epoll_fd(0)
 {
     memset(m_notify_pipe_fd, 0, sizeof(m_notify_pipe_fd));
+
+#ifdef _WIN32
+    m_epoll_fd = epoll_create(5000);
+    LON_ASSERT(m_epoll_fd != nullptr);
+
+    int rt = pipe(m_notify_pipe_fd);
+    LON_ASSERT(!rt);
+    epoll_event event;
+    memset(&event, 0, sizeof(event));
+    event.events    = EPOLLIN | EPOLLONESHOT;
+    event.data.sock = m_notify_pipe_fd[0];
+
+    u_long nb = 1;
+    rt        = ioctlsocket(m_notify_pipe_fd[0], FIONBIO, &nb);
+    LON_ASSERT(!rt);
+
+    rt = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_notify_pipe_fd[0], &event);
+    LON_ASSERT(!rt);
+#else
     m_epoll_fd = epoll_create(5000);
     LON_ASSERT(m_epoll_fd != -1);
 
@@ -26,6 +78,7 @@ IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name
 
     rt = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_notify_pipe_fd[0], &event);
     LON_ASSERT(!rt);
+#endif
 
     contextResize(32);
 
@@ -35,10 +88,15 @@ IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name
 IOScheduler::~IOScheduler()
 {
     stop();
+#ifdef _WIN32
+    epoll_close(m_epoll_fd);
+    closesocket(m_notify_pipe_fd[0]);
+    closesocket(m_notify_pipe_fd[1]);
+#else
     close(m_epoll_fd);
     close(m_notify_pipe_fd[0]);
     close(m_notify_pipe_fd[1]);
-
+#endif
     for (auto &it : m_fd_contexts)
     {
         delete it;
@@ -48,7 +106,7 @@ IOScheduler::~IOScheduler()
 
 int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
 {
-    //保证fd即是索引
+    // 保证fd即是索引
     FdContext *fd_ctx = nullptr;
     MutexType::RdLock rlock(m_mutex);
     if ((int)m_fd_contexts.size() > fd)
@@ -75,7 +133,11 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     int op = fd_ctx->event ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
     epoll_event epevent;
     memset(&epevent, 0, sizeof(epevent));
-    epevent.events   = EPOLLET | fd_ctx->event | event;
+#ifdef _WIN32
+    epevent.events = EPOLLONESHOT | fd_ctx->event | event;
+#else
+    epevent.events = EPOLLET | fd_ctx->event | event;
+#endif
     epevent.data.ptr = fd_ctx;
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
@@ -122,7 +184,11 @@ bool IOScheduler::delEvent(int fd, Event event)
     int op          = new_event ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
     epoll_event epevent;
     memset(&epevent, 0, sizeof(epevent));
-    epevent.events   = EPOLLET | new_event;
+#ifdef _WIN32
+    epevent.events = EPOLLONESHOT | new_event;
+#else
+    epevent.events = EPOLLET | new_event;
+#endif
     epevent.data.ptr = fd_ctx;
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
@@ -159,7 +225,11 @@ bool IOScheduler::cancelEvent(int fd, Event event)
     int op          = new_event ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
     epoll_event epevent;
     memset(&epevent, 0, sizeof(epevent));
-    epevent.events   = EPOLLET | new_event;
+#ifdef _WIN32
+    epevent.events = EPOLLONESHOT | new_event;
+#else
+    epevent.events = EPOLLET | new_event;
+#endif
     epevent.data.ptr = fd_ctx;
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
@@ -225,7 +295,13 @@ void IOScheduler::notify()
         return;
     }
     LON_DEBUG(LON_LOG_ROOT) << "notify";
+#ifdef _WIN32
+    char c  = 'T';
+    int ret = send(m_notify_pipe_fd[1], &c, 1, 0);
+    LON_ASSERT(ret == 1);
+#else
     int ret = write(m_notify_pipe_fd[1], "T", 1);
+#endif
     LON_ASSERT(ret == 1);
 }
 
@@ -245,10 +321,12 @@ void IOScheduler::idle()
 {
     LON_DEBUG(LON_LOG_ROOT) << "idle";
     epoll_event *events = new epoll_event[64]();
-    std::shared_ptr<epoll_event> shared_events(events, [](epoll_event *ptr) {
-        delete[] ptr;
-        ptr = nullptr;
-    });
+    std::shared_ptr<epoll_event> shared_events(events,
+                                               [](epoll_event *ptr)
+                                               {
+                                                   delete[] ptr;
+                                                   ptr = nullptr;
+                                               });
 
     while (true)
     {
@@ -292,6 +370,16 @@ void IOScheduler::idle()
         for (int cnt = 0; cnt < ret; ++cnt)
         {
             epoll_event &event = events[cnt];
+#ifdef _WIN32
+            if (event.data.sock == m_notify_pipe_fd[0])
+            {
+                char msg = 0;
+                while (recv(m_notify_pipe_fd[0], &msg, 1, 0) == 1)
+                {
+                }
+                continue;
+            }
+#else
             if (event.data.fd == m_notify_pipe_fd[0])
             {
                 uint8_t msg = 0;
@@ -300,6 +388,7 @@ void IOScheduler::idle()
                 }
                 continue;
             }
+#endif
             FdContext *fd_ctx = (FdContext *)event.data.ptr;
             FdContext::MutexType::Lock fd_ctx_lock(fd_ctx->mutex);
             if (event.events & (EPOLLERR | EPOLLHUP))
@@ -322,7 +411,11 @@ void IOScheduler::idle()
             }
             int left_event = (fd_ctx->event & ~real_event);
             int op         = left_event ? EPOLL_CTL_MOD : EPOLL_CTL_DEL;
-            event.events   = EPOLLET | left_event;
+#ifdef _WIN32
+            event.events = EPOLLONESHOT | left_event;
+#else
+            event.events = EPOLLET | left_event;
+#endif
 
             int ret_epoll_ctl = epoll_ctl(m_epoll_fd, op, fd_ctx->fd, &event);
             if (ret_epoll_ctl)
@@ -345,7 +438,7 @@ void IOScheduler::idle()
                 --m_waitting_events_count;
             }
         }
-        //减少t_fiber引用计数，防止idle fiber退出时，持有太多t_fiber的引用
+        // 减少t_fiber引用计数，防止idle fiber退出时，持有太多t_fiber的引用
         auto &&cur = std::move(fiber::Fiber::getThis());
         cur->swapOut(Scheduler::getMainFiber());
         // fiber::Fiber::yieldToHold(Scheduler::getMainFiber());
@@ -368,7 +461,7 @@ void IOScheduler::contextResize(size_t size)
     }
 }
 
-//静态方法
+// 静态方法
 IOScheduler *IOScheduler::getThis() { return dynamic_cast<IOScheduler *>(Scheduler::getThis()); }
 
 IOScheduler::FdContext::EventContext &IOScheduler::FdContext::getContext(Event event)

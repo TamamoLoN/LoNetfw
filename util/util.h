@@ -17,6 +17,10 @@
 
 #ifdef _WIN32
 #define _TIMESPEC_DEFINED
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
 #include <Windows.h>
 #include <profileapi.h>
 #include <pthread.h>
