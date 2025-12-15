@@ -359,15 +359,46 @@ uint32_t getThreadId()
 std::string getThreadName()
 {
 #ifdef _WIN32
-    PWSTR wname = nullptr;
-    HRESULT hr  = GetThreadDescription(GetCurrentThread(), &wname);
-    if (FAILED(hr) || !wname)
-        return "Thread-" + lexical_cast<std::string>(getThreadId());
-    // 转 UTF-16 → UTF-8
-    std::string name;
-    WideCharToMultiByte(CP_UTF8, 0, wname, -1, &name[0], sizeof(name), NULL, NULL);
-    LocalFree(wname);
-    return name.empty() ? "Thread-" + lexical_cast<std::string>(getThreadId()) : name;
+    auto WideToUtf8 = [](const std::wstring &src) -> std::string
+    {
+        if (src.empty())
+        {
+            return "";
+        }
+        int size_needed =
+            WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, nullptr, 0, nullptr, nullptr);
+        std::string ret(size_needed - 1, 0);
+        WideCharToMultiByte(CP_UTF8, 0, src.c_str(), -1, &ret[0], size_needed, nullptr, nullptr);
+        return ret;
+    };
+    // 尝试获取线程名
+    PWSTR wthread = nullptr;
+    HRESULT hr    = GetThreadDescription(GetCurrentThread(), &wthread);
+    if (SUCCEEDED(hr) && wthread && wcslen(wthread) > 0)
+    {
+        std::string name = WideToUtf8(wthread);
+        LocalFree(wthread);
+        if (!name.empty())
+        {
+            return name;
+        }
+    }
+    if (wthread)
+    {
+        LocalFree(wthread);
+    }
+    // 获取进程名
+    wchar_t wpath[MAX_PATH] = {0};
+    DWORD len               = GetModuleFileNameW(NULL, wpath, MAX_PATH);
+    if (len == 0)
+    {
+        return "";
+    }
+    std::wstring wfile(wpath);
+    size_t pos         = wfile.find_last_of(L"\\/");
+    std::wstring wname = (pos == std::wstring::npos) ? wfile : wfile.substr(pos + 1);
+
+    return WideToUtf8(wname);
 #else
     char buf[16] = {0};
     pthread_getname_np(pthread_self(), buf, sizeof(buf));
