@@ -1,9 +1,13 @@
 #pragma once
 #include "scheduler/ioscheduler.h"
-#include <dlfcn.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef _WIN32
+static int S_ISSOCK(SOCKET s);
+#else
+#include <dlfcn.h>
 #include <unistd.h>
+#endif
 
 namespace lon
 {

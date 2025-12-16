@@ -22,9 +22,14 @@ static VOID CALLBACK FiberProc(LPVOID lpParameter)
     {
         f->mainFunc();
     }
+    // catch (const std::runtime_error &e)
+    //{
+    //     std::cout << e.what() << std::endl;
+    // }
     catch (...)
     {
         // exceptions should already be handled in mainFunc; ensure fiber doesn't fall off
+        // std::cout << "unknown error" << std::endl;
     }
     // If mainFunc returns, just exit fiber by switching back to main fiber if any
     // But mainFunc is expected to throw if returns here, similar to your original implementation.
@@ -421,9 +426,12 @@ void Fiber::mainFunc()
     {
         cur->swapOut();
     }
-
+#ifdef _WIN32
+    return;
+#else
     throw std::runtime_error("fiber=" + util::lexical_cast<std::string>(getThis()->m_id) +
                              " can not execute here\n" + util::backtrace(100, 2, "\t"));
+#endif
 }
 
 } // namespace fiber

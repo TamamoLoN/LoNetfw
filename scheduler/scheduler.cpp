@@ -273,7 +273,7 @@ size_t Scheduler::getTaskCount() const
     return m_tasks.size();
 }
 
-//静态函数
+// 静态函数
 Scheduler *Scheduler::getThis() { return t_cur_scheduler; }
 
 fiber::Fiber *Scheduler::getMainFiber() { return t_scheduler_fiber; }

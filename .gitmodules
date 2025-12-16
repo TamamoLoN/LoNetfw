@@ -1,3 +1,6 @@
 [submodule "thirdparty/yaml-cpp"]
     path = thirdparty/yaml-cpp
     url = https://github.com/jbeder/yaml-cpp.git
+[submodule "thirdparty/minhook"]
+	path = thirdparty/minhook
+	url = git@github.com:TsudaKageyu/minhook.git

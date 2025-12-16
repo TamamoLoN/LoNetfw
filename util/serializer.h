@@ -10,12 +10,11 @@
 #include <vector>
 #ifdef _WIN32
 #include <BaseTsd.h>
+#include <winSock2.h>
 typedef SSIZE_T ssize_t;
-struct iovec
-{
-    void *iov_base;
-    size_t iov_len;
-};
+using iovec = WSABUF;
+#define iov_base buf
+#define iov_len len
 #else
 #include <sys/uio.h>
 #endif

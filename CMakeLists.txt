@@ -17,13 +17,16 @@ if(WIN32)
     add_definitions(/DWIN32 /D_WINDOWS)
     add_definitions(/D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/Zi)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/minhook)
     include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/pthreads-w32/include
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/wepoll/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/minhook/include
     )
     link_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/pthreads-w32/lib/x64
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/wepoll/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/dl/lib
     )
     set(LIB_TYPE STATIC)
 else()
@@ -75,6 +78,25 @@ function(add_build_target targetname)
                 ${CMAKE_CURRENT_SOURCE_DIR}/tests/${targetname}.cpp
                 )
     if(MODULARIZATION)
+    if(WIN32)
+        target_link_libraries(${targetname} PRIVATE 
+                                util 
+                                fiber
+                                thread
+                                log 
+                                config 
+                                scheduler
+                                hook
+                                net
+                                server
+                                yaml-cpp
+                                dl
+                                ws2_32
+                                minhook
+                                wepoll
+                                iphlpapi
+                                ) 
+    else()
         target_link_libraries(${targetname} PRIVATE 
                                 util 
                                 fiber
@@ -88,6 +110,7 @@ function(add_build_target targetname)
                                 yaml-cpp
                                 dl
                                 ) 
+    endif()
     else()
         target_link_libraries(${targetname} PRIVATE 
                                     ${PROJECT_NAME}

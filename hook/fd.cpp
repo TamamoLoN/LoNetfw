@@ -1,4 +1,29 @@
 #include "hook/fd.h"
+#ifdef _WIN32
+#include "hook/hook.h"
+#endif
+
+#ifdef _WIN32
+static int S_ISSOCK(SOCKET s)
+{
+    HANDLE h = (HANDLE)s;
+    DWORD ft = GetFileType(h);
+    if (ft != FILE_TYPE_PIPE)
+    {
+        // 磁盘文件 / 字符设备 / 无效
+        return false;
+    }
+    // PIPE 里可能是：命名管道 / 匿名管道 / socket
+    int type = 0;
+    int len  = sizeof(type);
+    // 只查属性，不收发数据，不阻塞
+    if (getsockopt_f(s, SOL_SOCKET, SO_TYPE, (char *)&type, &len) != 0)
+    {
+        return false; // pipe，但不是 socket
+    }
+    return true;
+}
+#endif
 
 namespace lon
 {
@@ -17,6 +42,31 @@ hook::Fd::Fd(int fd)
 
 bool hook::Fd::init()
 {
+#ifdef _WIN32
+    if (m_is_init)
+    {
+        return true;
+    }
+    m_recv_timeout = -1;
+    m_send_timeout = -1;
+    if (!S_ISSOCK((SOCKET)m_fd))
+    {
+        m_is_init   = false;
+        m_is_socket = false;
+        return false;
+    }
+    m_is_init   = true;
+    m_is_socket = true;
+    // 系统级非阻塞
+    u_long nonblock = 1;
+    int rc          = ioctlsocket_f((SOCKET)m_fd, FIONBIO, &nonblock);
+    LON_ASSERT(rc == 0);
+
+    m_is_sys_nonblock  = true;
+    m_is_user_nonblock = false;
+    m_is_closed        = false;
+    return m_is_init;
+#else
     if (fd_fcntl_f == nullptr)
     {
         fd_fcntl_f = (fd_fcntl_fun)dlsym(RTLD_NEXT, "fcntl");
@@ -58,6 +108,7 @@ bool hook::Fd::init()
     m_is_user_nonblock = false;
     m_is_closed        = false;
     return m_is_init;
+#endif
 }
 
 bool hook::Fd::isInit() const { return m_is_init; }

@@ -25,7 +25,7 @@ int8_t Varint::encode16(uint8_t *buf, uint16_t n)
     }
     while (n > 0b01111111)
     {
-        //从字节流末尾取出 7 bit 并在最高位增加 1 构成一个字节
+        // 从字节流末尾取出 7 bit 并在最高位增加 1 构成一个字节
         buf[cnt] = (n & 0b01111111) | 0b10000000;
         n >>= 7;
         ++cnt;
@@ -307,7 +307,7 @@ float ByteArray::readFloat()
 double ByteArray::readDouble()
 {
     uint64_t data = readFUInt64();
-    double res     = 0.0;
+    double res    = 0.0;
     memcpy(&res, &data, sizeof(data));
     return res;
 }
@@ -619,7 +619,7 @@ size_t ByteArray::getReadBuffers(std::vector<iovec> &bufs, size_t len) const
     size_t size        = len;
     size_t node_pos    = m_position % m_node_size;
     size_t node_remain = m_cur->size - node_pos;
-    struct iovec iov;
+    iovec iov;
     auto cur = m_cur;
 
     while (len > 0)
@@ -655,7 +655,7 @@ size_t ByteArray::getReadBuffers(std::vector<iovec> &bufs, size_t len, size_t po
     size_t size        = len;
     size_t node_pos    = position % m_node_size;
     size_t node_remain = m_cur->size - node_pos;
-    struct iovec iov;
+    iovec iov;
     auto cur     = m_root;
     size_t count = position / m_node_size;
     while (count > 0)
@@ -696,7 +696,7 @@ size_t ByteArray::getWriteBuffers(std::vector<iovec> &bufs, size_t len)
     size_t size        = len;
     size_t node_pos    = m_position % m_node_size;
     size_t node_remain = m_cur->size - node_pos;
-    struct iovec iov;
+    iovec iov;
     auto cur = m_cur;
 
     while (len > 0)
