@@ -92,60 +92,78 @@ static ssize_t io(int fd, OrgFun fun, const char *hook_name,
 
 retry:
     ssize_t ret = fun(fd, std::forward<Args>(args)...);
+#ifdef _WIN32
+    if (ret == SOCKET_ERROR)
+    {
+        int err = WSAGetLastError();
+        if (err != WSAEWOULDBLOCK)
+        {
+            return -1;
+        }
+    }
+    else
+    {
+        return ret;
+    }
+#else
     while (ret == -1 && errno == EINTR)
     {
         ret = fun(fd, std::forward<Args>(args)...);
     }
-    if (ret == -1 && errno == EAGAIN)
+    if (ret != -1 || errno != EAGAIN)
     {
-        auto ios                         = lon::scheduler::IOScheduler::getThis();
-        lon::scheduler::Timer::Ptr timer = nullptr;
-        std::weak_ptr<timerinfo> w_tinfo(tinfo);
+        return ret;
+    }
+#endif
 
-        if (timeout >= 0)
-        {
-            timer = ios->addConditionTimer(
-                timeout,
-                [w_tinfo, fd, ios, event]()
-                {
-                    auto t = w_tinfo.lock();
-                    if (!t || t->canceled)
-                    {
-                        return;
-                    }
-                    t->canceled = ETIMEDOUT;
-                    ios->cancelEvent(fd, event);
-                },
-                w_tinfo);
-        }
+    auto ios                         = lon::scheduler::IOScheduler::getThis();
+    lon::scheduler::Timer::Ptr timer = nullptr;
+    std::weak_ptr<timerinfo> w_tinfo(tinfo);
 
-        int rt = ios->addEvent(fd, event);
-        if (rt)
-        {
-
-            LON_ERROR(LON_LOG_ROOT) << hook_name << "io::addEvent(" << fd << ", " << event << ")";
-
-            if (timer)
+    if (timeout >= 0)
+    {
+        timer = ios->addConditionTimer(
+            timeout,
+            [w_tinfo, fd, ios, event]()
             {
-                timer->cancel();
-            }
+                auto t = w_tinfo.lock();
+                if (!t || t->canceled)
+                {
+                    return;
+                }
+                t->canceled = ETIMEDOUT;
+                ios->cancelEvent(fd, event);
+            },
+            w_tinfo);
+    }
+
+    int rt = ios->addEvent(fd, event);
+    if (rt)
+    {
+
+        LON_ERROR(LON_LOG_ROOT) << hook_name << "io::addEvent(" << fd << ", " << event << ")";
+
+        if (timer)
+        {
+            timer->cancel();
+        }
+        return -1;
+    }
+    else
+    {
+        lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
+        if (timer)
+        {
+            timer->cancel();
+        }
+        if (tinfo->canceled)
+        {
+            errno = tinfo->canceled;
             return -1;
         }
-        else
-        {
-            lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
-            if (timer)
-            {
-                timer->cancel();
-            }
-            if (tinfo->canceled)
-            {
-                errno = tinfo->canceled;
-                return -1;
-            }
-            goto retry;
-        }
+        goto retry;
     }
+
     return ret;
 }
 
@@ -158,6 +176,8 @@ extern "C"
 #undef XX
     VOID WINAPI hook_Sleep(_In_ DWORD dwMilliseconds)
     {
+        // FIXME - 这里因为有其他依赖使用了Sleep，会导致hook嵌套，ioscheduler卡死
+        return Sleep_f(dwMilliseconds);
         CHECK_HOOK(Sleep_f, dwMilliseconds)
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
@@ -264,6 +284,20 @@ extern "C"
         }
 
         int ret = connect_f(sockfd, addr, addrlen);
+#ifdef _WIN32
+        if (ret == SOCKET_ERROR)
+        {
+            int err = WSAGetLastError();
+            if (err == WSAEWOULDBLOCK || err == WSAEINPROGRESS)
+            {
+                errno = EINPROGRESS;
+            }
+            else
+            {
+                return ret;
+            }
+        }
+#endif
         if (ret == 0)
         {
             return 0;
@@ -319,9 +353,15 @@ extern "C"
                 return -1;
             }
         }
+#ifdef _WIN32
+        int error = 0;
+        int len   = sizeof(error);
+        if (getsockopt_f(sockfd, SOL_SOCKET, SO_ERROR, (char *)&error, &len) == -1)
+#else
         char error    = 0;
         socklen_t len = sizeof(int);
         if (getsockopt_f(sockfd, SOL_SOCKET, SO_ERROR, &error, &len) == -1)
+#endif
         {
             return -1;
         }
