@@ -36,10 +36,15 @@ typename std::enable_if<sizeof(T) == sizeof(uint16_t), T>::type byteswap(T value
     return (T)bswap_16((uint16_t)value);
 }
 
+#ifdef _WIN32
+// windows只有小端序
+#define LON_ENDIAN LON_LITTLE_ENDIAN
+#else
 #if BYTE_ORDER == BIG_ENDIAN
 #define LON_ENDIAN LON_BIG_ENDIAN
 #else
 #define LON_ENDIAN LON_LITTLE_ENDIAN
+#endif
 #endif
 
 #if LON_ENDIAN == LON_LITTLE_ENDIAN

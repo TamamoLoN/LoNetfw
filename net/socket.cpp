@@ -38,6 +38,7 @@ Socket::Ptr Socket::create(Socket::Family family, Socket::Type type)
         default:
             return nullptr;
         }
+#ifndef _WIN32
     case UNIX:
         switch (type)
         {
@@ -48,6 +49,7 @@ Socket::Ptr Socket::create(Socket::Family family, Socket::Type type)
         default:
             return nullptr;
         }
+#endif
     default:
         return nullptr;
     }
@@ -106,7 +108,7 @@ void Socket::setRecvTimeout(int64_t timeout)
 
 bool Socket::getOption(int level, int optname, void *optval, socklen_t *optlen)
 {
-    int ret = getsockopt(m_sockfd, level, optname, optval, optlen);
+    int ret = getsockopt(m_sockfd, level, optname, (char *)optval, optlen);
     if (ret)
     {
         LON_ERROR(LON_LOG_ROOT) << "getOption failed: "
@@ -120,7 +122,7 @@ bool Socket::getOption(int level, int optname, void *optval, socklen_t *optlen)
 
 bool Socket::setOption(int level, int optname, const void *optval, socklen_t optlen)
 {
-    int ret = setsockopt(m_sockfd, level, optname, optval, optlen);
+    int ret = setsockopt(m_sockfd, level, optname, (const char *)optval, optlen);
     if (ret)
     {
         LON_ERROR(LON_LOG_ROOT) << "setOption failed: "
@@ -271,7 +273,11 @@ bool Socket::close()
     m_is_connected = false;
     if (m_sockfd != -1)
     {
+#ifdef _WIN32
+        ::closesocket(m_sockfd);
+#else
         ::close(m_sockfd);
+#endif
         m_sockfd = -1;
     }
     return true;
@@ -284,7 +290,7 @@ ssize_t Socket::send(const void *buf, size_t len, int flags)
         LON_ERROR(LON_LOG_ROOT) << "send failed: socket is not connected";
         return -1;
     }
-    return ::send(m_sockfd, buf, len, flags);
+    return ::send(m_sockfd, (const char *)buf, len, flags);
 }
 
 ssize_t Socket::send(const iovec *bufs, size_t len, int flags)
@@ -294,12 +300,18 @@ ssize_t Socket::send(const iovec *bufs, size_t len, int flags)
         LON_ERROR(LON_LOG_ROOT) << "send failed: socket is not connected";
         return -1;
     }
+#ifdef _WIN32
+    DWORD bytes_sent = 0;
+    // return ::WSASend(m_sockfd, (LPWSABUF)bufs, (DWORD)len, &bytes_sent, flags, nullptr, nullptr);
+    return ::send(m_sockfd, bufs[0].buf, bufs[0].len, flags);
+#else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
     msg.msg_iov    = (iovec *)bufs;
     msg.msg_iovlen = len;
 
     return ::sendmsg(m_sockfd, &msg, flags);
+#endif
 }
 
 ssize_t Socket::sendto(const void *buf, size_t len, const Address::Ptr &dst, int flags)
@@ -309,7 +321,7 @@ ssize_t Socket::sendto(const void *buf, size_t len, const Address::Ptr &dst, int
         LON_ERROR(LON_LOG_ROOT) << "sendto failed: socket is not connected";
         return -1;
     }
-    return ::sendto(m_sockfd, buf, len, flags, dst->getAddr(), dst->getAddrLen());
+    return ::sendto(m_sockfd, (const char *)buf, len, flags, dst->getAddr(), dst->getAddrLen());
 }
 
 ssize_t Socket::sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, int flags)
@@ -319,6 +331,12 @@ ssize_t Socket::sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, i
         LON_ERROR(LON_LOG_ROOT) << "sendto failed: socket is not connected";
         return -1;
     }
+#ifdef _WIN32
+    DWORD bytes_sent = 0;
+    // return ::WSASendTo(m_sockfd, (LPWSABUF)bufs, (DWORD)len, &bytes_sent, flags,
+    //                    (sockaddr *)dst->getAddr(), dst->getAddrLen(), nullptr, nullptr);
+    return ::sendto(m_sockfd, bufs[0].buf, bufs[0].len, flags, dst->getAddr(), dst->getAddrLen());
+#else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
     msg.msg_iov     = (iovec *)bufs;
@@ -327,6 +345,7 @@ ssize_t Socket::sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, i
     msg.msg_namelen = dst->getAddrLen();
 
     return ::sendmsg(m_sockfd, &msg, flags);
+#endif
 }
 
 ssize_t Socket::recv(void *buf, size_t len, int flags)
@@ -336,7 +355,7 @@ ssize_t Socket::recv(void *buf, size_t len, int flags)
         LON_ERROR(LON_LOG_ROOT) << "recv failed: socket is not connected";
         return -1;
     }
-    return ::recv(m_sockfd, buf, len, flags);
+    return ::recv(m_sockfd, (char *)buf, len, flags);
 }
 
 ssize_t Socket::recv(const iovec *bufs, size_t len, int flags)
@@ -346,12 +365,20 @@ ssize_t Socket::recv(const iovec *bufs, size_t len, int flags)
         LON_ERROR(LON_LOG_ROOT) << "recv failed: socket is not connected";
         return -1;
     }
+#ifdef _WIN32
+    DWORD bytes_recv = 0;
+    DWORD recv_flags = flags;
+    // return WSARecv(m_sockfd, (LPWSABUF)bufs, (DWORD)len, &bytes_recv, &recv_flags, nullptr,
+    //                nullptr);
+    return ::recv(m_sockfd, bufs[0].buf, bufs[0].len, flags);
+#else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
     msg.msg_iov    = (iovec *)bufs;
     msg.msg_iovlen = len;
 
     return ::recvmsg(m_sockfd, &msg, flags);
+#endif
 }
 
 ssize_t Socket::recvfrom(void *buf, size_t len, Address::Ptr &src, int flags)
@@ -362,7 +389,7 @@ ssize_t Socket::recvfrom(void *buf, size_t len, Address::Ptr &src, int flags)
         return -1;
     }
     auto src_len = src->getAddrLen();
-    return ::recvfrom(m_sockfd, buf, len, flags, src->getAddr(), &src_len);
+    return ::recvfrom(m_sockfd, (char *)buf, len, flags, src->getAddr(), &src_len);
 }
 
 ssize_t Socket::recvfrom(const iovec *bufs, size_t len, Address::Ptr &src, int flags)
@@ -372,6 +399,14 @@ ssize_t Socket::recvfrom(const iovec *bufs, size_t len, Address::Ptr &src, int f
         LON_ERROR(LON_LOG_ROOT) << "recvfrom failed: socket is not connected";
         return -1;
     }
+#ifdef _WIN32
+    DWORD bytes_recv = 0;
+    DWORD recv_flags = flags;
+    int addr_len     = src->getAddrLen();
+    // return WSARecvFrom(m_sockfd, (LPWSABUF)bufs, (DWORD)len, &bytes_recv, &recv_flags,
+    //                    (sockaddr *)src->getAddr(), &addr_len, nullptr, nullptr);
+    ::recv(m_sockfd, bufs[0].buf, bufs[0].len, flags);
+#else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
     msg.msg_iov     = (iovec *)bufs;
@@ -379,6 +414,7 @@ ssize_t Socket::recvfrom(const iovec *bufs, size_t len, Address::Ptr &src, int f
     msg.msg_name    = src->getAddr();
     msg.msg_namelen = src->getAddrLen();
     return ::recvmsg(m_sockfd, &msg, flags);
+#endif
 }
 
 Address::Ptr Socket::getPeerAddress()
@@ -396,9 +432,11 @@ Address::Ptr Socket::getPeerAddress()
     case AF_INET6:
         addr = std::make_shared<IPv6Address>();
         break;
+#ifndef _WIN32
     case AF_UNIX:
         addr = std::make_shared<UnixAddress>();
         break;
+#endif
     default:
         addr = std::make_shared<UnknownAddress>(m_family);
         break;
@@ -409,11 +447,13 @@ Address::Ptr Socket::getPeerAddress()
         LON_ERROR(LON_LOG_ROOT) << "getPeerAddress failed: getpeername error";
         return std::make_shared<UnknownAddress>(m_family);
     }
+#ifndef _WIN32
     if (m_family == AF_UNIX)
     {
         auto tmp = std::dynamic_pointer_cast<UnixAddress>(addr);
         tmp->setAddrlen(len);
     }
+#endif
     m_peer_addr = addr;
     return addr;
 }
@@ -433,9 +473,11 @@ Address::Ptr Socket::getLocalAddress()
     case AF_INET6:
         addr = std::make_shared<IPv6Address>();
         break;
+#ifndef _WIN32
     case AF_UNIX:
         addr = std::make_shared<UnixAddress>();
         break;
+#endif
     default:
         addr = std::make_shared<UnknownAddress>(m_family);
         break;
@@ -446,11 +488,13 @@ Address::Ptr Socket::getLocalAddress()
         LON_ERROR(LON_LOG_ROOT) << "getLocalAddress failed: getsockname error";
         return std::make_shared<UnknownAddress>(m_family);
     }
+#ifndef _WIN32
     if (m_family == AF_UNIX)
     {
         auto tmp = std::dynamic_pointer_cast<UnixAddress>(addr);
         tmp->setAddrlen(len);
     }
+#endif
     m_local_addr = addr;
     return addr;
 }

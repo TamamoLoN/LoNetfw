@@ -1,4 +1,7 @@
 #include "net/address.h"
+#ifdef _WIN32
+#include <iphlpapi.h>
+#endif
 
 namespace lon
 {
@@ -128,6 +131,63 @@ bool Address::parseIPAddress(std::shared_ptr<IPAddress> &addr, const std::string
 bool Address::getInterfaceAddresses(
     std::multimap<std::string, std::pair<Address::Ptr, uint32_t>> &addrs, int family)
 {
+#ifdef _WIN32
+    ULONG flags  = GAA_FLAG_INCLUDE_PREFIX;
+    ULONG bufLen = 15 * 1024;
+    std::vector<char> buffer(bufLen);
+
+    PIP_ADAPTER_ADDRESSES adapters = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buffer.data());
+
+    ULONG ret = GetAdaptersAddresses(family == AF_UNSPEC ? AF_UNSPEC : family, flags, nullptr,
+                                     adapters, &bufLen);
+
+    if (ret == ERROR_BUFFER_OVERFLOW)
+    {
+        buffer.resize(bufLen);
+        adapters = reinterpret_cast<PIP_ADAPTER_ADDRESSES>(buffer.data());
+        ret      = GetAdaptersAddresses(family == AF_UNSPEC ? AF_UNSPEC : family, flags, nullptr,
+                                   adapters, &bufLen);
+    }
+
+    if (ret != NO_ERROR)
+    {
+        LON_ERROR(LON_LOG_ROOT) << "GetAdaptersAddresses failed, ret=" << ret;
+        return false;
+    }
+
+    for (auto ad = adapters; ad; ad = ad->Next)
+    {
+        std::string ifname = ad->AdapterName;
+
+        for (auto ua = ad->FirstUnicastAddress; ua; ua = ua->Next)
+        {
+            int sa_family = ua->Address.lpSockaddr->sa_family;
+            if (family != AF_UNSPEC && family != sa_family)
+            {
+                continue;
+            }
+
+            Address::Ptr addr   = nullptr;
+            uint32_t prefix_len = ua->OnLinkPrefixLength;
+
+            if (sa_family == AF_INET)
+            {
+                addr = create(ua->Address.lpSockaddr, sizeof(sockaddr_in));
+            }
+            else if (sa_family == AF_INET6)
+            {
+                addr = create(ua->Address.lpSockaddr, sizeof(sockaddr_in6));
+            }
+
+            if (addr)
+            {
+                addrs.emplace(ifname, std::make_pair(addr, prefix_len));
+            }
+        }
+    }
+
+    return true;
+#else
     struct ifaddrs *next = nullptr;
     struct ifaddrs *addr = nullptr;
     int ret              = getifaddrs(&addr);
@@ -187,14 +247,14 @@ bool Address::getInterfaceAddresses(
         return false;
     }
     freeifaddrs(addr);
-
+#endif
     return true;
 }
 
 bool Address::getInterfaceAddresses(std::vector<std::pair<Address::Ptr, uint32_t>> &addrs,
-                                    const std::string &interface, int family)
+                                    const std::string &_interface, int family)
 {
-    if (interface.empty() || interface == "*")
+    if (_interface.empty() || _interface == "*")
     {
         if (family == AF_UNSPEC || family == AF_INET)
         {
@@ -211,7 +271,7 @@ bool Address::getInterfaceAddresses(std::vector<std::pair<Address::Ptr, uint32_t
     {
         return false;
     }
-    auto its = results.equal_range(interface);
+    auto its = results.equal_range(_interface);
     for (; its.first != its.second; ++its.first)
     {
         addrs.push_back(its.first->second);
@@ -230,8 +290,12 @@ std::string Address::toString() const
 
 bool Address::operator<(const Address &val) const
 {
+#ifdef _WIN32
+    socklen_t minlen = min(getAddrLen(), val.getAddrLen());
+#else
     socklen_t minlen = std::min(getAddrLen(), val.getAddrLen());
-    int ret          = memcmp(getAddr(), val.getAddr(), minlen);
+#endif
+    int ret = memcmp(getAddr(), val.getAddr(), minlen);
     if (ret < 0)
     {
         return true;
@@ -292,6 +356,7 @@ IPAddress::Ptr IPAddress::create(const std::string &address, const uint16_t &por
     return nullptr;
 }
 
+#ifndef _WIN32
 UnixAddress::UnixAddress()
 {
     memset(&m_addr, 0, sizeof(m_addr));
@@ -333,6 +398,7 @@ std::ostream &UnixAddress::insert(std::ostream &os) const
     }
     return os << m_addr.sun_path;
 }
+#endif
 
 UnknownAddress::UnknownAddress(sockaddr addr) { m_addr = addr; }
 
@@ -414,13 +480,13 @@ IPAddress::Ptr IPv4Address::networkAddress(uint32_t prefix_len)
 
 IPAddress::Ptr IPv4Address::subnetMask(uint32_t prefix_len)
 {
-    sockaddr_in s_addr;
-    memset(&s_addr, 0, sizeof(s_addr));
-    s_addr.sin_family      = AF_INET;
-    s_addr.sin_addr.s_addr = ~util::byteswapToBigEndian(createMask<uint32_t>(prefix_len));
-    s_addr.sin_port        = m_addr.sin_port;
+    sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family      = AF_INET;
+    addr.sin_addr.s_addr = ~util::byteswapToBigEndian(createMask<uint32_t>(prefix_len));
+    addr.sin_port        = m_addr.sin_port;
 
-    return std::make_shared<IPv4Address>(s_addr);
+    return std::make_shared<IPv4Address>(addr);
 }
 
 uint16_t IPv4Address::getPort() const { return util::byteswapToBigEndian(m_addr.sin_port); }
@@ -439,7 +505,11 @@ IPv6Address::IPv6Address(const uint8_t address[16], uint16_t port)
 {
     memset(&m_addr, 0, sizeof(m_addr));
     m_addr.sin6_family = AF_INET6;
+#ifdef _WIN32
+    memcpy(m_addr.sin6_addr.u.Byte, address, 16);
+#else
     memcpy(m_addr.sin6_addr.__in6_u.__u6_addr8, address, 16);
+#endif
     setPort(port);
 }
 
@@ -465,7 +535,11 @@ socklen_t IPv6Address::getAddrLen() const { return sizeof(m_addr); }
 std::ostream &IPv6Address::insert(std::ostream &os) const
 {
     os << "[";
+#ifdef _WIN32
+    uint16_t *addr = (uint16_t *)m_addr.sin6_addr.u.Byte;
+#else
     uint16_t *addr = (uint16_t *)m_addr.sin6_addr.__in6_u.__u6_addr8;
+#endif
     uint16_t port  = util::byteswapToBigEndian(m_addr.sin6_port);
     bool use_zeros = false;
     for (ssize_t i = 0; i < 8; ++i)
@@ -496,35 +570,54 @@ std::ostream &IPv6Address::insert(std::ostream &os) const
 IPAddress::Ptr IPv6Address::broadcastAddress(uint32_t prefix_len)
 {
     sockaddr_in6 b_addr(m_addr);
+#ifdef _WIN32
+    b_addr.sin6_addr.u.Byte[prefix_len / 8] |= createMask<uint8_t>(prefix_len % 8);
+    for (int i = prefix_len / 8 + 1; i < 16; ++i)
+    {
+        b_addr.sin6_addr.u.Byte[i] = 0xff;
+    }
+#else
     b_addr.sin6_addr.__in6_u.__u6_addr8[prefix_len / 8] |= createMask<uint8_t>(prefix_len % 8);
     for (int i = prefix_len / 8 + 1; i < 16; ++i)
     {
         b_addr.sin6_addr.__in6_u.__u6_addr8[i] = 0xff;
     }
+#endif
     return std::make_shared<IPv6Address>(b_addr);
 }
 
 IPAddress::Ptr IPv6Address::networkAddress(uint32_t prefix_len)
 {
     sockaddr_in6 n_addr(m_addr);
+#ifdef _WIN32
+    n_addr.sin6_addr.u.Byte[prefix_len / 8] &= createMask<uint8_t>(prefix_len % 8);
+#else
     n_addr.sin6_addr.__in6_u.__u6_addr8[prefix_len / 8] &= createMask<uint8_t>(prefix_len % 8);
+#endif
 
     return std::make_shared<IPv6Address>(n_addr);
 }
 
 IPAddress::Ptr IPv6Address::subnetMask(uint32_t prefix_len)
 {
-    sockaddr_in6 s_addr;
-    memset(&s_addr, 0, sizeof(s_addr));
-    s_addr.sin6_family                                  = AF_INET6;
-    s_addr.sin6_addr.__in6_u.__u6_addr8[prefix_len / 8] = ~createMask<uint8_t>(prefix_len % 8);
-    s_addr.sin6_port                                    = m_addr.sin6_port;
+    sockaddr_in6 addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin6_family = AF_INET6;
+#ifdef _WIN32
+    addr.sin6_addr.u.Byte[prefix_len / 8] = ~createMask<uint8_t>(prefix_len % 8);
+#else
+    addr.sin6_addr.__in6_u.__u6_addr8[prefix_len / 8] = ~createMask<uint8_t>(prefix_len % 8);
+#endif
+    addr.sin6_port = m_addr.sin6_port;
     for (int i = 0; i < prefix_len / 8; ++i)
     {
-        s_addr.sin6_addr.__in6_u.__u6_addr8[i] = 0xff;
+#ifdef _WIN32
+        addr.sin6_addr.u.Byte[i] = 0xff;
+#else
+        addr.sin6_addr.__in6_u.__u6_addr8[i] = 0xff;
+#endif
     }
-
-    return std::make_shared<IPv6Address>(s_addr);
+    return std::make_shared<IPv6Address>(addr);
 }
 
 uint16_t IPv6Address::getPort() const { return util::byteswapToBigEndian(m_addr.sin6_port); }

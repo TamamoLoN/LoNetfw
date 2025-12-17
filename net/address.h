@@ -2,12 +2,16 @@
 
 #include "log/logger.h"
 #include "util/util.h"
+#include <sys/types.h>
+#ifdef _WIN32
+
+#else
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/un.h>
+#endif
 
 namespace lon
 {
@@ -47,7 +51,7 @@ class Address
     getInterfaceAddresses(std::multimap<std::string, std::pair<Address::Ptr, uint32_t>> &addrs,
                           int family = AF_INET);
     static bool getInterfaceAddresses(std::vector<std::pair<Address::Ptr, uint32_t>> &addrs,
-                                      const std::string &interface, int family = AF_INET);
+                                      const std::string &_interface, int family = AF_INET);
 
     int getFamily() const;
     virtual sockaddr *getAddr() const                    = 0;
@@ -60,6 +64,7 @@ class Address
     bool operator!=(const Address &val) const;
 };
 
+#ifndef _WIN32
 class UnixAddress : public Address
 {
   public:
@@ -77,6 +82,7 @@ class UnixAddress : public Address
     struct sockaddr_un m_addr;
     socklen_t m_addr_len;
 };
+#endif
 
 class UnknownAddress : public Address
 {

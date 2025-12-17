@@ -6,6 +6,9 @@ namespace lon
 {
 namespace net
 {
+#ifdef _WIN32
+#define in_port_t uint16_t
+#endif
 /**
  * Uri
  * @brief Uri类用于封装uri

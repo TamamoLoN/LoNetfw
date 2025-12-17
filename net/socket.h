@@ -1,8 +1,11 @@
 #pragma once
 #include "hook/hook.h"
 #include "net/address.h"
+#ifdef _WIN32
+#else
 #include <netinet/tcp.h>
 #include <sys/socket.h>
+#endif
 
 namespace lon
 {
@@ -20,7 +23,9 @@ class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
     {
         IPV4 = AF_INET,
         IPV6 = AF_INET6,
+#ifndef _WIN32
         UNIX = AF_UNIX,
+#endif
     };
 
   public:
