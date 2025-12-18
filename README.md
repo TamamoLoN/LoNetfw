@@ -1,6 +1,6 @@
 # LoNetfw
 本框架基于sylar网络框架学习重写，支持linux/windows\
-sylar: https://github.com/sylar-yin/sylar\
+sylar: https://github.com/sylar-yin/sylar \
 linux: epoll dl posix\
 windows: wepoll minhook pthreads-w32\
 
