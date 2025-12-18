@@ -539,7 +539,7 @@ extern "C"
         }
         return setsockopt_f(s, level, optname, optval, optlen);
     }
-#else _WIN32
+#else
 #define XX(name) name##_fun name##_f = nullptr;
     HOOK_FUN(XX)
 #undef XX
