@@ -110,6 +110,15 @@ std::string trim(const std::string &str)
     return str.substr(start, end - start);
 }
 
+bool globMatch(const std::string& pattern, const std::string& text)
+{
+#ifdef _WIN32
+    return PathMatchSpecA(text.c_str(), pattern.c_str()) == TRUE;
+#else
+    return fnmatch(pattern.c_str(), text.c_str(), 0) == 0;
+#endif
+}
+
 bool isFileExist(const std::string &path)
 {
     struct stat buffer;
