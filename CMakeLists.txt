@@ -143,6 +143,26 @@ if(MODULARIZATION)
     add_subdirectory(net)
     add_subdirectory(server)
 else()
+if(WIN32)
+    add_subdirectory(thirdparty/yaml-cpp)
+    file(GLOB MODULE_SRCS 
+        util/*.cpp
+        log/*.cpp
+        config/*.cpp
+        fiber/*.cpp
+        thread/*.cpp
+        scheduler/*.cpp
+        hook/*.cpp
+        net/*.cpp
+        server/*.cpp
+    )
+    add_library(${PROJECT_NAME} ${LIB_TYPE} ${MODULE_SRCS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC dl yaml-cpp ws2_32 minhook wepoll iphlpapi pthreadVC2) 
+    if(USE_ABSOLUTE_PATH)
+    else()
+        force_redefine_file_macro_for_sources(${PROJECT_NAME})
+    endif()
+else()
     add_subdirectory(thirdparty/yaml-cpp)
     file(GLOB MODULE_SRCS 
         util/*.cpp
@@ -161,6 +181,7 @@ else()
     else()
         force_redefine_file_macro_for_sources(${PROJECT_NAME})
     endif()
+endif()
 endif()
 
 

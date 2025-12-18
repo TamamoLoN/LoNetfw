@@ -25,9 +25,11 @@
 #include <profileapi.h>
 #include <pthread.h>
 #include <sysinfoapi.h>
+#include <shlwapi.h>
 #undef ERROR
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
+#pragma comment(lib, "Shlwapi.lib")
 int vasprintf(char **buf, const char *fmt, va_list ap);
 #else
 #include <cxxabi.h>
@@ -36,6 +38,7 @@ int vasprintf(char **buf, const char *fmt, va_list ap);
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <fnmatch.h>
 #endif
 
 namespace lon
@@ -49,6 +52,7 @@ char toUpper(const char &ch);
 std::string toUpper(const std::string &str);
 std::vector<std::string> split(const std::string &s, const std::string &delimiter);
 std::string trim(const std::string &str);
+bool globMatch(const std::string& pattern, const std::string& text);
 
 // 文件相关
 bool isFileExist(const std::string &path);
