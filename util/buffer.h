@@ -126,7 +126,7 @@ template <typename T> class EventRingBuffer : public Nonecopyable
         m_buf[tail] = std::move(v);
         m_tail.store(next, std::memory_order_release);
 
-        uint8_t one = 1;
+        uint64_t one = 1;
         write(m_eventfd, &one, sizeof(one)); // 通知消费者
         return true;
     }
