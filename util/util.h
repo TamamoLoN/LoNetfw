@@ -1,6 +1,5 @@
 #pragma once
 
-#include "util/buffer.h"
 #include "util/endian.h"
 #include "util/lexicalcast.h"
 #include "util/macro.h"
@@ -8,6 +7,8 @@
 #include "util/serializer.h"
 #include "util/singleton.h"
 #include "util/stream.h"
+
+#include "util/buffer.h"
 #include "yaml-cpp/yaml.h"
 #include <assert.h>
 #include <functional>
