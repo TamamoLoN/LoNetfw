@@ -20,7 +20,7 @@ template <typename T> struct is_std_vector : std::false_type
 template <typename T, typename Alloc> struct is_std_vector<std::vector<T, Alloc>> : std::true_type
 {
 };
-
+// TODO - 不太优雅，后续有时间重构
 /**
  * @brief 参考python argparse实现的一个简单命令行参数解析器
  * @note 仅支持部分功能，不支持:
@@ -116,6 +116,8 @@ class ArgumentParser final
     const std::string help() const;
     void getArgName(std::string &name);
     void handleError(const std::string &msg) const;
+    std::string formatHelper(const std::string &left, const std::string &right, size_t indent = 2,
+                             size_t help_col = 26, size_t width = 80) const;
 
   private:
     std::string m_name;

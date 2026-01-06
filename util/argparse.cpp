@@ -18,6 +18,10 @@ Argument *Argument::help(const std::string &h)
 Argument *Argument::action(const std::string &a)
 {
     m_action = a;
+    if (m_action == "store_true")
+    {
+        m_default.reset(new std::string("false"));
+    }
     return this;
 }
 
@@ -110,7 +114,7 @@ std::string Argument::getHelp(const std::string &name) const
 {
     bool is_optional  = name.at(0) == '-';
     std::string uname = is_optional ? toUpper(name) : name;
-    if (m_action == "store_true")
+    if (m_action == "store_true" || m_action == "help")
     {
         return name;
     }
@@ -142,11 +146,13 @@ std::string Argument::getHelp(const std::string &name) const
         else
         {
             int count = util::lexical_cast<int>(m_nargs);
-            int j     = is_optional ? count - 1 : count;
+            // int j     = is_optional ? count - 1 : count;
+            int j = count;
             for (int i = 0; i < j; ++i)
             {
-                res += " " + uname;
+                res += uname + " ";
             }
+            res.erase(res.size() - 1);
         }
         return res;
     }
@@ -232,13 +238,14 @@ void ArgumentParser::parse(int argc, char *argv[])
         if (it->second->m_action == "store_true")
         {
             it->second->m_val.push_back("true");
+            // 这里不存入map，防止重复处理
             continue;
         }
         // 如果为help参数，则打印帮助信息并退出程序
         else if (it->second->m_action == "help")
         {
             std::cout << help() << std::endl;
-            exit(0);
+            throw std::runtime_error("help argument, exit program");
         }
         while (cnt + 1 < argc && argv[cnt + 1][0] != '-')
         {
@@ -329,6 +336,7 @@ const std::string ArgumentParser::usage() const
 
 const std::string ArgumentParser::help() const
 {
+    std::unordered_map<Argument::Ptr, std::vector<std::string>> showed = {};
     std::string res = usage() + "\n\n" + m_description + "\n\n";
     if (!m_positional_args.empty())
     {
@@ -336,7 +344,7 @@ const std::string ArgumentParser::help() const
     }
     for (const auto &arg : m_positional_args)
     {
-        res += arg.second->getHelp(arg.first) + " " + arg.second->m_help + "\n";
+        res += formatHelper(arg.first, arg.second->m_help);
     }
     if (!m_optional_args.empty())
     {
@@ -344,7 +352,17 @@ const std::string ArgumentParser::help() const
     }
     for (const auto &arg : m_optional_args)
     {
-        res += arg.second->getHelp(arg.first) + " " + arg.second->m_help + "\n";
+        showed[arg.second].push_back(arg.first);
+    }
+    for (const auto &arg : showed)
+    {
+        std::string left = "";
+        for (const auto &it : arg.second)
+        {
+            left += arg.first->getHelp(it) + ", ";
+        }
+        left.erase(left.size() - 2);
+        res += formatHelper(left, arg.first->m_help);
     }
     return res;
 }
@@ -366,8 +384,42 @@ void ArgumentParser::handleError(const std::string &msg) const
 {
     std::cout << usage() << std::endl;
     std::cout << "error: " << msg << std::endl;
-    exit(0);
+    // exit(0);
+    throw std::runtime_error(msg);
 }
 
+std::string ArgumentParser::formatHelper(const std::string &left, const std::string &right,
+                                         size_t indent, size_t help_col, size_t width) const
+{
+    std::ostringstream oss;
+    std::string indent_str(indent, ' ');
+
+    oss << indent_str << left;
+
+    if (indent + left.size() >= help_col)
+    {
+        oss << "\n" << std::string(help_col, ' ');
+    }
+    else
+    {
+        oss << std::string(help_col - indent - left.size(), ' ');
+    }
+
+    size_t pos         = 0;
+    size_t right_width = width - help_col;
+
+    while (pos < right.size())
+    {
+        size_t len = std::min(right_width, right.size() - pos);
+        oss << right.substr(pos, len) << "\n";
+        pos += len;
+        if (pos < right.size())
+        {
+            oss << std::string(help_col, ' ');
+        }
+    }
+
+    return oss.str();
+}
 } // namespace util
 } // namespace lon
