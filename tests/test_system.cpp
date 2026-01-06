@@ -13,7 +13,7 @@ void test_argparse(int argc, char *argv[])
         ->help("处理次数（可选，默认1次）")
         ->defaultValue("1");
     // 3.布尔开关
-    parser.addArgument(std::vector<std::string>{"-f", "--verbose"})
+    parser.addArgument(std::vector<std::string>{"-v", "--verbose"})
         ->action("store_true")
         ->help("是否显示详细输出");
 
