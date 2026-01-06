@@ -128,6 +128,15 @@ struct GlobalConfig
                 LON_INFO(LON_LOG_ROOT) << "on config tcp server client timeout data changed";
                 LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
             });
+
+        config_system_daemon_restart_delay_s =
+            Config::setData("system.daemon.restart_delay_s", (uint32_t)(2),
+                            "daemon restart delay if process crash(default 2 sec)");
+        config_system_daemon_restart_delay_s->addConfigDataChangeCB(
+            [](const size_t &old_data, const size_t &new_data) {
+                LON_INFO(LON_LOG_ROOT) << "on system daemon restart delay second data changed";
+                LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+            });
     }
     static GlobalConfig &Instance()
     {
@@ -138,6 +147,7 @@ struct GlobalConfig
     ConfigData<size_t>::Ptr config_fiber;
     ConfigData<uint32_t>::Ptr config_tcp_timeout;
     ConfigData<uint32_t>::Ptr config_tcp_server_client_timeout;
+    ConfigData<uint32_t>::Ptr config_system_daemon_restart_delay_s;
 };
 
 //全局变量，使其在main函数之前初始化

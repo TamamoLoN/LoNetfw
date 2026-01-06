@@ -110,7 +110,7 @@ std::string trim(const std::string &str)
     return str.substr(start, end - start);
 }
 
-bool globMatch(const std::string& pattern, const std::string& text)
+bool globMatch(const std::string &pattern, const std::string &text)
 {
 #ifdef _WIN32
     return PathMatchSpecA(text.c_str(), pattern.c_str()) == TRUE;
@@ -287,15 +287,7 @@ std::vector<std::unordered_map<std::string, uint8_t>> formatParser(const std::st
 
 std::string getDateTime(const time_t &time, const std::string &format)
 {
-    struct tm tm;
-#ifdef _WIN32
-    localtime_s(&tm, &time);
-#else
-    localtime_r(&time, &tm);
-#endif
-    char buf[64] = {0};
-    strftime(buf, sizeof(buf), format.c_str(), &tm);
-    return std::string(buf);
+    return time2Str(time, format);
 }
 
 time_t getCurrentDateTime() { return time(nullptr); }
@@ -356,6 +348,30 @@ uint64_t getDurationUs(std::function<void()> func)
     return getCurrentUs() - start;
 }
 
+std::string time2Str(time_t time, const std::string &format)
+{
+    struct tm tm;
+#ifdef _WIN32
+    localtime_s(&tm, &time);
+#else
+    localtime_r(&time, &tm);
+#endif
+    char buf[64] = {0};
+    strftime(buf, sizeof(buf), format.c_str(), &tm);
+    return std::string(buf);
+}
+
+time_t str2Time(const std::string &str, const std::string &format)
+{
+    struct tm t;
+    memset(&t, 0, sizeof(t));
+    if (!strptime(str.c_str(), format.c_str(), &t))
+    {
+        return 0;
+    }
+    return mktime(&t);
+}
+
 uint32_t getThreadId()
 {
 #ifdef _WIN32
@@ -368,8 +384,7 @@ uint32_t getThreadId()
 std::string getThreadName()
 {
 #ifdef _WIN32
-    auto WideToUtf8 = [](const std::wstring &src) -> std::string
-    {
+    auto WideToUtf8 = [](const std::wstring &src) -> std::string {
         if (src.empty())
         {
             return "";

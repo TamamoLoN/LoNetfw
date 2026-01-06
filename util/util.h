@@ -8,6 +8,7 @@
 #include "util/singleton.h"
 #include "util/stream.h"
 
+#include "util/argparse.h"
 #include "util/buffer.h"
 #include "yaml-cpp/yaml.h"
 #include <assert.h>
@@ -121,6 +122,8 @@ std::string getCurrentDateTime(const std::string &format);
 uint64_t getCurrentMs();
 uint64_t getCurrentUs();
 uint64_t getDurationUs(std::function<void()> func);
+std::string time2Str(time_t time, const std::string &format = "%Y-%m-%d %H:%M:%S");
+time_t str2Time(const std::string &str, const std::string &format = "%Y-%m-%d %H:%M:%S");
 
 uint32_t getThreadId();
 std::string getThreadName();

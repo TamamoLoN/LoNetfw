@@ -89,6 +89,7 @@ function(add_build_target targetname)
                                 hook
                                 net
                                 server
+                                system
                                 yaml-cpp
                                 dl
                                 ws2_32
@@ -107,6 +108,7 @@ function(add_build_target targetname)
                                 hook
                                 net
                                 server
+                                system
                                 yaml-cpp
                                 dl
                                 ) 
@@ -142,6 +144,7 @@ if(MODULARIZATION)
     add_subdirectory(hook)
     add_subdirectory(net)
     add_subdirectory(server)
+    add_subdirectory(system)
 else()
 if(WIN32)
     add_subdirectory(thirdparty/yaml-cpp)
@@ -155,6 +158,7 @@ if(WIN32)
         hook/*.cpp
         net/*.cpp
         server/*.cpp
+        system/*.cpp
     )
     add_library(${PROJECT_NAME} ${LIB_TYPE} ${MODULE_SRCS})
     target_link_libraries(${PROJECT_NAME} PUBLIC dl yaml-cpp ws2_32 minhook wepoll iphlpapi pthreadVC2) 
@@ -174,6 +178,7 @@ else()
         hook/*.cpp
         net/*.cpp
         server/*.cpp
+        system/*.cpp
     )
     add_library(${PROJECT_NAME} ${LIB_TYPE} ${MODULE_SRCS})
     target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl yaml-cpp) 
@@ -205,6 +210,7 @@ if(BUILT_TESTS)
     add_build_target(test_hook)
     add_build_target(test_net)
     add_build_target(test_server)
+    add_build_target(test_system)
 endif()
 
 if(MODULARIZATION)
@@ -218,6 +224,7 @@ if(MODULARIZATION)
             hook
             net
             server
+            system
             ARCHIVE DESTINATION lib 
             LIBRARY DESTINATION lib 
             RUNTIME DESTINATION bin)
@@ -238,6 +245,7 @@ install(DIRECTORY
         hook
         net
         server
+        system
         lonetfw
         DESTINATION include
         FILES_MATCHING
