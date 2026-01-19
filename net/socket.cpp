@@ -16,58 +16,75 @@ Socket::~Socket() { close(); }
 
 Socket::Ptr Socket::create(Socket::Family family, Socket::Type type)
 {
+    Socket::Ptr socket = nullptr;
     switch (family)
     {
     case IPV4:
         switch (type)
         {
         case TCP:
-            return std::make_shared<Socket>(IPV4, TCP, 0);
+            socket = std::make_shared<Socket>(IPV4, TCP, 0);
+            break;
         case UDP:
-            return std::make_shared<Socket>(IPV4, UDP, 0);
+            // UDP没有连接和绑定端口，所以在这里直接创建socket
+            socket = std::make_shared<Socket>(IPV4, UDP, 0);
+            socket->newSocket();
+            socket->m_is_connected = true;
+            break;
         default:
-            return nullptr;
+            break;
         }
     case IPV6:
         switch (type)
         {
         case TCP:
-            return std::make_shared<Socket>(IPV6, TCP, 0);
+            socket = std::make_shared<Socket>(IPV6, TCP, 0);
+            break;
         case UDP:
-            return std::make_shared<Socket>(IPV6, UDP, 0);
+            socket = std::make_shared<Socket>(IPV6, UDP, 0);
+            socket->newSocket();
+            socket->m_is_connected = true;
+            break;
         default:
-            return nullptr;
+            break;
         }
 #ifndef _WIN32
     case UNIX:
         switch (type)
         {
         case TCP:
-            return std::make_shared<Socket>(UNIX, TCP, 0);
+            socket = std::make_shared<Socket>(UNIX, TCP, 0);
+            break;
         case UDP:
-            return std::make_shared<Socket>(UNIX, UDP, 0);
+            socket = std::make_shared<Socket>(UNIX, UDP, 0);
+            break;
         default:
-            return nullptr;
+            break;
         }
 #endif
     default:
-        return nullptr;
+        break;
     }
+    return socket;
 }
 
 Socket::Ptr Socket::create(const Address::Ptr &addr, Socket::Type type)
 {
+    Socket::Ptr socket = nullptr;
     switch (type)
     {
     case TCP:
-        return std::make_shared<Socket>(addr->getFamily(), TCP, 0);
+        socket = std::make_shared<Socket>(addr->getFamily(), TCP, 0);
         break;
     case UDP:
-        return std::make_shared<Socket>(addr->getFamily(), UDP, 0);
+        socket = std::make_shared<Socket>(addr->getFamily(), UDP, 0);
+        socket->newSocket();
+        socket->m_is_connected = true;
         break;
     default:
-        return nullptr;
+        break;
     }
+    return socket;
 }
 
 int64_t Socket::getSendTimeout() const
@@ -307,7 +324,7 @@ ssize_t Socket::send(const iovec *bufs, size_t len, int flags)
 #else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
-    msg.msg_iov    = (iovec *)bufs;
+    msg.msg_iov = (iovec *)bufs;
     msg.msg_iovlen = len;
 
     return ::sendmsg(m_sockfd, &msg, flags);
@@ -339,9 +356,9 @@ ssize_t Socket::sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, i
 #else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
-    msg.msg_iov     = (iovec *)bufs;
-    msg.msg_iovlen  = len;
-    msg.msg_name    = dst->getAddr();
+    msg.msg_iov = (iovec *)bufs;
+    msg.msg_iovlen = len;
+    msg.msg_name = dst->getAddr();
     msg.msg_namelen = dst->getAddrLen();
 
     return ::sendmsg(m_sockfd, &msg, flags);
@@ -374,14 +391,14 @@ ssize_t Socket::recv(const iovec *bufs, size_t len, int flags)
 #else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
-    msg.msg_iov    = (iovec *)bufs;
+    msg.msg_iov = (iovec *)bufs;
     msg.msg_iovlen = len;
 
     return ::recvmsg(m_sockfd, &msg, flags);
 #endif
 }
 
-ssize_t Socket::recvfrom(void *buf, size_t len, Address::Ptr &src, int flags)
+ssize_t Socket::recvfrom(void *buf, size_t len, const Address::Ptr &src, int flags)
 {
     if (!isConnected())
     {
@@ -392,7 +409,7 @@ ssize_t Socket::recvfrom(void *buf, size_t len, Address::Ptr &src, int flags)
     return ::recvfrom(m_sockfd, (char *)buf, len, flags, src->getAddr(), &src_len);
 }
 
-ssize_t Socket::recvfrom(const iovec *bufs, size_t len, Address::Ptr &src, int flags)
+ssize_t Socket::recvfrom(const iovec *bufs, size_t len, const Address::Ptr &src, int flags)
 {
     if (!isConnected())
     {
@@ -409,9 +426,9 @@ ssize_t Socket::recvfrom(const iovec *bufs, size_t len, Address::Ptr &src, int f
 #else
     msghdr msg;
     memset(&msg, 0, sizeof(msghdr));
-    msg.msg_iov     = (iovec *)bufs;
-    msg.msg_iovlen  = len;
-    msg.msg_name    = src->getAddr();
+    msg.msg_iov = (iovec *)bufs;
+    msg.msg_iovlen = len;
+    msg.msg_name = src->getAddr();
     msg.msg_namelen = src->getAddrLen();
     return ::recvmsg(m_sockfd, &msg, flags);
 #endif

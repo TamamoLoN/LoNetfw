@@ -110,12 +110,12 @@ class ArgumentParser final
     }
 
     void parse(int argc, char *argv[]);
+    void handleError(const std::string &msg) const;
 
   private:
     const std::string usage() const;
     const std::string help() const;
     void getArgName(std::string &name);
-    void handleError(const std::string &msg) const;
     std::string formatHelper(const std::string &left, const std::string &right, size_t indent = 2,
                              size_t help_col = 26, size_t width = 80) const;
 

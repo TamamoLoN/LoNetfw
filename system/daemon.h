@@ -27,7 +27,7 @@ struct ProcessInfo
 
     std::string toString() const;
 };
-#define G_PROC_INFO lon::util::Singleton<ProcessInfo>::Instance()
+#define G_PROC_INFO lon::util::Singleton<lon::system::ProcessInfo>::Instance()
 
 /**
  * @brief 启动程序可以选择用守护进程的方式

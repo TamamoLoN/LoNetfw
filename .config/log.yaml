@@ -26,3 +26,6 @@ tcp:
             timeout: 3000
       server:
             client_timeout: 120000
+system:
+      daemon:
+            restart_delay_s: 3

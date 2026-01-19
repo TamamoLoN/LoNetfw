@@ -337,10 +337,10 @@ const std::string ArgumentParser::usage() const
 const std::string ArgumentParser::help() const
 {
     std::unordered_map<Argument::Ptr, std::vector<std::string>> showed = {};
-    std::string res = usage() + "\n\n" + m_description + "\n\n";
+    std::string res = usage() + "\n\n" + m_description + "\n";
     if (!m_positional_args.empty())
     {
-        res += "positional arguments:\n";
+        res += "\npositional arguments:\n";
     }
     for (const auto &arg : m_positional_args)
     {

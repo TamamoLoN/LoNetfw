@@ -1,8 +1,27 @@
 #include "lonetfw/lonetfw.h"
 
-void test_daemon(int argc, char *argv[]) {}
+static auto g_logger = LON_LOG_ROOT;
 
-void test_argparse(int argc, char *argv[])
+lon::scheduler::Timer::Ptr timer = nullptr;
+int test_daemon(int argc, char **argv)
+{
+    LON_INFO(g_logger) << G_PROC_INFO.toString();
+    lon::scheduler::IOScheduler ios(1);
+    timer = ios.addTimer(
+        1000,
+        []() {
+            LON_INFO(g_logger) << "onTimer";
+            static int count = 0;
+            if (++count > 10)
+            {
+                exit(1);
+            }
+        },
+        true);
+    return 0;
+}
+
+int test_argparse(int argc, char *argv[])
 {
     lon::util::ArgumentParser parser;
     parser.addDescription("argparse 功能示例程序");
@@ -35,7 +54,7 @@ void test_argparse(int argc, char *argv[])
     }
     catch (...)
     {
-        return;
+        return 0;
     }
 
     auto filename = parser.get<std::vector<std::string>>("filename");
@@ -63,12 +82,13 @@ void test_argparse(int argc, char *argv[])
         std::cout << t << " ";
     }
     std::cout << std::endl;
+    return 0;
 }
 
 int main(int argc, char *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
-    // test_daemon(argc, argv);
-    test_argparse(argc, argv);
+    return lon::system::start_daemon(argc, argv, test_daemon, true);
+    // return test_argparse(argc, argv);
     return 0;
 }

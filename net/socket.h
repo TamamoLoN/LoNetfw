@@ -70,8 +70,8 @@ class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
 
     ssize_t recv(void *buf, size_t len, int flags = 0);
     ssize_t recv(const iovec *bufs, size_t len, int flags = 0);
-    ssize_t recvfrom(void *buf, size_t len, Address::Ptr &src, int flags = 0);
-    ssize_t recvfrom(const iovec *bufs, size_t len, Address::Ptr &src, int flags = 0);
+    ssize_t recvfrom(void *buf, size_t len, const Address::Ptr &src, int flags = 0);
+    ssize_t recvfrom(const iovec *bufs, size_t len, const Address::Ptr &src, int flags = 0);
 
     Address::Ptr getPeerAddress();
     Address::Ptr getLocalAddress();
