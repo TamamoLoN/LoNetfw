@@ -85,10 +85,26 @@ int test_argparse(int argc, char *argv[])
     return 0;
 }
 
+int test_env(int argc, char *argv[])
+{
+    if (!ENVMGR.init(argc, argv))
+    {
+        return 0;
+    }
+    LON_INFO(g_logger) << "exe=" << ENVMGR.getExe();
+    LON_INFO(g_logger) << "cwd=" << ENVMGR.getCwd();
+    LON_INFO(g_logger) << "env PATH=" << ENVMGR.getEnv("PATH");
+    LON_INFO(g_logger) << "env PATH=" << ENVMGR.getEnv("TEST");
+    ENVMGR.setEnv("TEST", "888");
+    LON_INFO(g_logger) << "env PATH=" << ENVMGR.getEnv("TEST");
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     lon::config::Config::parseFromYaml(".config/log.yaml");
-    return lon::system::start_daemon(argc, argv, test_daemon, true);
+    // return lon::system::start_daemon(argc, argv, test_daemon, true);
     // return test_argparse(argc, argv);
+    return test_env(argc, argv);
     return 0;
 }
