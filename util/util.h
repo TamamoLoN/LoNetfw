@@ -10,6 +10,7 @@
 
 #include "util/argparse.h"
 #include "util/buffer.h"
+#include "util/fsutil.h"
 #include "yaml-cpp/yaml.h"
 #include <assert.h>
 #include <functional>
@@ -56,10 +57,6 @@ std::string toUpper(const std::string &str);
 std::vector<std::string> split(const std::string &s, const std::string &delimiter);
 std::string trim(const std::string &str);
 bool globMatch(const std::string &pattern, const std::string &text);
-
-// 文件相关
-bool isFileExist(const std::string &path);
-size_t getFileSize(const std::string &path);
 
 // yaml风格的格式参数名验证规则
 bool isValidParamName(const std::string &str);

@@ -119,25 +119,6 @@ bool globMatch(const std::string &pattern, const std::string &text)
 #endif
 }
 
-bool isFileExist(const std::string &path)
-{
-    struct stat buffer;
-    return (stat(path.c_str(), &buffer) == 0);
-}
-
-size_t getFileSize(const std::string &path)
-{
-    struct stat st;
-    if (stat(path.c_str(), &st) == 0)
-    {
-        return st.st_size;
-    }
-    else
-    {
-        throw std::runtime_error("getFileSize: stat file failed, path: " + path);
-    }
-}
-
 bool isValidParamName(const std::string &str)
 {
     if (str.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.") !=

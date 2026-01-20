@@ -15,6 +15,17 @@ ConfigDataBase::Ptr Config::getDataBase(const std::string &name)
 
 void Config::parseFromYaml(const std::string &yaml_path)
 {
+    {
+        // TODO - 根据md5判断文件是否修改过，如果没有修改过则不重新加载
+        // struct stat st;
+        // lstat(i.c_str(), &st);
+        // sylar::Mutex::Lock lock(s_mutex);
+        // if (s_file2modifytime[i] == (uint64_t)st.st_mtime)
+        // {
+        //     continue;
+        // }
+        // s_file2modifytime[i] = st.st_mtime;
+    }
     YAML::Node root = YAML::LoadFile(yaml_path);
     parseFromYaml(root);
 }
@@ -56,6 +67,24 @@ void Config::parseFromYaml(YAML::Node node)
     catch (const std::runtime_error &e)
     {
         LON_ERROR(LON_LOG_ROOT) << e.what();
+    }
+}
+
+void Config::parseFromDir(const std::string &dir_path)
+{
+    std::vector<std::string> files;
+    util::FSUtil::getDirFiles(files, dir_path, ".yaml");
+    for (auto &file : files)
+    {
+        try
+        {
+            parseFromYaml(file);
+            LON_INFO(LON_LOG_ROOT) << "parseFromDir config file=" << file << " success";
+        }
+        catch (...)
+        {
+            LON_ERROR(LON_LOG_ROOT) << "parseFromDir config file=" << file << " failed";
+        }
     }
 }
 

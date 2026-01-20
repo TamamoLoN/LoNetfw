@@ -169,10 +169,19 @@ void test_visit()
     });
 }
 
+void test_read_dir_config()
+{
+    LON_INFO(LON_LOG_NAME("root")) << "read dir config" << std::endl << "=========================";
+    lon::config::Config::parseFromDir("./.config");
+}
+
 int main(int argc, char **argv)
 {
     // test_std_type();
     test_diy_type();
     // test_log_config();
     test_visit();
+
+    test_read_dir_config();
+    test_read_dir_config();
 }

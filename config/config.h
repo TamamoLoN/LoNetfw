@@ -99,6 +99,7 @@ class Config
 
     static void parseFromYaml(const std::string &yaml_path);
     static void parseFromYaml(YAML::Node node);
+    static void parseFromDir(const std::string &dir_path);
     static void visit(std::function<void(config::ConfigDataBase::Ptr)> cb);
     static std::ostream &toString(std::ostream &os);
     static std::string toString();
