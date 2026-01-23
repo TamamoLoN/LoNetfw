@@ -17,17 +17,15 @@ void test_fiber()
 
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::READ,
                  []() { LON_FATAL(LON_LOG_ROOT) << "read cb"; });
-    io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE,
-                 [fd]()
-                 {
-                     auto fd_ = fd;
-                     LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
-                     // lon::scheduler::IOScheduler::getThis()->cancelEvent(
-                     //     fd_, lon::scheduler::IOScheduler::Event::READ);
-                     // lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
-                     closesocket(fd_);
-                     LON_FATAL(LON_LOG_ROOT) << "close fd";
-                 });
+    io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [fd]() {
+        auto fd_ = fd;
+        LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
+        // lon::scheduler::IOScheduler::getThis()->cancelEvent(
+        //     fd_, lon::scheduler::IOScheduler::Event::READ);
+        // lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
+        closesocket(fd_);
+        LON_FATAL(LON_LOG_ROOT) << "close fd";
+    });
 #else
     fcntl(fd, F_SETFL, O_NONBLOCK);
     sockaddr_in addr;
@@ -38,16 +36,14 @@ void test_fiber()
 
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::READ,
                  []() { LON_FATAL(LON_LOG_ROOT) << "read cb"; });
-    io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE,
-                 [fd]()
-                 {
-                     auto fd_ = fd;
-                     LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
-                     // lon::scheduler::IOScheduler::getThis()->cancelEvent(
-                     //     fd_, lon::scheduler::IOScheduler::Event::READ);
-                     lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
-                     close(fd_);
-                 });
+    io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [fd]() {
+        auto fd_ = fd;
+        LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
+        // lon::scheduler::IOScheduler::getThis()->cancelEvent(
+        //     fd_, lon::scheduler::IOScheduler::Event::READ);
+        lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
+        close(fd_);
+    });
 #endif
     auto ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
     if (ret == 0)
@@ -81,18 +77,17 @@ void test_timer()
         2, true, "io_scheduler", lon::config::GlobalConfig::Instance().config_fiber->getData());
     timer = io->addTimer(
         50,
-        []()
-        {
+        []() {
             static int cnt = 0;
             LON_INFO(LON_LOG_ROOT)
                 << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
 
-            if (++cnt > 10)
+            if (++cnt == 10)
             {
                 // timer->cancel();
                 timer->reset(200, true);
             }
-            if (cnt > 40)
+            if (cnt == 40)
             {
                 timer->cancel();
             }

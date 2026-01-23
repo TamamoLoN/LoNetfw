@@ -25,7 +25,11 @@ static int real_start(int argc, char **argv, std::function<int(int argc, char **
 
 static int real_daemon(int argc, char **argv, std::function<int(int argc, char **argv)> main_cb)
 {
-    daemon(1, 0);
+    if (LON_UNLIKELY(daemon(1, 0) == -1))
+    {
+        LON_ERROR(root_logger) << "daemon fail, errno=" << errno << " errstr=" << strerror(errno);
+        return -1;
+    }
     G_PROC_INFO.parent_id         = getpid();
     G_PROC_INFO.parent_start_time = time(0);
     while (true)

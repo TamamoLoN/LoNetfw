@@ -9,7 +9,10 @@ bool Env::init(int argc, char **argv)
     char link[1024] = {0};
     char path[1024] = {0};
     sprintf(link, "/proc/%d/exe", getpid());
-    readlink(link, path, sizeof(path));
+    if (LON_UNLIKELY(readlink(link, path, sizeof(path)) == -1))
+    {
+        return false;
+    }
     // /path/xxx/exe
     m_exe = path;
 
