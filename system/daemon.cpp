@@ -4,7 +4,7 @@ namespace lon
 {
 namespace system
 {
-static auto root_logger = LON_LOG_ROOT;
+static auto g_logger = LON_LOG_ROOT;
 
 std::string ProcessInfo::toString() const
 {
@@ -27,7 +27,7 @@ static int real_daemon(int argc, char **argv, std::function<int(int argc, char *
 {
     if (LON_UNLIKELY(daemon(1, 0) == -1))
     {
-        LON_ERROR(root_logger) << "daemon fail, errno=" << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "daemon fail, errno=" << errno << " errstr=" << strerror(errno);
         return -1;
     }
     G_PROC_INFO.parent_id         = getpid();
@@ -40,13 +40,13 @@ static int real_daemon(int argc, char **argv, std::function<int(int argc, char *
             //子进程返回
             G_PROC_INFO.main_id         = getpid();
             G_PROC_INFO.main_start_time = time(0);
-            LON_INFO(root_logger) << "process start pid=" << getpid();
+            LON_INFO(g_logger) << "process start pid=" << getpid();
             return real_start(argc, argv, main_cb);
         }
         else if (pid < 0)
         {
-            LON_INFO(root_logger) << "fork fail return=" << pid << " errno=" << errno
-                                  << " errstr=" << strerror(errno);
+            LON_INFO(g_logger) << "fork fail return=" << pid << " errno=" << errno
+                               << " errstr=" << strerror(errno);
             return -1;
         }
         else
@@ -58,17 +58,17 @@ static int real_daemon(int argc, char **argv, std::function<int(int argc, char *
             {
                 if (status == 9)
                 {
-                    LON_INFO(root_logger) << "killed";
+                    LON_INFO(g_logger) << "killed";
                     break;
                 }
                 else
                 {
-                    LON_ERROR(root_logger) << "child crash pid=" << pid << " status=" << status;
+                    LON_ERROR(g_logger) << "child crash pid=" << pid << " status=" << status;
                 }
             }
             else
             {
-                LON_INFO(root_logger) << "child finished pid=" << pid;
+                LON_INFO(g_logger) << "child finished pid=" << pid;
                 break;
             }
             G_PROC_INFO.restart_count += 1;

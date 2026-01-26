@@ -1,4 +1,7 @@
 #include "lonetfw/lonetfw.h"
+
+static auto g_logger = LON_LOG_ROOT;
+
 class Person
 {
   public:
@@ -98,35 +101,35 @@ void test_std_type()
     auto res = config->getData<int>("test");
     if (res != nullptr)
     {
-        LON_INFO(LON_LOG_ROOT) << res->toString();
+        LON_INFO(g_logger) << res->toString();
     }
 
     YAML::Node root = YAML::LoadFile("/home/tamamo/LoNetfw/.config/test.yaml");
 
-    LON_INFO(LON_LOG_ROOT) << "before: " << data1->getData();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data2->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data3->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data4->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data5->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data6->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data7->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data8->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data12->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data13->toString();
+    LON_INFO(g_logger) << "before: " << data1->getData();
+    LON_INFO(g_logger) << "before: " << data2->toString();
+    LON_INFO(g_logger) << "before: " << data3->toString();
+    LON_INFO(g_logger) << "before: " << data4->toString();
+    LON_INFO(g_logger) << "before: " << data5->toString();
+    LON_INFO(g_logger) << "before: " << data6->toString();
+    LON_INFO(g_logger) << "before: " << data7->toString();
+    LON_INFO(g_logger) << "before: " << data8->toString();
+    LON_INFO(g_logger) << "before: " << data12->toString();
+    LON_INFO(g_logger) << "before: " << data13->toString();
     lon::config::Config::parseFromYaml(root);
 
-    LON_INFO(LON_LOG_ROOT) << "after: " << data1->getData();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data2->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data3->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data4->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data5->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data6->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data7->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data8->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data12->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data13->toString();
+    LON_INFO(g_logger) << "after: " << data1->getData();
+    LON_INFO(g_logger) << "after: " << data2->toString();
+    LON_INFO(g_logger) << "after: " << data3->toString();
+    LON_INFO(g_logger) << "after: " << data4->toString();
+    LON_INFO(g_logger) << "after: " << data5->toString();
+    LON_INFO(g_logger) << "after: " << data6->toString();
+    LON_INFO(g_logger) << "after: " << data7->toString();
+    LON_INFO(g_logger) << "after: " << data8->toString();
+    LON_INFO(g_logger) << "after: " << data12->toString();
+    LON_INFO(g_logger) << "after: " << data13->toString();
 
-    // LON_INFO(LON_LOG_ROOT) << "__cplusplus = " << __cplusplus;
+    // LON_INFO(g_logger) << "__cplusplus = " << __cplusplus;
 }
 
 void test_diy_type()
@@ -138,14 +141,14 @@ void test_diy_type()
         std::map<std::string, std::vector<Person>>({{"mmd", {Person("yqh", 22, "male", 100.0f)}}}),
         "yqh");
     data11->addConfigDataChangeCB([](const Person &old_data, const Person &new_data) {
-        LON_FATAL(LON_LOG_ROOT) << "11111old_data: " << old_data.print();
-        LON_FATAL(LON_LOG_ROOT) << "11111new_data: " << new_data.print();
+        LON_FATAL(g_logger) << "11111old_data: " << old_data.print();
+        LON_FATAL(g_logger) << "11111new_data: " << new_data.print();
     });
-    LON_INFO(LON_LOG_ROOT) << "before: " << data11->toString();
-    LON_INFO(LON_LOG_ROOT) << "before: " << data14->toString();
+    LON_INFO(g_logger) << "before: " << data11->toString();
+    LON_INFO(g_logger) << "before: " << data14->toString();
     lon::config::Config::parseFromYaml("/home/tamamo/LoNetfw/.config/test.yaml");
-    LON_INFO(LON_LOG_ROOT) << "after: " << data11->toString();
-    LON_INFO(LON_LOG_ROOT) << "after: " << data14->toString();
+    LON_INFO(g_logger) << "after: " << data11->toString();
+    LON_INFO(g_logger) << "after: " << data14->toString();
 }
 
 void test_log_config()

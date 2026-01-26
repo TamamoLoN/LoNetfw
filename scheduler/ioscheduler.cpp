@@ -4,6 +4,8 @@ namespace lon
 {
 namespace scheduler
 {
+static auto g_logger = LON_LOG_ROOT;
+
 #ifdef _WIN32
 static int pipe(SOCKET sv[2])
 {
@@ -125,8 +127,8 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     // 一个句柄一般不会重复加同一个事件， 可能是两个不同的线程在操控同一个句柄添加事件
     if (fd_ctx->event & event)
     {
-        LON_ERROR(LON_LOG_ROOT) << "can not add same event ,fd=" << fd << " event=" << event
-                                << " fd_ctx->event=" << fd_ctx->event;
+        LON_ERROR(g_logger) << "can not add same event ,fd=" << fd << " event=" << event
+                            << " fd_ctx->event=" << fd_ctx->event;
         return -1;
     }
 
@@ -142,9 +144,9 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
     {
-        LON_ERROR(LON_LOG_ROOT) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
-                                << " fd=" << fd << " epevent.events=" << epevent.events
-                                << " errno=" << errno << ": " << strerror(errno);
+        LON_ERROR(g_logger) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
+                            << " fd=" << fd << " epevent.events=" << epevent.events
+                            << " errno=" << errno << ": " << strerror(errno);
         return -1;
     }
     ++m_waitting_events_count;
@@ -193,9 +195,9 @@ bool IOScheduler::delEvent(int fd, Event event)
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
     {
-        LON_ERROR(LON_LOG_ROOT) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
-                                << " fd=" << fd << " epevent.events=" << epevent.events
-                                << " errno=" << errno << ": " << strerror(errno);
+        LON_ERROR(g_logger) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
+                            << " fd=" << fd << " epevent.events=" << epevent.events
+                            << " errno=" << errno << ": " << strerror(errno);
         return false;
     }
     --m_waitting_events_count;
@@ -234,9 +236,9 @@ bool IOScheduler::cancelEvent(int fd, Event event)
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
     {
-        LON_ERROR(LON_LOG_ROOT) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
-                                << " fd=" << fd << " epevent.events=" << epevent.events
-                                << " errno=" << errno << ": " << strerror(errno);
+        LON_ERROR(g_logger) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
+                            << " fd=" << fd << " epevent.events=" << epevent.events
+                            << " errno=" << errno << ": " << strerror(errno);
         return false;
     }
     fd_ctx->triggerEvent(event);
@@ -268,9 +270,9 @@ bool IOScheduler::cancelAll(int fd)
     int ret          = epoll_ctl(m_epoll_fd, op, fd, &epevent);
     if (ret != 0)
     {
-        LON_ERROR(LON_LOG_ROOT) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
-                                << " fd=" << fd << " epevent.events=" << epevent.events
-                                << " errno=" << errno << ": " << strerror(errno);
+        LON_ERROR(g_logger) << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
+                            << " fd=" << fd << " epevent.events=" << epevent.events
+                            << " errno=" << errno << ": " << strerror(errno);
         return false;
     }
     if (fd_ctx->event & Event::READ)
@@ -294,13 +296,13 @@ void IOScheduler::notify()
     {
         return;
     }
-    LON_DEBUG(LON_LOG_ROOT) << "notify";
+    LON_DEBUG(g_logger) << "notify";
 #ifdef _WIN32
     char c  = 'T';
     int ret = send(m_notify_pipe_fd[1], &c, 1, 0);
     LON_ASSERT(ret == 1);
 #else
-    int ret = write(m_notify_pipe_fd[1], "T", 1);
+    int ret        = write(m_notify_pipe_fd[1], "T", 1);
 #endif
     LON_ASSERT(ret == 1);
 }
@@ -319,21 +321,19 @@ bool IOScheduler::stopping(uint64_t &timeout)
 
 void IOScheduler::idle()
 {
-    LON_DEBUG(LON_LOG_ROOT) << "idle";
+    LON_DEBUG(g_logger) << "idle";
     epoll_event *events = new epoll_event[64]();
-    std::shared_ptr<epoll_event> shared_events(events,
-                                               [](epoll_event *ptr)
-                                               {
-                                                   delete[] ptr;
-                                                   ptr = nullptr;
-                                               });
+    std::shared_ptr<epoll_event> shared_events(events, [](epoll_event *ptr) {
+        delete[] ptr;
+        ptr = nullptr;
+    });
 
     while (true)
     {
         uint64_t next_timeout = 0;
         if (stopping(next_timeout))
         {
-            LON_INFO(LON_LOG_ROOT) << "ioscheduler[" << getName() << "] idle stopping exit";
+            LON_INFO(g_logger) << "ioscheduler[" << getName() << "] idle stopping exit";
             break;
         }
 
@@ -420,7 +420,7 @@ void IOScheduler::idle()
             int ret_epoll_ctl = epoll_ctl(m_epoll_fd, op, fd_ctx->fd, &event);
             if (ret_epoll_ctl)
             {
-                LON_ERROR(LON_LOG_ROOT)
+                LON_ERROR(g_logger)
                     << "epoll_ctl error ,m_epoll_fd=" << m_epoll_fd << " op=" << op
                     << " fd_ctx->fd=" << fd_ctx->fd << " event.events=" << event.events
                     << " errno=" << errno << ": " << strerror(errno);
@@ -442,7 +442,7 @@ void IOScheduler::idle()
         auto &&cur = std::move(fiber::Fiber::getThis());
         cur->swapOut(Scheduler::getMainFiber());
         // fiber::Fiber::yieldToHold(Scheduler::getMainFiber());
-        // LON_WARN(LON_LOG_ROOT) << fiber::Fiber::getThis()->getFiberId();
+        // LON_WARN(g_logger) << fiber::Fiber::getThis()->getFiberId();
     }
 }
 

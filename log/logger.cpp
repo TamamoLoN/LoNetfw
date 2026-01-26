@@ -5,6 +5,8 @@ namespace lon
 {
 namespace log
 {
+static auto g_logger = LON_LOG_ROOT;
+
 Logger::Logger(const std::string &name, LogLevel::Level level)
     : m_name(name), m_appenders({}), m_level(level)
 {
@@ -132,7 +134,7 @@ Logger::Ptr LoggerManager::getLogger(const std::string &name, bool auto_create)
         }
         else
         {
-            LON_WARN(LON_LOG_ROOT) << "the logger has not been initialized: " << name;
+            LON_WARN(g_logger) << "the logger has not been initialized: " << name;
             return nullptr;
         }
     }

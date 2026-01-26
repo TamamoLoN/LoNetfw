@@ -1,13 +1,15 @@
 #include "lonetfw/lonetfw.h"
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_tcp_server()
 {
     lon::net::Address::Ptr addr;
     // auto addr_unix = std::make_shared<lon::net::UnixAddress>("/tmp/unix_addr");
     lon::net::Address::parse(addr, "0.0.0.0:8080", AF_INET);
 
-    LON_INFO(LON_LOG_ROOT) << "addr=" << addr->toString();
-    // LON_INFO(LON_LOG_ROOT) << "addr_unix=" << addr_unix->toString();
+    LON_INFO(g_logger) << "addr=" << addr->toString();
+    // LON_INFO(g_logger) << "addr_unix=" << addr_unix->toString();
 
     std::vector<lon::net::Address::Ptr> addrs;
     addrs.push_back(addr);
@@ -40,7 +42,7 @@ class EchoServer : public lon::server::TcpServer
 
     void handleClient(const lon::net::Socket::Ptr &client) override
     {
-        LON_INFO(LON_LOG_ROOT) << "handleClient: " << client->toString();
+        LON_INFO(g_logger) << "handleClient: " << client->toString();
         lon::util::ByteArray::Ptr buffer = std::make_shared<lon::util::ByteArray>();
         while (true)
         {
@@ -51,24 +53,24 @@ class EchoServer : public lon::server::TcpServer
             auto ret = client->recv(&iovecs[0], iovecs.size());
             if (ret == 0)
             {
-                LON_INFO(LON_LOG_ROOT) << "client closed: " << client->toString();
+                LON_INFO(g_logger) << "client closed: " << client->toString();
                 break;
             }
             else if (ret < 0)
             {
-                LON_ERROR(LON_LOG_ROOT) << "recv error: " << client->toString() << " error=" << ret
-                                        << " errno=" << errno << " errstr=" << strerror(errno);
+                LON_ERROR(g_logger) << "recv error: " << client->toString() << " error=" << ret
+                                    << " errno=" << errno << " errstr=" << strerror(errno);
                 break;
             }
             buffer->setPosition(buffer->getPosition() + ret);
             buffer->setPosition(0);
             if (m_type == 1) // 文本
             {
-                LON_INFO(LON_LOG_ROOT) << "recv text: " << buffer->toString();
+                LON_INFO(g_logger) << "recv text: " << buffer->toString();
             }
             else
             {
-                LON_INFO(LON_LOG_ROOT) << "recv hex: " << buffer->toStringHex();
+                LON_INFO(g_logger) << "recv hex: " << buffer->toStringHex();
             }
         }
     }
@@ -82,7 +84,7 @@ void test_echo_server()
     lon::net::Address::Ptr addr;
     lon::net::Address::parse(addr, "0.0.0.0:8080", AF_INET);
 
-    LON_INFO(LON_LOG_ROOT) << "addr=" << addr->toString();
+    LON_INFO(g_logger) << "addr=" << addr->toString();
 
     std::vector<lon::net::Address::Ptr> addrs;
     addrs.push_back(addr);

@@ -1,6 +1,8 @@
 #include "lonetfw/lonetfw.h"
 #include <chrono>
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_log()
 {
     auto start = std::chrono::high_resolution_clock::now();
@@ -10,9 +12,9 @@ void test_log()
     }
     auto end = std::chrono::high_resolution_clock::now();
 
-    LON_INFO(LON_LOG_ROOT)
-        << "duration: "
-        << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "us";
+    LON_INFO(g_logger) << "duration: "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+                       << "us";
 }
 
 int main(int argc, char const *argv[])

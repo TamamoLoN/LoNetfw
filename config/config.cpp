@@ -4,6 +4,8 @@ namespace lon
 {
 namespace config
 {
+static auto g_logger = LON_LOG_ROOT;
+
 ConfigDataBase::Ptr Config::getDataBase(const std::string &name)
 {
     if (getDatas().find(name) != getDatas().end())
@@ -46,8 +48,8 @@ void Config::parseFromYaml(YAML::Node node)
             auto data_base = getDataBase(key);
             if (data_base == nullptr)
             {
-                LON_DEBUG(LON_LOG_ROOT) << "Config::parseFromYaml: "
-                                        << "cannot find data: " << key;
+                LON_DEBUG(g_logger) << "Config::parseFromYaml: "
+                                    << "cannot find data: " << key;
             }
             else
             {
@@ -66,7 +68,7 @@ void Config::parseFromYaml(YAML::Node node)
     }
     catch (const std::runtime_error &e)
     {
-        LON_ERROR(LON_LOG_ROOT) << e.what();
+        LON_ERROR(g_logger) << e.what();
     }
 }
 
@@ -79,11 +81,11 @@ void Config::parseFromDir(const std::string &dir_path)
         try
         {
             parseFromYaml(file);
-            LON_INFO(LON_LOG_ROOT) << "parseFromDir config file=" << file << " success";
+            LON_INFO(g_logger) << "parseFromDir config file=" << file << " success";
         }
         catch (...)
         {
-            LON_ERROR(LON_LOG_ROOT) << "parseFromDir config file=" << file << " failed";
+            LON_ERROR(g_logger) << "parseFromDir config file=" << file << " failed";
         }
     }
 }

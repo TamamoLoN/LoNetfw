@@ -7,6 +7,7 @@ namespace lon
 {
 namespace net
 {
+static auto g_logger = LON_LOG_ROOT;
 Address::Ptr Address::create(const sockaddr *addr, socklen_t addr_len)
 {
     if (addr == nullptr)
@@ -81,9 +82,9 @@ bool Address::parse(std::vector<Address::Ptr> &addrs, const std::string &host, i
     int ret = getaddrinfo(node.c_str(), service, &addr, &result);
     if (ret)
     {
-        LON_ERROR(LON_LOG_ROOT) << "Address::find(addrs, " << host << ", " << family << ", " << type
-                                << ", " << protocol << ") getaddrinfo error, ret=" << ret
-                                << " errno=" << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "Address::find(addrs, " << host << ", " << family << ", " << type
+                            << ", " << protocol << ") getaddrinfo error, ret=" << ret
+                            << " errno=" << errno << " errstr=" << strerror(errno);
         return false;
     }
 
@@ -151,7 +152,7 @@ bool Address::getInterfaceAddresses(
 
     if (ret != NO_ERROR)
     {
-        LON_ERROR(LON_LOG_ROOT) << "GetAdaptersAddresses failed, ret=" << ret;
+        LON_ERROR(g_logger) << "GetAdaptersAddresses failed, ret=" << ret;
         return false;
     }
 
@@ -193,9 +194,9 @@ bool Address::getInterfaceAddresses(
     int ret              = getifaddrs(&addr);
     if (ret)
     {
-        LON_ERROR(LON_LOG_ROOT) << "Address::getInterfaceAddresse(addrs, " << family
-                                << ") getifaddrs error, ret=" << ret << " errno=" << errno
-                                << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "Address::getInterfaceAddresse(addrs, " << family
+                            << ") getifaddrs error, ret=" << ret << " errno=" << errno
+                            << " errstr=" << strerror(errno);
         return false;
     }
     next = addr;
@@ -242,7 +243,7 @@ bool Address::getInterfaceAddresses(
     }
     catch (...)
     {
-        LON_ERROR(LON_LOG_ROOT) << "Address::getInterfaceAddresse(addrs, " << family << ") error";
+        LON_ERROR(g_logger) << "Address::getInterfaceAddresse(addrs, " << family << ") error";
         freeifaddrs(addr);
         return false;
     }
@@ -330,9 +331,9 @@ IPAddress::Ptr IPAddress::create(const std::string &address, const uint16_t &por
     int ret        = getaddrinfo(address.c_str(), NULL, &addr, &result);
     if (ret)
     {
-        LON_ERROR(LON_LOG_ROOT) << "IPAddress::create(" << address << ", " << port
-                                << ") error, ret=" << ret << " errno=" << errno
-                                << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "IPAddress::create(" << address << ", " << port
+                            << ") error, ret=" << ret << " errno=" << errno
+                            << " errstr=" << strerror(errno);
         freeaddrinfo(result);
         return nullptr;
     }
@@ -434,9 +435,9 @@ IPv4Address::Ptr IPv4Address::create(const std::string &address, const uint16_t 
     int ret = inet_pton(AF_INET, address.c_str(), &addr->m_addr.sin_addr.s_addr);
     if (ret <= 0)
     {
-        LON_ERROR(LON_LOG_ROOT) << "IPv4Address::create(" << address << ", " << port
-                                << ") error ,ret=" << ret << " errno=" << errno
-                                << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "IPv4Address::create(" << address << ", " << port
+                            << ") error ,ret=" << ret << " errno=" << errno
+                            << " errstr=" << strerror(errno);
         return nullptr;
     }
     return addr;
@@ -520,9 +521,9 @@ IPv6Address::Ptr IPv6Address::create(const std::string &address, const uint16_t 
     int ret = inet_pton(AF_INET6, address.c_str(), &addr->m_addr.sin6_addr);
     if (ret <= 0)
     {
-        LON_ERROR(LON_LOG_ROOT) << "IPv6Address::create(" << address << ", " << port
-                                << ") error ,ret=" << ret << " errno=" << errno
-                                << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "IPv6Address::create(" << address << ", " << port
+                            << ") error ,ret=" << ret << " errno=" << errno
+                            << " errstr=" << strerror(errno);
         return nullptr;
     }
     return addr;

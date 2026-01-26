@@ -4,6 +4,7 @@ namespace lon
 {
 namespace scheduler
 {
+static auto g_logger = LON_LOG_ROOT;
 // 当前协程调度器
 static thread_local Scheduler *t_cur_scheduler = nullptr;
 // 调度器协程
@@ -69,7 +70,7 @@ void Scheduler::start()
     // {
     //     m_root_fiber->swapIn();
     // }
-    LON_INFO(LON_LOG_ROOT) << "scheduler[" << m_name << "]:" << this << " started";
+    LON_INFO(g_logger) << "scheduler[" << m_name << "]:" << this << " started";
 }
 
 void Scheduler::stop()
@@ -81,7 +82,7 @@ void Scheduler::stop()
         (m_root_fiber->getState() == fiber::Fiber::TERM ||
          m_root_fiber->getState() == fiber::Fiber::INIT))
     {
-        LON_INFO(LON_LOG_ROOT) << "scheduler[" << m_name << "]:" << this << " stopped";
+        LON_INFO(g_logger) << "scheduler[" << m_name << "]:" << this << " stopped";
         m_stopping = true;
         if (stopping())
         {
@@ -128,7 +129,7 @@ void Scheduler::stop()
     }
 }
 
-void Scheduler::notify() { LON_DEBUG(LON_LOG_ROOT) << "notify"; }
+void Scheduler::notify() { LON_DEBUG(g_logger) << "notify"; }
 
 void Scheduler::run()
 {
@@ -233,7 +234,7 @@ void Scheduler::run()
             }
             if (idle_fiber->getState() == fiber::Fiber::TERM)
             {
-                LON_DEBUG(LON_LOG_ROOT) << "idle fiber terminate";
+                LON_DEBUG(g_logger) << "idle fiber terminate";
                 break;
             }
             ++m_idle_threads_count;
@@ -256,7 +257,7 @@ bool Scheduler::stopping()
 
 void Scheduler::idle()
 {
-    LON_DEBUG(LON_LOG_ROOT) << "idle";
+    LON_DEBUG(g_logger) << "idle";
     while (!stopping())
     {
         fiber::Fiber::yieldToHold(getMainFiber());

@@ -4,6 +4,7 @@ namespace lon
 {
 namespace net
 {
+static auto g_logger = LON_LOG_ROOT;
 
 Socket::Socket(int family, int type, int protocol)
     : m_sockfd(-1), m_family(family), m_type(type), m_protocol(protocol), m_is_connected(false),
@@ -128,10 +129,10 @@ bool Socket::getOption(int level, int optname, void *optval, socklen_t *optlen)
     int ret = getsockopt(m_sockfd, level, optname, (char *)optval, optlen);
     if (ret)
     {
-        LON_ERROR(LON_LOG_ROOT) << "getOption failed: "
-                                << "socket=" << m_sockfd << " level=" << level
-                                << " optname=" << optname << " ret = " << ret
-                                << " errno = " << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "getOption failed: "
+                            << "socket=" << m_sockfd << " level=" << level << " optname=" << optname
+                            << " ret = " << ret << " errno = " << errno
+                            << " errstr=" << strerror(errno);
         return false;
     }
     return true;
@@ -142,10 +143,10 @@ bool Socket::setOption(int level, int optname, const void *optval, socklen_t opt
     int ret = setsockopt(m_sockfd, level, optname, (const char *)optval, optlen);
     if (ret)
     {
-        LON_ERROR(LON_LOG_ROOT) << "setOption failed: "
-                                << "socket=" << m_sockfd << " level=" << level
-                                << " optname=" << optname << " ret = " << ret
-                                << " errno = " << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "setOption failed: "
+                            << "socket=" << m_sockfd << " level=" << level << " optname=" << optname
+                            << " ret = " << ret << " errno = " << errno
+                            << " errstr=" << strerror(errno);
         return false;
     }
     return true;
@@ -157,9 +158,9 @@ Socket::Ptr Socket::accept()
     int new_socket     = ::accept(m_sockfd, nullptr, nullptr);
     if (new_socket == -1)
     {
-        LON_ERROR(LON_LOG_ROOT) << "accept failed: "
-                                << "socket=" << m_sockfd << " new_socket = " << new_socket
-                                << " errno = " << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "accept failed: "
+                            << "socket=" << m_sockfd << " new_socket = " << new_socket
+                            << " errno = " << errno << " errstr=" << strerror(errno);
         return nullptr;
     }
     if (socket->init(new_socket))
@@ -197,17 +198,17 @@ bool Socket::bind(const Address::Ptr &addr)
     }
     if (LON_UNLIKELY(m_family != addr->getFamily()))
     {
-        LON_ERROR(LON_LOG_ROOT) << "bind failed: family mismatch"
-                                << " socket=" << m_sockfd << " family=" << m_family
-                                << " addr.family = " << addr->getFamily();
+        LON_ERROR(g_logger) << "bind failed: family mismatch"
+                            << " socket=" << m_sockfd << " family=" << m_family
+                            << " addr.family = " << addr->getFamily();
         return false;
     }
 
     if (::bind(m_sockfd, addr->getAddr(), addr->getAddrLen()) == -1)
     {
-        LON_ERROR(LON_LOG_ROOT) << "bind failed: bind error"
-                                << "socket=" << m_sockfd << " errno = " << errno
-                                << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "bind failed: bind error"
+                            << "socket=" << m_sockfd << " errno = " << errno
+                            << " errstr=" << strerror(errno);
         return false;
     }
     getLocalAddress();
@@ -227,18 +228,18 @@ bool Socket::connect(const Address::Ptr &addr, int64_t timeout)
     }
     if (LON_UNLIKELY(m_family != addr->getFamily()))
     {
-        LON_ERROR(LON_LOG_ROOT) << "connect failed: family mismatch"
-                                << " socket=" << m_sockfd << " family=" << m_family
-                                << " addr.family = " << addr->getFamily();
+        LON_ERROR(g_logger) << "connect failed: family mismatch"
+                            << " socket=" << m_sockfd << " family=" << m_family
+                            << " addr.family = " << addr->getFamily();
         return false;
     }
     if (timeout < 0)
     {
         if (::connect(m_sockfd, addr->getAddr(), addr->getAddrLen()) == -1)
         {
-            LON_ERROR(LON_LOG_ROOT) << "connect failed: connect error"
-                                    << "socket=" << m_sockfd << " addr=" << addr->toString()
-                                    << " errno = " << errno << " errstr=" << strerror(errno);
+            LON_ERROR(g_logger) << "connect failed: connect error"
+                                << "socket=" << m_sockfd << " addr=" << addr->toString()
+                                << " errno = " << errno << " errstr=" << strerror(errno);
             close();
             return false;
         }
@@ -247,10 +248,10 @@ bool Socket::connect(const Address::Ptr &addr, int64_t timeout)
     {
         if (connect_with_timeout(m_sockfd, addr->getAddr(), addr->getAddrLen(), timeout) == -1)
         {
-            LON_ERROR(LON_LOG_ROOT)
-                << "connect failed: connect_with_timeout error"
-                << "socket=" << m_sockfd << " addr=" << addr->toString() << " timeout=" << timeout
-                << " errno = " << errno << " errstr=" << strerror(errno);
+            LON_ERROR(g_logger) << "connect failed: connect_with_timeout error"
+                                << "socket=" << m_sockfd << " addr=" << addr->toString()
+                                << " timeout=" << timeout << " errno = " << errno
+                                << " errstr=" << strerror(errno);
             close();
             return false;
         }
@@ -266,16 +267,16 @@ bool Socket::listen(int backlog)
 {
     if (!isValid())
     {
-        LON_ERROR(LON_LOG_ROOT) << "listen failed: socket is not valid";
+        LON_ERROR(g_logger) << "listen failed: socket is not valid";
         return false;
     }
 
     int ret = ::listen(m_sockfd, backlog);
     if (ret)
     {
-        LON_ERROR(LON_LOG_ROOT) << "listen failed: listen error"
-                                << "socket=" << m_sockfd << " backlog = " << backlog
-                                << " errno = " << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "listen failed: listen error"
+                            << "socket=" << m_sockfd << " backlog = " << backlog
+                            << " errno = " << errno << " errstr=" << strerror(errno);
         return false;
     }
     return true;
@@ -304,7 +305,7 @@ ssize_t Socket::send(const void *buf, size_t len, int flags)
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "send failed: socket is not connected";
+        LON_ERROR(g_logger) << "send failed: socket is not connected";
         return -1;
     }
     return ::send(m_sockfd, (const char *)buf, len, flags);
@@ -314,7 +315,7 @@ ssize_t Socket::send(const iovec *bufs, size_t len, int flags)
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "send failed: socket is not connected";
+        LON_ERROR(g_logger) << "send failed: socket is not connected";
         return -1;
     }
 #ifdef _WIN32
@@ -335,7 +336,7 @@ ssize_t Socket::sendto(const void *buf, size_t len, const Address::Ptr &dst, int
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "sendto failed: socket is not connected";
+        LON_ERROR(g_logger) << "sendto failed: socket is not connected";
         return -1;
     }
     return ::sendto(m_sockfd, (const char *)buf, len, flags, dst->getAddr(), dst->getAddrLen());
@@ -345,7 +346,7 @@ ssize_t Socket::sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, i
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "sendto failed: socket is not connected";
+        LON_ERROR(g_logger) << "sendto failed: socket is not connected";
         return -1;
     }
 #ifdef _WIN32
@@ -369,7 +370,7 @@ ssize_t Socket::recv(void *buf, size_t len, int flags)
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "recv failed: socket is not connected";
+        LON_ERROR(g_logger) << "recv failed: socket is not connected";
         return -1;
     }
     return ::recv(m_sockfd, (char *)buf, len, flags);
@@ -379,7 +380,7 @@ ssize_t Socket::recv(const iovec *bufs, size_t len, int flags)
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "recv failed: socket is not connected";
+        LON_ERROR(g_logger) << "recv failed: socket is not connected";
         return -1;
     }
 #ifdef _WIN32
@@ -402,7 +403,7 @@ ssize_t Socket::recvfrom(void *buf, size_t len, const Address::Ptr &src, int fla
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "recvfrom failed: socket is not connected";
+        LON_ERROR(g_logger) << "recvfrom failed: socket is not connected";
         return -1;
     }
     auto src_len = src->getAddrLen();
@@ -413,7 +414,7 @@ ssize_t Socket::recvfrom(const iovec *bufs, size_t len, const Address::Ptr &src,
 {
     if (!isConnected())
     {
-        LON_ERROR(LON_LOG_ROOT) << "recvfrom failed: socket is not connected";
+        LON_ERROR(g_logger) << "recvfrom failed: socket is not connected";
         return -1;
     }
 #ifdef _WIN32
@@ -461,7 +462,7 @@ Address::Ptr Socket::getPeerAddress()
     socklen_t len = addr->getAddrLen();
     if (getpeername(m_sockfd, addr->getAddr(), &len) == -1)
     {
-        LON_ERROR(LON_LOG_ROOT) << "getPeerAddress failed: getpeername error";
+        LON_ERROR(g_logger) << "getPeerAddress failed: getpeername error";
         return std::make_shared<UnknownAddress>(m_family);
     }
 #ifndef _WIN32
@@ -502,7 +503,7 @@ Address::Ptr Socket::getLocalAddress()
     socklen_t len = addr->getAddrLen();
     if (getsockname(m_sockfd, addr->getAddr(), &len) == -1)
     {
-        LON_ERROR(LON_LOG_ROOT) << "getLocalAddress failed: getsockname error";
+        LON_ERROR(g_logger) << "getLocalAddress failed: getsockname error";
         return std::make_shared<UnknownAddress>(m_family);
     }
 #ifndef _WIN32
@@ -598,9 +599,9 @@ void Socket::newSocket()
     }
     else
     {
-        LON_ERROR(LON_LOG_ROOT) << "newSocket socket(" << m_family << ", " << m_type << ", "
-                                << m_protocol << ") failed"
-                                << " errno=" << errno << " errstr=" << strerror(errno);
+        LON_ERROR(g_logger) << "newSocket socket(" << m_family << ", " << m_type << ", "
+                            << m_protocol << ") failed"
+                            << " errno=" << errno << " errstr=" << strerror(errno);
     }
 }
 

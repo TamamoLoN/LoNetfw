@@ -1,5 +1,7 @@
 #include "lonetfw/lonetfw.h"
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_parse_log_format()
 {
     auto res =
@@ -32,7 +34,7 @@ void test_backtrace()
     }
     catch (const std::exception &e)
     {
-        LON_ERROR(LON_LOG_ROOT) << e.what() << '\n' << lon::util::backtrace(100, 2, "\t");
+        LON_ERROR(g_logger) << e.what() << '\n' << lon::util::backtrace(100, 2, "\t");
     }
 }
 
@@ -42,9 +44,9 @@ void test_zigzag()
 {
     int16_t a         = -1;
     uint16_t a_encode = lon::util::ZigZag::encode16(a);
-    LON_INFO(LON_LOG_ROOT) << "a: " << a;
-    LON_INFO(LON_LOG_ROOT) << "a_encode: " << a_encode;
-    LON_INFO(LON_LOG_ROOT) << "a_encode decode: " << lon::util::ZigZag::decode16(a_encode);
+    LON_INFO(g_logger) << "a: " << a;
+    LON_INFO(g_logger) << "a_encode: " << a_encode;
+    LON_INFO(g_logger) << "a_encode decode: " << lon::util::ZigZag::decode16(a_encode);
 }
 
 int main(int argc, char const *argv[])

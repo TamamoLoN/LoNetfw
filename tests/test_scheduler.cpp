@@ -1,9 +1,11 @@
 #include "lonetfw/lonetfw.h"
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_fiber()
 {
     static int i = 5;
-    LON_DEBUG(LON_LOG_ROOT) << "test_fiber cnt = " << i;
+    LON_DEBUG(g_logger) << "test_fiber cnt = " << i;
     // usleep(100000);
     if (--i == 0)
     {
@@ -14,7 +16,7 @@ void test_fiber()
 void test_fiber1()
 {
     static int i = 5;
-    LON_DEBUG(LON_LOG_ROOT) << "test_fiber cnt = " << i;
+    LON_DEBUG(g_logger) << "test_fiber cnt = " << i;
     // usleep(100000);
     if (--i == 0)
     {
@@ -72,12 +74,12 @@ void test_scheduler_yield()
 
     worker->start();
     worker->schedule([]() {
-        LON_DEBUG(LON_LOG_ROOT) << "test yield";
+        LON_DEBUG(g_logger) << "test yield";
         auto fiber = lon::fiber::Fiber::getThis();
         auto w     = lon::scheduler::Scheduler::getThis();
         w->schedule(fiber);
         lon::fiber::Fiber::yieldToHold(w->getMainFiber());
-        LON_DEBUG(LON_LOG_ROOT) << "test yield end";
+        LON_DEBUG(g_logger) << "test yield end";
     });
     worker->stop();
 }

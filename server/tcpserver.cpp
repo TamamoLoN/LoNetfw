@@ -4,6 +4,8 @@ namespace lon
 {
 namespace server
 {
+static auto g_logger = LON_LOG_ROOT;
+
 TcpServer::TcpServer(scheduler::IOScheduler *scheduler, scheduler::IOScheduler *accept_scheduler,
                      size_t client_timeout, const std::string &name)
     : m_scheduler(scheduler), m_accept_scheduler(accept_scheduler),
@@ -36,13 +38,13 @@ bool TcpServer::bind(const std::vector<net::Address::Ptr> &addrs,
         auto socket = net::Socket::create(addr, net::Socket::Type::TCP);
         if (!socket->bind(addr))
         {
-            LON_ERROR(LON_LOG_ROOT) << "[" << getName() << "] bind failed: " << addr->toString();
+            LON_ERROR(g_logger) << "[" << getName() << "] bind failed: " << addr->toString();
             bind_failed_addrs.push_back(addr);
             continue;
         }
         if (!socket->listen())
         {
-            LON_ERROR(LON_LOG_ROOT) << "[" << getName() << "] listen failed: " << addr->toString();
+            LON_ERROR(g_logger) << "[" << getName() << "] listen failed: " << addr->toString();
             bind_failed_addrs.push_back(addr);
             continue;
         }
@@ -55,7 +57,7 @@ bool TcpServer::bind(const std::vector<net::Address::Ptr> &addrs,
     }
     for (const auto &socket : m_sockets)
     {
-        LON_INFO(LON_LOG_ROOT) << "[" << getName() << "] bind success: " << socket->toString();
+        LON_INFO(g_logger) << "[" << getName() << "] bind success: " << socket->toString();
     }
     return true;
 }
@@ -110,7 +112,7 @@ void TcpServer::setStop(bool is_stop) { m_is_stop = is_stop; }
 
 void TcpServer::handleClient(const net::Socket::Ptr &client)
 {
-    LON_INFO(LON_LOG_ROOT) << "[" << getName() << "] handleClient: " << client->toString();
+    LON_INFO(g_logger) << "[" << getName() << "] handleClient: " << client->toString();
 }
 
 void TcpServer::startAccept(const net::Socket::Ptr &socket)
@@ -120,8 +122,7 @@ void TcpServer::startAccept(const net::Socket::Ptr &socket)
         auto client = socket->accept();
         if (!client)
         {
-            LON_ERROR(LON_LOG_ROOT)
-                << "[" << getName() << "] accept failed: " << socket->toString();
+            LON_ERROR(g_logger) << "[" << getName() << "] accept failed: " << socket->toString();
         }
         else
         {

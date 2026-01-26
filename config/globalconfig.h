@@ -60,7 +60,8 @@ struct GlobalConfig
                 if (it == old_data.end())
                 {
                     //有新增的Logger
-                    logger = std::make_shared<log::Logger>(data.name, data.level);
+                    // logger = std::make_shared<log::Logger>(data.name, data.level);
+                    logger = LON_LOG_NAME(data.name);
                 }
                 else
                 {
@@ -69,7 +70,12 @@ struct GlobalConfig
                         //有修改的Logger
                         logger = LON_LOG_NAME(data.name);
                     }
+                    else
+                    {
+                        continue;
+                    }
                 }
+                logger->setLevel(data.level);
                 logger->clearAppenders();
                 for (const auto &_appender : data.appenders)
                 {

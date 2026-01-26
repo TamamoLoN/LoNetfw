@@ -1,10 +1,12 @@
 #include "lonetfw/lonetfw.h"
 #include <chrono>
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_thread_no_join()
 {
     auto t = std::make_shared<lon::thread::Thread>(
-        []() { LON_INFO(LON_LOG_ROOT) << "id=" << lon::util::getThreadId(); }, "test");
+        []() { LON_INFO(g_logger) << "id=" << lon::util::getThreadId(); }, "test");
 
     //析构里detach，但是主线程比线程早结束了，所以崩溃
     t->join();
@@ -20,11 +22,10 @@ void test_thread()
     {
         threads.push_back(std::make_shared<lon::thread::Thread>(
             []() {
-                LON_INFO(LON_LOG_ROOT)
-                    << "id=" << lon::util::getThreadId()
-                    << "; this->id=" << lon::thread::Thread::getThis()->getId()
-                    << "; name=" << lon::thread::Thread::getNameStatic()
-                    << "; this->name=" << lon::thread::Thread::getThis()->getName();
+                LON_INFO(g_logger) << "id=" << lon::util::getThreadId()
+                                   << "; this->id=" << lon::thread::Thread::getThis()->getId()
+                                   << "; name=" << lon::thread::Thread::getNameStatic()
+                                   << "; this->name=" << lon::thread::Thread::getThis()->getName();
             },
             "thread_" + std::to_string(i)));
     }
@@ -50,7 +51,7 @@ void test_thread_mutex()
                     // lon::thread::Mutex::Lock lock(mtx);
                     // lon::thread::RWMutex::RdLock lock(rwmtx);
                     lon::thread::RWMutex::WrLock lock(rwmtx);
-                    // LON_INFO(LON_LOG_ROOT) << cnt;
+                    // LON_INFO(g_logger) << cnt;
                     ++cnt;
                 }
             },
@@ -61,7 +62,7 @@ void test_thread_mutex()
     {
         it->join();
     }
-    LON_INFO(LON_LOG_ROOT) << cnt;
+    LON_INFO(g_logger) << cnt;
 }
 
 void test_thread_mutex_log()
@@ -105,10 +106,9 @@ void test_thread_mutex_log()
     }
     auto end = std::chrono::high_resolution_clock::now();
 
-    LON_INFO(LON_LOG_ROOT)
-        << "duration: "
-        << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-        << "us; write count:" << cnt;
+    LON_INFO(g_logger) << "duration: "
+                       << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
+                       << "us; write count:" << cnt;
 }
 
 int main(int argc, char const *argv[])

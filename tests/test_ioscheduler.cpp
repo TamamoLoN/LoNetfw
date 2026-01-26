@@ -1,10 +1,12 @@
 #include "lonetfw/lonetfw.h"
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_fiber()
 {
     const auto &io = lon::scheduler::IOScheduler::getThis();
     int fd         = socket(AF_INET, SOCK_STREAM, 0);
-    LON_INFO(LON_LOG_ROOT) << "socket fd = " << fd;
+    LON_INFO(g_logger) << "socket fd = " << fd;
     LON_ASSERT(fd != -1);
 #ifdef _WIN32
     u_long nb = 1;
@@ -16,15 +18,15 @@ void test_fiber()
     inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr.s_addr);
 
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::READ,
-                 []() { LON_FATAL(LON_LOG_ROOT) << "read cb"; });
+                 []() { LON_FATAL(g_logger) << "read cb"; });
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [fd]() {
         auto fd_ = fd;
-        LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
+        LON_FATAL(g_logger) << "write cb :connected";
         // lon::scheduler::IOScheduler::getThis()->cancelEvent(
         //     fd_, lon::scheduler::IOScheduler::Event::READ);
         // lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
         closesocket(fd_);
-        LON_FATAL(LON_LOG_ROOT) << "close fd";
+        LON_FATAL(g_logger) << "close fd";
     });
 #else
     fcntl(fd, F_SETFL, O_NONBLOCK);
@@ -35,10 +37,10 @@ void test_fiber()
     inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr.s_addr);
 
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::READ,
-                 []() { LON_FATAL(LON_LOG_ROOT) << "read cb"; });
+                 []() { LON_FATAL(g_logger) << "read cb"; });
     io->addEvent(fd, lon::scheduler::IOScheduler::Event::WRITE, [fd]() {
         auto fd_ = fd;
-        LON_FATAL(LON_LOG_ROOT) << "write cb :connected";
+        LON_FATAL(g_logger) << "write cb :connected";
         // lon::scheduler::IOScheduler::getThis()->cancelEvent(
         //     fd_, lon::scheduler::IOScheduler::Event::READ);
         lon::scheduler::IOScheduler::getThis()->cancelAll(fd_);
@@ -48,17 +50,17 @@ void test_fiber()
     auto ret = connect(fd, (sockaddr *)&addr, sizeof(addr));
     if (ret == 0)
     {
-        LON_INFO(LON_LOG_ROOT) << "connect immediately success";
+        LON_INFO(g_logger) << "connect immediately success";
         // 可以直接开始通信
     }
     else if (ret == -1 && errno == EINPROGRESS)
     {
-        LON_INFO(LON_LOG_ROOT) << "connect in progress";
+        LON_INFO(g_logger) << "connect in progress";
         // 等待可写事件，事件触发后再检查连接结果
     }
     else
     {
-        LON_FATAL(LON_LOG_ROOT) << "connect failed: " << strerror(errno);
+        LON_FATAL(g_logger) << "connect failed: " << strerror(errno);
     }
 }
 auto fiber = std::make_shared<lon::fiber::Fiber>(
@@ -79,8 +81,7 @@ void test_timer()
         50,
         []() {
             static int cnt = 0;
-            LON_INFO(LON_LOG_ROOT)
-                << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
+            LON_INFO(g_logger) << "i am timer cnt=" << lon::util::lexical_cast<std::string>(cnt);
 
             if (++cnt == 10)
             {

@@ -1,5 +1,7 @@
 #include "lonetfw/lonetfw.h"
 
+static auto g_logger = LON_LOG_ROOT;
+
 void test_fiber()
 {
     try
@@ -7,26 +9,26 @@ void test_fiber()
         {
             //创建主协程
             auto main_fiber = lon::fiber::Fiber::getThis();
-            LON_INFO(LON_LOG_ROOT) << "main begin";
+            LON_INFO(g_logger) << "main begin";
             auto fiber = std::make_shared<lon::fiber::Fiber>(
                 []() {
-                    LON_INFO(LON_LOG_ROOT) << "run in fiber begin";
+                    LON_INFO(g_logger) << "run in fiber begin";
                     lon::fiber::Fiber::yieldToHold();
-                    LON_INFO(LON_LOG_ROOT) << "run in fiber end";
+                    LON_INFO(g_logger) << "run in fiber end";
                     lon::fiber::Fiber::yieldToHold();
                 },
                 lon::config::GlobalConfig::Instance().config_fiber->getData());
             fiber->swapIn();
-            LON_INFO(LON_LOG_ROOT) << "main after swapIn";
+            LON_INFO(g_logger) << "main after swapIn";
             fiber->swapIn();
-            LON_INFO(LON_LOG_ROOT) << "main after end";
+            LON_INFO(g_logger) << "main after end";
             fiber->swapIn();
         }
-        LON_INFO(LON_LOG_ROOT) << "main end";
+        LON_INFO(g_logger) << "main end";
     }
     catch (const std::runtime_error &e)
     {
-        LON_INFO(LON_LOG_ROOT) << e.what();
+        LON_INFO(g_logger) << e.what();
     }
     // catch (...)
     // {

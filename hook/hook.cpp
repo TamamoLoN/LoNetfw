@@ -1,5 +1,7 @@
 #include "hook/hook.h"
 
+static auto g_logger = LON_LOG_ROOT;
+
 #ifdef _WIN32
 #define HOOK_FUN(XX)                                                                               \
     XX(Sleep)                                                                                      \
@@ -63,7 +65,7 @@ struct timerinfo
 template <typename OrgFun, typename... Args>
 static ssize_t io(int fd, OrgFun fun, const char *hook_name,
                   lon::scheduler::IOScheduler::Event event, lon::hook::Fd::TimeoutType timeout_type,
-                  Args &&...args)
+                  Args &&... args)
 {
     if (!lon::util::HookState::isEnable())
     {
@@ -124,8 +126,7 @@ retry:
     {
         timer = ios->addConditionTimer(
             timeout,
-            [w_tinfo, fd, ios, event]()
-            {
+            [w_tinfo, fd, ios, event]() {
                 auto t = w_tinfo.lock();
                 if (!t || t->canceled)
                 {
@@ -141,7 +142,7 @@ retry:
     if (rt)
     {
 
-        LON_ERROR(LON_LOG_ROOT) << hook_name << "io::addEvent(" << fd << ", " << event << ")";
+        LON_ERROR(g_logger) << hook_name << "io::addEvent(" << fd << ", " << event << ")";
 
         if (timer)
         {
@@ -181,12 +182,12 @@ extern "C"
         CHECK_HOOK(Sleep_f, dwMilliseconds)
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(dwMilliseconds,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            dwMilliseconds,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return;
@@ -201,12 +202,12 @@ extern "C"
         }
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(seconds * 1000,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            seconds * 1000,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -221,12 +222,12 @@ extern "C"
         }
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(usec / 1000,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            usec / 1000,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -242,12 +243,12 @@ extern "C"
         }
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(msec,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            msec,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -316,8 +317,7 @@ extern "C"
         {
             timer = ios->addConditionTimer(
                 timeout_ms,
-                [w_tinfo, sockfd, ios]()
-                {
+                [w_tinfo, sockfd, ios]() {
                     auto t = w_tinfo.lock();
                     if (!t || t->canceled)
                     {
@@ -332,7 +332,7 @@ extern "C"
         int rt = ios->addEvent(sockfd, lon::scheduler::IOScheduler::Event::WRITE);
         if (rt)
         {
-            LON_ERROR(LON_LOG_ROOT) << "connect_with_timeout::addEvent(" << sockfd << ", WRITE)";
+            LON_ERROR(g_logger) << "connect_with_timeout::addEvent(" << sockfd << ", WRITE)";
 
             if (timer)
             {
@@ -399,7 +399,7 @@ extern "C"
     }
 
     int WSAAPI hook_recv(_In_ SOCKET s,
-                         _Out_writes_bytes_to_(len, return)
+                         _Out_writes_bytes_to_(len, return )
                              __out_data_source(NETWORK) char FAR *buf,
                          _In_ int len, _In_ int flags)
     {
@@ -419,7 +419,7 @@ extern "C"
     }
 
     int WSAAPI hook_recvfrom(
-        _In_ SOCKET s, _Out_writes_bytes_to_(len, return) __out_data_source(NETWORK) char FAR *buf,
+        _In_ SOCKET s, _Out_writes_bytes_to_(len, return ) __out_data_source(NETWORK) char FAR *buf,
         _In_ int len, _In_ int flags,
         _Out_writes_bytes_to_opt_(*fromlen, *fromlen) struct sockaddr FAR *from,
         _Inout_opt_ int FAR *fromlen)
@@ -549,12 +549,12 @@ extern "C"
         CHECK_HOOK(sleep_f, seconds)
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(seconds * 1000,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            seconds * 1000,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -565,12 +565,12 @@ extern "C"
         CHECK_HOOK(usleep_f, usec)
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(usec / 1000,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            usec / 1000,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -582,12 +582,12 @@ extern "C"
         auto msec  = req->tv_sec * 1000 + req->tv_nsec / (1000 * 1000);
         auto fiber = lon::fiber::Fiber::getThis();
         auto ios   = lon::scheduler::IOScheduler::getThis();
-        ios->addTimer(msec,
-                      std::bind((void (lon::scheduler::Scheduler::*)(
-                                    lon::fiber::Fiber::Ptr,
-                                    int thread))&lon::scheduler::IOScheduler::schedule,
-                                ios, fiber, -1),
-                      false);
+        ios->addTimer(
+            msec,
+            std::bind((void (lon::scheduler::Scheduler::*)(lon::fiber::Fiber::Ptr, int thread)) &
+                          lon::scheduler::IOScheduler::schedule,
+                      ios, fiber, -1),
+            false);
         lon::fiber::Fiber::yieldToHold(lon::scheduler::IOScheduler::getMainFiber());
 
         return 0;
@@ -643,8 +643,7 @@ extern "C"
         {
             timer = ios->addConditionTimer(
                 timeout_ms,
-                [w_tinfo, sockfd, ios]()
-                {
+                [w_tinfo, sockfd, ios]() {
                     auto t = w_tinfo.lock();
                     if (!t || t->canceled)
                     {
@@ -659,7 +658,7 @@ extern "C"
         int rt = ios->addEvent(sockfd, lon::scheduler::IOScheduler::Event::WRITE);
         if (rt)
         {
-            LON_ERROR(LON_LOG_ROOT) << "connect_with_timeout::addEvent(" << sockfd << ", WRITE)";
+            LON_ERROR(g_logger) << "connect_with_timeout::addEvent(" << sockfd << ", WRITE)";
 
             if (timer)
             {
@@ -962,8 +961,7 @@ Hook::Hook()
 #define XX(name)                                                                                   \
     do                                                                                             \
     {                                                                                              \
-        auto resolve_dll = [](const char *name) -> const char *                                    \
-        {                                                                                          \
+        auto resolve_dll = [](const char *name) -> const char * {                                  \
             if (strcmp(name, "Sleep") == 0)                                                        \
             {                                                                                      \
                 return "KernelBase.dll";                                                           \
