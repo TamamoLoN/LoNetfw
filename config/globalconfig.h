@@ -12,15 +12,8 @@ struct ConfigLogAppender
     explicit ConfigLogAppender(
         uint8_t type = 0, log::LogLevel::Level level = log::LogLevel::Level::DEBUG,
         std::string format   = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n",
-        std::string log_path = "~/.log/tmp.log")
-        : type(type), level(level), format(format), log_path(log_path)
-    {
-    }
-    bool operator==(const ConfigLogAppender &other) const
-    {
-        return type == other.type && level == other.level && format == other.format &&
-               log_path == other.log_path;
-    }
+        std::string log_path = "~/.log/tmp.log");
+    bool operator==(const ConfigLogAppender &other) const;
     uint8_t type; // 0:StdoutLogAppender 1:FileLogAppender
     log::LogLevel::Level level;
     std::string format;
@@ -31,15 +24,9 @@ struct ConfigLog
 {
     explicit ConfigLog(std::string name                         = "root",
                        log::LogLevel::Level level               = log::LogLevel::Level::DEBUG,
-                       std::vector<ConfigLogAppender> appenders = {})
-        : name(name), level(level), appenders(appenders)
-    {
-    }
-    bool operator==(const ConfigLog &other) const
-    {
-        return name == other.name && level == other.level && appenders == other.appenders;
-    }
-    bool operator<(const ConfigLog &other) const { return name < other.name; }
+                       std::vector<ConfigLogAppender> appenders = {});
+    bool operator==(const ConfigLog &other) const;
+    bool operator<(const ConfigLog &other) const;
     std::string name;
     log::LogLevel::Level level;
     std::vector<ConfigLogAppender> appenders;
@@ -47,108 +34,8 @@ struct ConfigLog
 
 struct GlobalConfig
 {
-    explicit GlobalConfig()
-    {
-        config_log = Config::setData("logs", std::set<ConfigLog>({}), "logs config");
-        config_log->addConfigDataChangeCB([](const std::set<ConfigLog> &old_data,
-                                             const std::set<ConfigLog> &new_data) {
-            LON_INFO(LON_LOG_ROOT) << "on config log data changed";
-            for (const auto &data : new_data)
-            {
-                log::Logger::Ptr logger = nullptr;
-                auto it                 = old_data.find(data);
-                if (it == old_data.end())
-                {
-                    //有新增的Logger
-                    // logger = std::make_shared<log::Logger>(data.name, data.level);
-                    logger = LON_LOG_NAME(data.name);
-                }
-                else
-                {
-                    if (!(*it == data))
-                    {
-                        //有修改的Logger
-                        logger = LON_LOG_NAME(data.name);
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                logger->setLevel(data.level);
-                logger->clearAppenders();
-                for (const auto &_appender : data.appenders)
-                {
-                    if (_appender.type == 0)
-                    {
-                        auto appender = std::make_shared<log::StdoutLogAppender>(_appender.level);
-                        appender->setFormatter(
-                            std::make_shared<log::LogFormatter>(_appender.format));
-                        logger->addAppender(appender);
-                    }
-                    else if (_appender.type == 1)
-                    {
-                        auto appender = std::make_shared<log::FileLogAppender>(_appender.log_path,
-                                                                               _appender.level);
-                        appender->setFormatter(
-                            std::make_shared<log::LogFormatter>(_appender.format));
-                        logger->addAppender(appender);
-                    }
-                }
-                LON_LOG_MANAGER.setLogger(data.name, logger);
-            }
-            for (const auto &data : old_data)
-            {
-                auto it = new_data.find(data);
-                if (it == new_data.end())
-                {
-                    //有删除的Logger
-                    //仅作软删除，防止有其他还在使用导致崩溃
-                    // auto logger = LON_LOG_NAME(it->name);
-                    // logger->setLevel((log::LogLevel::Level)100);
-                    // logger->clearAppenders();
-                    LON_LOG_MANAGER.delLogger(it->name);
-                }
-            }
-        });
-
-        config_fiber =
-            Config::setData("fiber.stack_size", (size_t)(1024 * 1024), "fiber stack size");
-        config_fiber->addConfigDataChangeCB([](const size_t &old_data, const size_t &new_data) {
-            LON_INFO(LON_LOG_ROOT) << "on config fiber data changed";
-            LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
-        });
-        config_tcp_timeout =
-            Config::setData("tcp.connect.timeout", (uint32_t)5000, "tcp connect timeout ms");
-        config_tcp_timeout->addConfigDataChangeCB(
-            [](const size_t &old_data, const size_t &new_data) {
-                LON_INFO(LON_LOG_ROOT) << "on config tcp connect timeout data changed";
-                LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
-            });
-
-        config_tcp_server_client_timeout =
-            Config::setData("tcp.server.client_timeout", (uint32_t)(1000 * 60 * 2),
-                            "tcp server client timeout ms(default 2min)");
-        config_tcp_server_client_timeout->addConfigDataChangeCB(
-            [](const size_t &old_data, const size_t &new_data) {
-                LON_INFO(LON_LOG_ROOT) << "on config tcp server client timeout data changed";
-                LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
-            });
-
-        config_system_daemon_restart_delay_s =
-            Config::setData("system.daemon.restart_delay_s", (uint32_t)(2),
-                            "daemon restart delay if process crash(default 2 sec)");
-        config_system_daemon_restart_delay_s->addConfigDataChangeCB(
-            [](const size_t &old_data, const size_t &new_data) {
-                LON_INFO(LON_LOG_ROOT) << "on system daemon restart delay second data changed";
-                LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
-            });
-    }
-    static GlobalConfig &Instance()
-    {
-        static GlobalConfig instance;
-        return instance;
-    }
+    explicit GlobalConfig();
+    static GlobalConfig &Instance();
     ConfigData<std::set<ConfigLog>>::Ptr config_log;
     ConfigData<size_t>::Ptr config_fiber;
     ConfigData<uint32_t>::Ptr config_tcp_timeout;
@@ -158,7 +45,7 @@ struct GlobalConfig
 
 //全局变量，使其在main函数之前初始化
 // static ConfigLogChanged __log_changed;//这样写会被初始化多次
-static auto global_config = GlobalConfig::Instance();
+// static auto global_config = GlobalConfig::Instance();
 
 } // namespace config
 template <> class util::LexicalCast<config::ConfigLogAppender, std::string>

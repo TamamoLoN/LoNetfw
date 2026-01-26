@@ -1,6 +1,7 @@
 #include "hook/hook.h"
 
 static auto g_logger = LON_LOG_ROOT;
+static auto s_hook   = lon::hook::Hook::Instance();
 
 #ifdef _WIN32
 #define HOOK_FUN(XX)                                                                               \

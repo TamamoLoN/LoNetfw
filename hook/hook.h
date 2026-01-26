@@ -29,7 +29,7 @@ class Hook
     static void enable();
     static void disable();
 };
-static auto s_hook = Hook::Instance();
+// static auto s_hook = Hook::Instance();
 
 } // namespace hook
 } // namespace lon
@@ -68,7 +68,7 @@ extern "C"
 
     // read相关api
     typedef int(WSAAPI *recv_fun)(_In_ SOCKET s,
-                                  _Out_writes_bytes_to_(len, return)
+                                  _Out_writes_bytes_to_(len, return )
                                       __out_data_source(NETWORK) char FAR *buf,
                                   _In_ int len, _In_ int flags);
     extern recv_fun recv_f;
@@ -81,7 +81,7 @@ extern "C"
     extern WSARecv_fun WSARecv_f;
 
     typedef int(WSAAPI *recvfrom_fun)(
-        _In_ SOCKET s, _Out_writes_bytes_to_(len, return) __out_data_source(NETWORK) char FAR *buf,
+        _In_ SOCKET s, _Out_writes_bytes_to_(len, return ) __out_data_source(NETWORK) char FAR *buf,
         _In_ int len, _In_ int flags,
         _Out_writes_bytes_to_opt_(*fromlen, *fromlen) struct sockaddr FAR *from,
         _Inout_opt_ int FAR *fromlen);
