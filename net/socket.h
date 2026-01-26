@@ -57,21 +57,21 @@ class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
         return setOption(level, optname, &optval, sizeof(optval));
     }
 
-    Socket::Ptr accept();
-    bool bind(const Address::Ptr &addr);
-    bool connect(const Address::Ptr &addr, int64_t timeout = -1);
-    bool listen(int backlog = SOMAXCONN);
-    bool close();
+    virtual Socket::Ptr accept();
+    virtual bool bind(const Address::Ptr &addr);
+    virtual bool connect(const Address::Ptr &addr, int64_t timeout = -1);
+    virtual bool listen(int backlog = SOMAXCONN);
+    virtual bool close();
 
-    ssize_t send(const void *buf, size_t len, int flags = 0);
-    ssize_t send(const iovec *bufs, size_t len, int flags = 0);
-    ssize_t sendto(const void *buf, size_t len, const Address::Ptr &dst, int flags = 0);
-    ssize_t sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, int flags = 0);
+    virtual ssize_t send(const void *buf, size_t len, int flags = 0);
+    virtual ssize_t send(const iovec *bufs, size_t len, int flags = 0);
+    virtual ssize_t sendto(const void *buf, size_t len, const Address::Ptr &dst, int flags = 0);
+    virtual ssize_t sendto(const iovec *bufs, size_t len, const Address::Ptr &dst, int flags = 0);
 
-    ssize_t recv(void *buf, size_t len, int flags = 0);
-    ssize_t recv(const iovec *bufs, size_t len, int flags = 0);
-    ssize_t recvfrom(void *buf, size_t len, const Address::Ptr &src, int flags = 0);
-    ssize_t recvfrom(const iovec *bufs, size_t len, const Address::Ptr &src, int flags = 0);
+    virtual ssize_t recv(void *buf, size_t len, int flags = 0);
+    virtual ssize_t recv(const iovec *bufs, size_t len, int flags = 0);
+    virtual ssize_t recvfrom(void *buf, size_t len, const Address::Ptr &src, int flags = 0);
+    virtual ssize_t recvfrom(const iovec *bufs, size_t len, const Address::Ptr &src, int flags = 0);
 
     Address::Ptr getPeerAddress();
     Address::Ptr getLocalAddress();
@@ -84,7 +84,7 @@ class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
     bool isValid() const;
     int getError();
 
-    std::ostream &dump(std::ostream &os) const;
+    virtual std::ostream &dump(std::ostream &os) const;
     std::string toString() const;
     int getSocket() const;
 
@@ -93,12 +93,12 @@ class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
     bool cancelAccept();
     bool cancelAll();
 
-  private:
-    bool init(int socketfd);
+  protected:
+    virtual bool init(int socketfd);
     void initSocket();
     void newSocket();
 
-  private:
+  protected:
     int m_sockfd;
     int m_family;
     int m_type;
