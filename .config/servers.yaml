@@ -1,0 +1,11 @@
+servers:
+  - name: tcp_server
+    addrs: ["0.0.0.0:8090", "127.0.0.1:8091", "/tmp/test.sock"]
+    recv_timeout: 3000
+    send_timeout: 3000
+    accept_scheduler: accept
+    process_scheduler: io_scheduler
+    type: tcp
+    ssl: 0
+    cert_file: ""
+    key_file: ""

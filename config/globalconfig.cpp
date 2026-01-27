@@ -6,6 +6,7 @@ namespace config
 {
 //全局变量，使其在main函数之前初始化
 static auto global_config = GlobalConfig::Instance();
+static auto g_logger      = LON_LOG_ROOT;
 
 ConfigLogAppender::ConfigLogAppender(uint8_t type, log::LogLevel::Level level, std::string format,
                                      std::string log_path)
@@ -32,12 +33,30 @@ bool ConfigLog::operator==(const ConfigLog &other) const
 
 bool ConfigLog::operator<(const ConfigLog &other) const { return name < other.name; }
 
+ConfigServer::ConfigServer(std::string name, std::vector<std::string> addrs, uint32_t recv_timeout,
+                           uint32_t send_timeout, std::string accept_scheduler,
+                           std::string process_scheduler, std::string type, uint8_t ssl,
+                           std::string cert_file, std::string key_file)
+    : name(name), addrs(addrs), recv_timeout(recv_timeout), send_timeout(send_timeout),
+      accept_scheduler(accept_scheduler), process_scheduler(process_scheduler), type(type),
+      ssl(ssl), cert_file(cert_file), key_file(key_file)
+{
+}
+
+bool ConfigServer::operator==(const ConfigServer &other) const
+{
+    return name == other.name && addrs == other.addrs && recv_timeout == other.recv_timeout &&
+           send_timeout == other.send_timeout && accept_scheduler == other.accept_scheduler &&
+           process_scheduler == other.process_scheduler && type == other.type && ssl == other.ssl &&
+           cert_file == other.cert_file && key_file == other.key_file;
+}
+
 GlobalConfig::GlobalConfig()
 {
     config_log = Config::setData("logs", std::set<ConfigLog>({}), "logs config");
     config_log->addConfigDataChangeCB([](const std::set<ConfigLog> &old_data,
                                          const std::set<ConfigLog> &new_data) {
-        LON_INFO(LON_LOG_ROOT) << "on config log data changed";
+        LON_INFO(g_logger) << "on config log data changed";
         for (const auto &data : new_data)
         {
             log::Logger::Ptr logger = nullptr;
@@ -97,14 +116,14 @@ GlobalConfig::GlobalConfig()
 
     config_fiber = Config::setData("fiber.stack_size", (size_t)(1024 * 1024), "fiber stack size");
     config_fiber->addConfigDataChangeCB([](const size_t &old_data, const size_t &new_data) {
-        LON_INFO(LON_LOG_ROOT) << "on config fiber data changed";
-        LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+        LON_INFO(g_logger) << "on config fiber data changed";
+        LON_DEBUG(g_logger) << "old_data: " << old_data << " new_data: " << new_data;
     });
     config_tcp_timeout =
         Config::setData("tcp.connect.timeout", (uint32_t)5000, "tcp connect timeout ms");
     config_tcp_timeout->addConfigDataChangeCB([](const size_t &old_data, const size_t &new_data) {
-        LON_INFO(LON_LOG_ROOT) << "on config tcp connect timeout data changed";
-        LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+        LON_INFO(g_logger) << "on config tcp connect timeout data changed";
+        LON_DEBUG(g_logger) << "old_data: " << old_data << " new_data: " << new_data;
     });
 
     config_tcp_server_client_timeout =
@@ -112,8 +131,8 @@ GlobalConfig::GlobalConfig()
                         "tcp server client timeout ms(default 2min)");
     config_tcp_server_client_timeout->addConfigDataChangeCB(
         [](const size_t &old_data, const size_t &new_data) {
-            LON_INFO(LON_LOG_ROOT) << "on config tcp server client timeout data changed";
-            LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+            LON_INFO(g_logger) << "on config tcp server client timeout data changed";
+            LON_DEBUG(g_logger) << "old_data: " << old_data << " new_data: " << new_data;
         });
 
     config_system_daemon_restart_delay_s =
@@ -121,8 +140,14 @@ GlobalConfig::GlobalConfig()
                         "daemon restart delay if process crash(default 2 sec)");
     config_system_daemon_restart_delay_s->addConfigDataChangeCB(
         [](const size_t &old_data, const size_t &new_data) {
-            LON_INFO(LON_LOG_ROOT) << "on system daemon restart delay second data changed";
-            LON_DEBUG(LON_LOG_ROOT) << "old_data: " << old_data << " new_data: " << new_data;
+            LON_INFO(g_logger) << "on system daemon restart delay second data changed";
+            LON_DEBUG(g_logger) << "old_data: " << old_data << " new_data: " << new_data;
+        });
+
+    config_servers = Config::setData("servers", std::vector<ConfigServer>{}, "servers config");
+    config_servers->addConfigDataChangeCB(
+        [](const std::vector<ConfigServer> &old_data, const std::vector<ConfigServer> &new_data) {
+            LON_INFO(g_logger) << "on config servers data changed, this config should be reload";
         });
 }
 
