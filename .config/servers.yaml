@@ -4,7 +4,7 @@ servers:
     recv_timeout: 3000
     send_timeout: 3000
     accept_scheduler: accept
-    process_scheduler: io_scheduler
+    process_scheduler: process
     type: tcp
     ssl: 0
     cert_file: ""

@@ -29,7 +29,8 @@ class Hook
     static void enable();
     static void disable();
 };
-// static auto s_hook = Hook::Instance();
+// 这里放在.h里是为了让每一个引用了的动态库里都有这个符号，防止程序启动时还没有hook住
+static auto s_hook = Hook::Instance();
 
 } // namespace hook
 } // namespace lon

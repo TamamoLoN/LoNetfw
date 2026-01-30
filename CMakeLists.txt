@@ -211,6 +211,8 @@ if(BUILT_TESTS)
     add_build_target(test_net)
     add_build_target(test_server)
     add_build_target(test_system)
+    add_build_target(test_udp)
+    add_build_target(test_application)
 endif()
 
 if(MODULARIZATION)

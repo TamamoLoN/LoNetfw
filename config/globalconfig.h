@@ -3,6 +3,8 @@
 #include "config/config.h"
 #include "log/logger.h"
 
+#define G_CONFIG lon::config::GlobalConfig::Instance()
+
 namespace lon
 {
 namespace config
@@ -64,6 +66,8 @@ struct GlobalConfig
     ConfigData<uint32_t>::Ptr config_tcp_server_client_timeout;
     ConfigData<uint32_t>::Ptr config_system_daemon_restart_delay_s;
     ConfigData<std::vector<ConfigServer>>::Ptr config_servers;
+    ConfigData<std::unordered_map<std::string, std::unordered_map<std::string, std::string>>>::Ptr
+        config_schedulers;
 };
 
 //全局变量，使其在main函数之前初始化
@@ -156,21 +160,21 @@ template <> class util::LexicalCast<config::ConfigServer, std::string>
         if (node["addrs"].IsDefined())
             ss << node["addrs"];
         if (node["recv_timeout"].IsDefined())
-            res.name = node["recv_timeout"].as<uint32_t>();
+            res.recv_timeout = node["recv_timeout"].as<uint32_t>();
         if (node["send_timeout"].IsDefined())
-            res.name = node["send_timeout"].as<uint32_t>();
+            res.send_timeout = node["send_timeout"].as<uint32_t>();
         if (node["accept_scheduler"].IsDefined())
-            res.name = node["accept_scheduler"].as<std::string>();
+            res.accept_scheduler = node["accept_scheduler"].as<std::string>();
         if (node["process_scheduler"].IsDefined())
-            res.name = node["process_scheduler"].as<std::string>();
+            res.process_scheduler = node["process_scheduler"].as<std::string>();
         if (node["type"].IsDefined())
-            res.name = node["type"].as<std::string>();
+            res.type = node["type"].as<std::string>();
         if (node["ssl"].IsDefined())
-            res.name = node["ssl"].as<uint8_t>();
+            res.ssl = node["ssl"].as<uint8_t>();
         if (node["cert_file"].IsDefined())
-            res.name = node["cert_file"].as<std::string>();
+            res.cert_file = node["cert_file"].as<std::string>();
         if (node["key_file"].IsDefined())
-            res.name = node["key_file"].as<std::string>();
+            res.key_file = node["key_file"].as<std::string>();
         res.addrs = LexicalCast<std::vector<std::string>, std::string>()(ss.str());
         return res;
     }

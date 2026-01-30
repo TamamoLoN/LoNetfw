@@ -145,6 +145,43 @@ class HookState
     static void enable();
     static void disable();
 };
+
+template <class Map, class K, class V>
+V getOr(const Map &map, const K &val, const V &default_val = V{})
+{
+    auto it = map.find(val);
+    if (it == map.end())
+    {
+        return default_val;
+    }
+    try
+    {
+        return util::lexical_cast<V>(it->second);
+    }
+    catch (...)
+    {
+    }
+    return default_val;
+}
+
+template <class Map, class K, class V> bool tryGet(const Map &map, const K &val, V &ret_val)
+{
+    auto it = map.find(val);
+    if (it == map.end())
+    {
+        return false;
+    }
+    try
+    {
+        ret_val = util::lexical_cast<V>(it->second);
+        return true;
+    }
+    catch (...)
+    {
+    }
+    return false;
+}
+
 } // namespace util
 
 } // namespace lon

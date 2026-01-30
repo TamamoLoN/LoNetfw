@@ -8,6 +8,7 @@
 #include "net/uri.h"
 #include "scheduler/ioscheduler.h"
 #include "scheduler/scheduler.h"
+#include "scheduler/schedulermanager.h"
 #include "server/tcpserver.h"
 #include "system/system.h"
 #include "thread/thread.h"

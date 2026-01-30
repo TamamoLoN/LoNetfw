@@ -147,7 +147,21 @@ GlobalConfig::GlobalConfig()
     config_servers = Config::setData("servers", std::vector<ConfigServer>{}, "servers config");
     config_servers->addConfigDataChangeCB(
         [](const std::vector<ConfigServer> &old_data, const std::vector<ConfigServer> &new_data) {
-            LON_INFO(g_logger) << "on config servers data changed, this config should be reload";
+            LON_INFO(g_logger) << "on config servers data changed, this config should reloads app";
+        });
+
+    config_schedulers = Config::setData(
+        "schedulers",
+        std::unordered_map<std::string, std::unordered_map<std::string, std::string>>{},
+        "schedulers config [scheduler_name]: thread_count: 1, scheduler_count: 1, "
+        "fiber_stack_size: 1024*1024");
+    config_schedulers->addConfigDataChangeCB(
+        [](const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
+               &old_data,
+           const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>
+               &new_data) {
+            LON_INFO(g_logger)
+                << "on config schedulers data changed, this config should reloads app";
         });
 }
 

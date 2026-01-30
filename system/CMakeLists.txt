@@ -14,7 +14,7 @@ add_library(system ${LIB_TYPE}
             ${SYSTEM_SRCS}
             )
 
-target_link_libraries(system PRIVATE util log)
+target_link_libraries(system PRIVATE util log server)
 target_include_directories(system PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 
 if(USE_ABSOLUTE_PATH)

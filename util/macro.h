@@ -14,6 +14,8 @@
 // XX(scheme, default_port)
 #define PROTOCAL_MAP(XX)                                                                           \
     XX(http, 80)                                                                                   \
+    XX(ws, 80)                                                                                     \
     XX(https, 443)                                                                                 \
+    XX(wss, 443)                                                                                   \
     XX(rtsp, 554)                                                                                  \
     XX(mqtt, 1883)

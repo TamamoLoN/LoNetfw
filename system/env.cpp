@@ -20,6 +20,11 @@ bool Env::init(int argc, char **argv)
     m_cwd    = m_exe.substr(0, pos) + "/";
 
     m_program = argv[0];
+    pos       = m_program.find_last_of("/");
+    if (pos != std::string::npos)
+    {
+        m_program = m_program.substr(pos + 1);
+    }
     // -config /path/to/config -file xxxx -d
     try
     {
@@ -36,6 +41,8 @@ bool Env::init(int argc, char **argv)
 const std::string &Env::getExe() const { return m_exe; }
 
 const std::string &Env::getCwd() const { return m_cwd; }
+
+const std::string &Env::getProgram() const { return m_program; }
 
 bool Env::setEnv(const std::string &key, const std::string &val)
 {

@@ -16,6 +16,7 @@ class Env
 
     const std::string &getExe() const;
     const std::string &getCwd() const;
+    const std::string &getProgram() const;
 
     bool setEnv(const std::string &key, const std::string &val);
     std::string getEnv(const std::string &key, const std::string &default_value = "");
@@ -37,8 +38,8 @@ class Env
   private:
     MutexType m_mutex;
     util::ArgumentParser m_argparser;
-    std::string m_program;
-    std::string m_exe;
+    std::string m_program; // 可执行文件名
+    std::string m_exe;     // 可执行文件实际绝对路径
     std::string m_cwd;
 };
 #define ENVMGR lon::util::Singleton<lon::system::Env>::Instance()
