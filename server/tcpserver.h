@@ -1,6 +1,7 @@
 #pragma once
 
 #include "net/socket.h"
+#include "net/sslsocket.h"
 #include "scheduler/ioscheduler.h"
 
 namespace lon
@@ -18,9 +19,9 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, util::Nonecopy
     virtual ~TcpServer();
 
     // bind: bind + listen
-    virtual bool bind(const net::Address::Ptr &addr);
+    virtual bool bind(const net::Address::Ptr &addr, bool use_ssl = false);
     virtual bool bind(const std::vector<net::Address::Ptr> &addrs,
-                      std::vector<net::Address::Ptr> &bind_failed_addrs);
+                      std::vector<net::Address::Ptr> &bind_failed_addrs, bool use_ssl = false);
     virtual bool start();
     virtual bool stop();
 
@@ -30,6 +31,7 @@ class TcpServer : public std::enable_shared_from_this<TcpServer>, util::Nonecopy
     std::string getName() const;
     bool isStop() const;
     void setStop(bool is_stop);
+    bool loadCertificates(const std::string &cert_file, const std::string &key_file);
 
   protected:
     virtual void handleClient(const net::Socket::Ptr &client);

@@ -204,6 +204,20 @@ bool Socket::bind(const Address::Ptr &addr)
         return false;
     }
 
+    UnixAddress::Ptr uaddr = std::dynamic_pointer_cast<UnixAddress>(addr);
+    if (uaddr)
+    {
+        Socket::Ptr sock = Socket::create(addr, (Socket::Type)m_type);
+        if (sock->connect(uaddr))
+        {
+            return false;
+        }
+        else
+        {
+            util::FSUtil::unlink(uaddr->getPath(), true);
+        }
+    }
+
     if (::bind(m_sockfd, addr->getAddr(), addr->getAddrLen()) == -1)
     {
         LON_ERROR(g_logger) << "bind failed: bind error"

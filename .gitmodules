@@ -4,3 +4,6 @@
 [submodule "thirdparty/minhook"]
 	path = thirdparty/minhook
 	url = git@github.com:TsudaKageyu/minhook.git
+[submodule "thirdparty/openssl"]
+	path = thirdparty/openssl
+	url = https://github.com/janbar/openssl-cmake.git

@@ -23,19 +23,20 @@ TcpServer::~TcpServer()
     m_sockets.clear();
 }
 
-bool TcpServer::bind(const net::Address::Ptr &addr)
+bool TcpServer::bind(const net::Address::Ptr &addr, bool use_ssl)
 {
     std::vector<net::Address::Ptr> addrs = {addr};
     std::vector<net::Address::Ptr> bind_failed_addrs;
-    return bind(addrs, bind_failed_addrs);
+    return bind(addrs, bind_failed_addrs, use_ssl);
 }
 
 bool TcpServer::bind(const std::vector<net::Address::Ptr> &addrs,
-                     std::vector<net::Address::Ptr> &bind_failed_addrs)
+                     std::vector<net::Address::Ptr> &bind_failed_addrs, bool use_ssl)
 {
     for (const auto &addr : addrs)
     {
-        auto socket = net::Socket::create(addr, net::Socket::Type::TCP);
+        auto socket = use_ssl ? net::SSLSocket::create(addr, net::Socket::Type::TCP)
+                              : net::Socket::create(addr, net::Socket::Type::TCP);
         if (!socket->bind(addr))
         {
             LON_ERROR(g_logger) << "[" << getName() << "] bind failed: " << addr->toString();
@@ -109,6 +110,22 @@ std::string TcpServer::getName() const { return m_name; }
 bool TcpServer::isStop() const { return m_is_stop; }
 
 void TcpServer::setStop(bool is_stop) { m_is_stop = is_stop; }
+
+bool TcpServer::loadCertificates(const std::string &cert_file, const std::string &key_file)
+{
+    for (const auto &socket : m_sockets)
+    {
+        auto ssl_socket = std::dynamic_pointer_cast<net::SSLSocket>(socket);
+        if (ssl_socket)
+        {
+            if (!ssl_socket->loadCertificates(cert_file, key_file))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 void TcpServer::handleClient(const net::Socket::Ptr &client)
 {

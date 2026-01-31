@@ -96,7 +96,7 @@ bool Address::parse(std::vector<Address::Ptr> &addrs, const std::string &host, i
     }
     freeaddrinfo(result);
 
-    return true;
+    return !addrs.empty();
 }
 
 bool Address::parse(Address::Ptr &addr, const std::string &host, int family, int type, int protocol)
@@ -107,7 +107,7 @@ bool Address::parse(Address::Ptr &addr, const std::string &host, int family, int
         addr = addrs.at(0);
         return true;
     }
-    return false;
+    return !addrs.empty();
 }
 
 bool Address::parseIPAddress(std::shared_ptr<IPAddress> &addr, const std::string &host, int family,
@@ -126,7 +126,7 @@ bool Address::parseIPAddress(std::shared_ptr<IPAddress> &addr, const std::string
             }
         }
     }
-    return false;
+    return !addrs.empty();
 }
 
 bool Address::getInterfaceAddresses(
@@ -249,7 +249,7 @@ bool Address::getInterfaceAddresses(
     }
     freeifaddrs(addr);
 #endif
-    return true;
+    return !addrs.empty();
 }
 
 bool Address::getInterfaceAddresses(std::vector<std::pair<Address::Ptr, uint32_t>> &addrs,
@@ -277,7 +277,7 @@ bool Address::getInterfaceAddresses(std::vector<std::pair<Address::Ptr, uint32_t
     {
         addrs.push_back(its.first->second);
     }
-    return true;
+    return !addrs.empty();
 }
 
 int Address::getFamily() const { return getAddr()->sa_family; }
@@ -398,6 +398,21 @@ std::ostream &UnixAddress::insert(std::ostream &os) const
                                  m_addr_len - offsetof(sockaddr_un, sun_path) - 1);
     }
     return os << m_addr.sun_path;
+}
+
+std::string UnixAddress::getPath() const
+{
+    std::stringstream ss;
+    if (m_addr_len > offsetof(sockaddr_un, sun_path) && m_addr.sun_path[0] == '\0')
+    {
+        ss << "\\0"
+           << std::string(m_addr.sun_path + 1, m_addr_len - offsetof(sockaddr_un, sun_path) - 1);
+    }
+    else
+    {
+        ss << m_addr.sun_path;
+    }
+    return ss.str();
 }
 #endif
 

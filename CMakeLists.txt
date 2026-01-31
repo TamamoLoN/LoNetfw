@@ -53,6 +53,8 @@ if(USE_HIGH_PRECISION_TIME)
 endif()
 
 set(YAML_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/yaml-cpp/include)
+set(OPENSSL_INCLUDE_PATH ${CMAKE_CURRENT_BINARY_DIR}/thirdparty/openssl/include
+)
 
 function(force_redefine_file_macro_for_sources targetname)
     get_target_property (source_files "${targetname}" SOURCES)
@@ -133,6 +135,19 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 # yaml 0.6.3
 set(YAML_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 
+
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib
+                 )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/src
+                    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+		            ${YAML_INCLUDE_PATH}
+                    ${OPENSSL_INCLUDE_PATH}
+                    )
+
+add_subdirectory(thirdparty/openssl)
+
 if(MODULARIZATION)
     add_subdirectory(thirdparty/yaml-cpp)
     add_subdirectory(util)
@@ -188,16 +203,6 @@ else()
     endif()
 endif()
 endif()
-
-
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib
-                 )
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/src
-                    ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
-		    ${YAML_INCLUDE_PATH}
-                    )
 
 if(BUILT_TESTS)
     add_build_target(test_log)

@@ -77,6 +77,7 @@ class UnixAddress : public Address
     void setAddrlen(socklen_t len);
     socklen_t getAddrLen() const override;
     std::ostream &insert(std::ostream &os) const override;
+    std::string getPath() const;
 
   private:
     struct sockaddr_un m_addr;
