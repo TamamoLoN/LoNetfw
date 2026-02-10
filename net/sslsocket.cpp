@@ -218,7 +218,7 @@ ssize_t SSLSocket::sendto(const iovec *bufs, size_t len, const Address::Ptr &dst
 
 ssize_t SSLSocket::recv(void *buf, size_t len, int flags)
 {
-    if (m_ssl)
+    if (!m_ssl)
     {
         return -1;
     }

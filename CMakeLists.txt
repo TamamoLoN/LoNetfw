@@ -196,7 +196,7 @@ else()
         system/*.cpp
     )
     add_library(${PROJECT_NAME} ${LIB_TYPE} ${MODULE_SRCS})
-    target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl yaml-cpp) 
+    target_link_libraries(${PROJECT_NAME} PUBLIC pthread dl yaml-cpp ssl) 
     if(USE_ABSOLUTE_PATH)
     else()
         force_redefine_file_macro_for_sources(${PROJECT_NAME})

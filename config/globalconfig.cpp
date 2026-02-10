@@ -35,11 +35,11 @@ bool ConfigLog::operator<(const ConfigLog &other) const { return name < other.na
 
 ConfigServer::ConfigServer(std::string name, std::vector<std::string> addrs, uint32_t recv_timeout,
                            uint32_t send_timeout, std::string accept_scheduler,
-                           std::string process_scheduler, std::string type, uint8_t ssl,
-                           std::string cert_file, std::string key_file)
+                           std::string process_scheduler, std::string type, uint8_t keepalive,
+                           uint8_t ssl, std::string cert_file, std::string key_file)
     : name(name), addrs(addrs), recv_timeout(recv_timeout), send_timeout(send_timeout),
       accept_scheduler(accept_scheduler), process_scheduler(process_scheduler), type(type),
-      ssl(ssl), cert_file(cert_file), key_file(key_file)
+      keepalive(keepalive), ssl(ssl), cert_file(cert_file), key_file(key_file)
 {
 }
 
@@ -47,8 +47,9 @@ bool ConfigServer::operator==(const ConfigServer &other) const
 {
     return name == other.name && addrs == other.addrs && recv_timeout == other.recv_timeout &&
            send_timeout == other.send_timeout && accept_scheduler == other.accept_scheduler &&
-           process_scheduler == other.process_scheduler && type == other.type && ssl == other.ssl &&
-           cert_file == other.cert_file && key_file == other.key_file;
+           process_scheduler == other.process_scheduler && type == other.type &&
+           keepalive == other.keepalive && ssl == other.ssl && cert_file == other.cert_file &&
+           key_file == other.key_file;
 }
 
 GlobalConfig::GlobalConfig()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scheduler/schedulermanager.h"
+#include "server/serverfactory.h"
 #include "server/tcpserver.h"
 #include "system/daemon.h"
 #include "system/env.h"
@@ -34,7 +35,6 @@ class Application
   private:
     int m_argc;
     char **m_argv;
-    std::unordered_map<std::string, std::function<server::TcpServer::Ptr()>> m_server_factory;
     std::unordered_map<std::string, std::vector<server::TcpServer::Ptr>> m_servers;
     scheduler::IOScheduler::Ptr m_main_ioscheduler;
 };

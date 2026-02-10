@@ -41,7 +41,8 @@ struct ConfigServer
                           uint32_t recv_timeout = 1000, uint32_t send_timeout = 1000,
                           std::string accept_scheduler  = "io_scheduler",
                           std::string process_scheduler = "io_scheduler", std::string type = "tcp",
-                          uint8_t ssl = 0, std::string cert_file = "", std::string key_file = "");
+                          uint8_t keepalive = 0, uint8_t ssl = 0, std::string cert_file = "",
+                          std::string key_file = "");
     bool operator==(const ConfigServer &other) const;
     bool operator<(const ConfigServer &other) const;
     std::string name;
@@ -50,8 +51,9 @@ struct ConfigServer
     uint32_t send_timeout;
     std::string accept_scheduler;
     std::string process_scheduler;
-    std::string type; // http, ws, tcp ...
-    uint8_t ssl;      // 0:no, 1:yes
+    std::string type;  // http, ws, tcp ...
+    uint8_t keepalive; // 0:no, 1:yes
+    uint8_t ssl;       // 0:no, 1:yes
     std::string cert_file;
     std::string key_file;
 };
@@ -169,8 +171,10 @@ template <> class util::LexicalCast<config::ConfigServer, std::string>
             res.process_scheduler = node["process_scheduler"].as<std::string>();
         if (node["type"].IsDefined())
             res.type = node["type"].as<std::string>();
+        if (node["keepalive"].IsDefined())
+            res.keepalive = node["keepalive"].as<int>();
         if (node["ssl"].IsDefined())
-            res.ssl = node["ssl"].as<uint8_t>();
+            res.ssl = node["ssl"].as<int>();
         if (node["cert_file"].IsDefined())
             res.cert_file = node["cert_file"].as<std::string>();
         if (node["key_file"].IsDefined())
@@ -193,6 +197,7 @@ template <> class util::LexicalCast<std::string, config::ConfigServer>
         node["accept_scheduler"]  = source.accept_scheduler;
         node["process_scheduler"] = source.process_scheduler;
         node["type"]              = source.type;
+        node["keepalive"]         = source.keepalive;
         node["ssl"]               = source.ssl;
         node["cert_file"]         = source.cert_file;
         node["key_file"]          = source.key_file;

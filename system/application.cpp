@@ -6,8 +6,7 @@ namespace system
 {
 static auto g_logger = LON_LOG_ROOT;
 
-Application::Application()
-    : m_argc(0), m_argv(nullptr), m_servers({}), m_server_factory({}), m_main_ioscheduler(nullptr)
+Application::Application() : m_argc(0), m_argv(nullptr), m_servers({}), m_main_ioscheduler(nullptr)
 {
 }
 
@@ -245,12 +244,9 @@ int Application::runTask()
             }
         }
 
-        server::TcpServer::Ptr server = nullptr;
-        if (m_server_factory.find(config_server.type) != m_server_factory.end())
-        {
-            server = m_server_factory[config_server.type]();
-        }
-        else
+        server::TcpServer::Ptr server = server::ServerFactory::Instance().create(
+            config_server.type, process_scheduler, accept_scheduler, config_server);
+        if (!server)
         {
             LON_WARN(g_logger) << "invalid server type=" << config_server.type;
             server.reset(new server::TcpServer(process_scheduler, accept_scheduler,
@@ -259,8 +255,7 @@ int Application::runTask()
         }
 
         std::vector<net::Address::Ptr> fails;
-        if (!server->bind(addrs, fails))
-        // if (!server->bind(addrs, fails, i.ssl))
+        if (!server->bind(addrs, fails, config_server.ssl))
         {
             for (auto &fail : fails)
             {
@@ -270,11 +265,12 @@ int Application::runTask()
         }
         if (config_server.ssl)
         {
-            // if (!server->loadCertificates(i.cert_file, i.key_file))
-            // {
-            //     SYLAR_LOG_ERROR(g_logger) << "loadCertificates fail, cert_file=" << i.cert_file
-            //                               << " key_file=" << i.key_file;
-            // }
+            if (!server->loadCertificates(config_server.cert_file, config_server.key_file))
+            {
+                LON_ERROR(g_logger)
+                    << "loadCertificates fail, cert_file=" << config_server.cert_file
+                    << " key_file=" << config_server.key_file;
+            }
         }
         server->start();
         m_servers[config_server.type].push_back(server);
