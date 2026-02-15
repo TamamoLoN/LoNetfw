@@ -46,23 +46,24 @@ bool Application::init(int argc, char **argv)
 
     auto mode        = ENVMGR.get<std::string>("--mode");
     auto config_path = ENVMGR.getConfigPath();
+    auto plugin_path = ENVMGR.getPluginPath();
     LON_INFO(g_logger) << "mode=" << mode << ", config_path=" << config_path;
     config::Config::parseFromDir(config_path);
 
-    // ModuleMgr::GetInstance()->init();
-    // std::vector<Module::ptr> modules;
-    // ModuleMgr::GetInstance()->listAll(modules);
+    PLUGINMGR.init(plugin_path);
+    std::vector<Plugin::Ptr> plugins{};
+    PLUGINMGR.getAll(plugins);
 
-    // for (auto i : modules)
-    // {
-    //     i->onBeforeArgsParse(argc, argv);
-    // }
+    for (const auto &plugin : plugins)
+    {
+        plugin->onBeforeArgParse(argc, argv);
+    }
 
-    // for (auto i : modules)
-    // {
-    //     i->onAfterArgsParse(argc, argv);
-    // }
-    // modules.clear();
+    for (const auto &plugin : plugins)
+    {
+        plugin->onAfterArgParse(argc, argv);
+    }
+    plugins.clear();
 
     return true;
 }
@@ -125,23 +126,23 @@ int Application::main(int argc, char **argv)
 
 int Application::runTask()
 {
-    // std::vector<Module::ptr> modules;
-    // ModuleMgr::GetInstance()->listAll(modules);
-    // bool has_error = false;
-    // for (auto &i : modules)
-    // {
-    //     if (!i->onLoad())
-    //     {
-    //         SYLAR_LOG_ERROR(g_logger)
-    //             << "module name=" << i->getName() << " version=" << i->getVersion()
-    //             << " filename=" << i->getFilename();
-    //         has_error = true;
-    //     }
-    // }
-    // if (has_error)
-    // {
-    //     _exit(0);
-    // }
+    bool onload_failed = false;
+    std::vector<Plugin::Ptr> plugins{};
+    PLUGINMGR.getAll(plugins);
+    for (const auto &plugin : plugins)
+    {
+        if (!plugin->onLoad())
+        {
+            LON_ERROR(g_logger) << "plugin onLoad() failed, name=" << plugin->getName()
+                                << " version=" << plugin->getVersion()
+                                << " filename=" << plugin->getPath();
+            onload_failed = true;
+        }
+    }
+    if (onload_failed)
+    {
+        exit(0);
+    }
 
     // 初始化IO调度器，这里默认只用IOScheduler
     auto config_schedulers = G_CONFIG.config_schedulers->getData();
@@ -281,10 +282,10 @@ int Application::runTask()
         m_servers[config_server.type].push_back(server);
     }
 
-    // for (auto &i : modules)
-    // {
-    //     i->onServerReady();
-    // }
+    for (const auto &plugin : plugins)
+    {
+        plugin->onServerReady();
+    }
     return 0;
 }
 

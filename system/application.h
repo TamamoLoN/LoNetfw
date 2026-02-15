@@ -5,6 +5,7 @@
 #include "server/tcpserver.h"
 #include "system/daemon.h"
 #include "system/env.h"
+#include "system/plugin.h"
 
 namespace lon
 {

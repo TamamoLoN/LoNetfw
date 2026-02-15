@@ -48,6 +48,8 @@ class Plugin
     std::string m_id;
 };
 
+#define PLUGINMGR lon::util::Singleton<lon::system::PluginManager>::Instance()
+
 class PluginManager
 {
   public:
@@ -58,7 +60,7 @@ class PluginManager
     void add(const Plugin::Ptr &plugin);
     void del(const std::string &name);
     void delAll();
-    void init();
+    void init(const std::string &plugin_path);
     Plugin::Ptr get(const std::string &name);
     void getAll(std::vector<Plugin::Ptr> &plugins);
 

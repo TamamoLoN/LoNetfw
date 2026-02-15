@@ -150,9 +150,8 @@ void PluginManager::delAll()
     }
 }
 
-void PluginManager::init()
+void PluginManager::init(const std::string &plugin_path)
 {
-    auto plugin_path = ENVMGR.getPluginPath();
     std::vector<std::string> plugins{};
     util::FSUtil::getDirFiles(plugins, plugin_path, ".so");
 
