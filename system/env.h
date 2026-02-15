@@ -23,6 +23,7 @@ class Env
 
     std::string getAbsolutePath(const std::string &path) const;
     std::string getConfigPath();
+    std::string getPluginPath();
 
     util::ArgumentParser &getArgParser();
 

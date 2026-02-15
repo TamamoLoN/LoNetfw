@@ -74,6 +74,8 @@ std::string Env::getAbsolutePath(const std::string &path) const
 
 std::string Env::getConfigPath() { return getAbsolutePath(get<std::string>("--config")); }
 
+std::string Env::getPluginPath() { return getAbsolutePath(get<std::string>("--plugin")); }
+
 util::ArgumentParser &Env::getArgParser()
 {
     MutexType::WrLock lock(m_mutex);

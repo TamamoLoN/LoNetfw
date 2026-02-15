@@ -34,6 +34,11 @@ bool Application::init(int argc, char **argv)
         ->defaultValue("../.config")
         ->nargs("1");
 
+    ENVMGR.addArgument(std::vector<std::string>{"-p", "--plugin"})
+        ->help("program read config file directory path")
+        ->defaultValue("../.plugin")
+        ->nargs("1");
+
     if (!ENVMGR.init(m_argc, m_argv))
     {
         return false;

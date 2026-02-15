@@ -11,6 +11,7 @@
 #include "util/argparse.h"
 #include "util/buffer.h"
 #include "util/fsutil.h"
+#include "util/hashutil.h"
 #include "yaml-cpp/yaml.h"
 #include <assert.h>
 #include <functional>
