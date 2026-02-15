@@ -17,9 +17,9 @@ add_library(util ${LIB_TYPE}
 target_include_directories(util PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WIN32)
-target_link_libraries(util PRIVATE yaml-cpp pthreadVC2)
+target_link_libraries(util PRIVATE yaml-cpp pthreadVC2 ssl)
 else()
-target_link_libraries(util PRIVATE yaml-cpp pthread dl)
+target_link_libraries(util PRIVATE yaml-cpp pthread dl ssl)
 endif()
 
 if(USE_ABSOLUTE_PATH)

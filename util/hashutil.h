@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/endian.h"
 #include <algorithm>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
