@@ -135,6 +135,7 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 # yaml 0.6.3
 set(YAML_BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 
+set(WITH_APPS OFF CACHE BOOL "" FORCE)
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib
                  )
