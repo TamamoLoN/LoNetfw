@@ -439,7 +439,7 @@ IPv4Address::IPv4Address(uint32_t address, uint16_t port)
 {
     memset(&m_addr, 0, sizeof(m_addr));
     m_addr.sin_family      = AF_INET;
-    m_addr.sin_addr.s_addr = util::byteswapToBigEndian(address);
+    m_addr.sin_addr.s_addr = util::byteswapOnLittleEndian(address);
     setPort(port);
 }
 
@@ -464,8 +464,8 @@ socklen_t IPv4Address::getAddrLen() const { return sizeof(m_addr); }
 
 std::ostream &IPv4Address::insert(std::ostream &os) const
 {
-    uint32_t addr = util::byteswapToBigEndian(m_addr.sin_addr.s_addr);
-    uint16_t port = util::byteswapToBigEndian(m_addr.sin_port);
+    uint32_t addr = util::byteswapOnLittleEndian(m_addr.sin_addr.s_addr);
+    uint16_t port = util::byteswapOnLittleEndian(m_addr.sin_port);
     os << ((addr >> 24) & 0xff) << "." << ((addr >> 16) & 0xff) << "." << ((addr >> 8) & 0xff)
        << "." << (addr & 0xff);
     os << ":" << port;
@@ -479,7 +479,7 @@ IPAddress::Ptr IPv4Address::broadcastAddress(uint32_t prefix_len)
         return nullptr;
     }
     sockaddr_in b_addr(m_addr);
-    b_addr.sin_addr.s_addr |= util::byteswapToBigEndian(createMask<uint32_t>(prefix_len));
+    b_addr.sin_addr.s_addr |= util::byteswapOnLittleEndian(createMask<uint32_t>(prefix_len));
     return std::make_shared<IPv4Address>(b_addr);
 }
 
@@ -490,7 +490,7 @@ IPAddress::Ptr IPv4Address::networkAddress(uint32_t prefix_len)
         return nullptr;
     }
     sockaddr_in n_addr(m_addr);
-    n_addr.sin_addr.s_addr &= util::byteswapToBigEndian(createMask<uint32_t>(prefix_len));
+    n_addr.sin_addr.s_addr &= util::byteswapOnLittleEndian(createMask<uint32_t>(prefix_len));
     return std::make_shared<IPv4Address>(n_addr);
 }
 
@@ -499,15 +499,15 @@ IPAddress::Ptr IPv4Address::subnetMask(uint32_t prefix_len)
     sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family      = AF_INET;
-    addr.sin_addr.s_addr = ~util::byteswapToBigEndian(createMask<uint32_t>(prefix_len));
+    addr.sin_addr.s_addr = ~util::byteswapOnLittleEndian(createMask<uint32_t>(prefix_len));
     addr.sin_port        = m_addr.sin_port;
 
     return std::make_shared<IPv4Address>(addr);
 }
 
-uint16_t IPv4Address::getPort() const { return util::byteswapToBigEndian(m_addr.sin_port); }
+uint16_t IPv4Address::getPort() const { return util::byteswapOnLittleEndian(m_addr.sin_port); }
 
-void IPv4Address::setPort(uint16_t port) { m_addr.sin_port = util::byteswapToBigEndian(port); }
+void IPv4Address::setPort(uint16_t port) { m_addr.sin_port = util::byteswapOnLittleEndian(port); }
 
 IPv6Address::IPv6Address()
 {
@@ -556,7 +556,7 @@ std::ostream &IPv6Address::insert(std::ostream &os) const
 #else
     uint16_t *addr = (uint16_t *)m_addr.sin6_addr.__in6_u.__u6_addr8;
 #endif
-    uint16_t port  = util::byteswapToBigEndian(m_addr.sin6_port);
+    uint16_t port  = util::byteswapOnLittleEndian(m_addr.sin6_port);
     bool use_zeros = false;
     for (ssize_t i = 0; i < 8; ++i)
     {
@@ -573,7 +573,7 @@ std::ostream &IPv6Address::insert(std::ostream &os) const
         {
             os << ":";
         }
-        os << std::hex << (int)util::byteswapToBigEndian(addr[i]) << std::dec;
+        os << std::hex << (int)util::byteswapOnLittleEndian(addr[i]) << std::dec;
     }
     if (!use_zeros && addr[7] == 0)
     {
@@ -636,9 +636,9 @@ IPAddress::Ptr IPv6Address::subnetMask(uint32_t prefix_len)
     return std::make_shared<IPv6Address>(addr);
 }
 
-uint16_t IPv6Address::getPort() const { return util::byteswapToBigEndian(m_addr.sin6_port); }
+uint16_t IPv6Address::getPort() const { return util::byteswapOnLittleEndian(m_addr.sin6_port); }
 
-void IPv6Address::setPort(uint16_t port) { m_addr.sin6_port = util::byteswapToBigEndian(port); }
+void IPv6Address::setPort(uint16_t port) { m_addr.sin6_port = util::byteswapOnLittleEndian(port); }
 
 } // namespace net
 } // namespace lon
