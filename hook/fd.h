@@ -13,7 +13,7 @@ namespace lon
 {
 namespace hook
 {
-class Fd : public std::enable_shared_from_this<Fd>
+class LON_API Fd : public std::enable_shared_from_this<Fd>
 {
   public:
     using Ptr         = std::shared_ptr<Fd>;
@@ -45,7 +45,7 @@ class Fd : public std::enable_shared_from_this<Fd>
     // lon::scheduler::Scheduler *m_ioscheculer;
 };
 
-class FdManager
+class LON_API FdManager
 {
   public:
     using MutexType = thread::RWMutex;
@@ -59,7 +59,11 @@ class FdManager
 
   private:
     MutexType m_mutex;
+#ifdef _WIN32
+    std::unordered_map<uint64_t, Fd::Ptr> m_fds;
+#else
     std::vector<Fd::Ptr> m_fds;
+#endif
     int m_size;
 };
 

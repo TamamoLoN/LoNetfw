@@ -18,13 +18,23 @@ std::string ProcessInfo::toString() const
 
 static int real_start(int argc, char **argv, std::function<int(int argc, char **argv)> main_cb)
 {
-    G_PROC_INFO.main_id         = getpid();
+#ifdef _WIN32
+    G_PROC_INFO.main_id = _getpid();
+#else
+    G_PROC_INFO.main_id = getpid();
+#endif
     G_PROC_INFO.main_start_time = time(0);
     return main_cb(argc, argv);
 }
 
 static int real_daemon(int argc, char **argv, std::function<int(int argc, char **argv)> main_cb)
 {
+#ifdef _WIN32
+    LON_INFO(g_logger) << "Windows does not support daemon mode, running as normal process";
+    G_PROC_INFO.parent_id = _getpid();
+    G_PROC_INFO.parent_start_time = time(0);
+    return real_start(argc, argv, main_cb);
+#else
     if (LON_UNLIKELY(daemon(1, 0) == -1))
     {
         LON_ERROR(g_logger) << "daemon fail, errno=" << errno << " errstr=" << strerror(errno);
@@ -76,6 +86,7 @@ static int real_daemon(int argc, char **argv, std::function<int(int argc, char *
         }
     }
     return 0;
+#endif
 }
 
 int start_daemon(int argc, char **argv, std::function<int(int argc, char **argv)> main_cb,
@@ -83,7 +94,11 @@ int start_daemon(int argc, char **argv, std::function<int(int argc, char **argv)
 {
     if (!is_daemon)
     {
-        G_PROC_INFO.parent_id         = getpid();
+#ifdef _WIN32
+        G_PROC_INFO.parent_id = _getpid();
+#else
+        G_PROC_INFO.parent_id = getpid();
+#endif
         G_PROC_INFO.parent_start_time = time(0);
         return real_start(argc, argv, main_cb);
     }

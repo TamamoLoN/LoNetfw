@@ -5,7 +5,7 @@ namespace lon
 {
 namespace util
 {
-class Stream
+class LON_API Stream
 {
   public:
     using Ptr = std::shared_ptr<Stream>;

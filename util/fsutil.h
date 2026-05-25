@@ -1,15 +1,38 @@
 #pragma once
 
 #include "util/endian.h"
+#include "util/macro.h"
 
+#ifdef _WIN32
+#include <windows.h>
+
+#include <direct.h>
+#include <io.h>
+#include <process.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#define S_IFDIR _S_IFDIR
+#define S_IRWXU _S_IREAD | _S_IWRITE | _S_IEXEC
+#define S_IRWXG _S_IREAD | _S_IWRITE | _S_IEXEC
+#define S_IROTH _S_IREAD
+#define S_IXOTH _S_IEXEC
+#define F_OK 0
+#define X_OK 1
+#define W_OK 2
+#define R_OK 4
+typedef struct _stat lon_stat_t;
+#else
 #include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+typedef struct stat lon_stat_t;
+#endif
 #include <fstream>
 #include <signal.h>
 #include <string.h>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <vector>
 
 namespace lon
@@ -17,7 +40,7 @@ namespace lon
 namespace util
 {
 // 文件相关
-class FSUtil
+class LON_API FSUtil
 {
   public:
     static void getDirFiles(std::vector<std::string> &files, const std::string &dir_path,
@@ -39,7 +62,7 @@ class FSUtil
     static bool isProcRunning(const std::string &pidfile);
 
   private:
-    static int __lstat(const char *file, struct stat *st = nullptr);
+    static int __lstat(const char *file, lon_stat_t *st = nullptr);
     static int __mkdir(const char *dirname);
 };
 

@@ -7,7 +7,7 @@ namespace lon
 namespace scheduler
 {
 class TimerManager;
-class Timer : public std::enable_shared_from_this<Timer>
+class LON_API Timer : public std::enable_shared_from_this<Timer>
 {
     friend class TimerManager;
 
@@ -30,13 +30,13 @@ class Timer : public std::enable_shared_from_this<Timer>
     TimerManager *m_manager;
 
   private:
-    struct Comparator
+    struct LON_API Comparator
     {
         bool operator()(const Timer::Ptr &lhs, const Timer::Ptr &rhs) const;
     };
 };
 
-class TimerManager
+class LON_API TimerManager
 {
     friend class Timer;
 

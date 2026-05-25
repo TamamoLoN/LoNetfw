@@ -2,6 +2,7 @@
 
 #include "util/endian.h"
 #include "util/lexicalcast.h"
+#include "util/macro.h"
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -28,7 +29,7 @@ template <typename T, typename Alloc> struct is_std_vector<std::vector<T, Alloc>
  *  2. 互斥参数([--debug | --release]).
  */
 class ArgumentParser;
-class Argument
+class LON_API Argument
 {
   public:
     friend class ArgumentParser;
@@ -81,7 +82,7 @@ class Argument
     std::string m_nargs;
 };
 
-class ArgumentParser final
+class LON_API ArgumentParser final
 {
   public:
     explicit ArgumentParser();

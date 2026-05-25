@@ -6,7 +6,7 @@ namespace lon
 {
 namespace config
 {
-struct ConfigDataBase
+struct LON_API ConfigDataBase
 {
   public:
     using Ptr = std::shared_ptr<ConfigDataBase>;

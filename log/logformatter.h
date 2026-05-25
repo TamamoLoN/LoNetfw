@@ -29,7 +29,7 @@ namespace lon
 {
 namespace log
 {
-class LogFormatter
+class LON_API LogFormatter
 {
   public:
     using Ptr = std::shared_ptr<LogFormatter>;

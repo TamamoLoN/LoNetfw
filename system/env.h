@@ -8,7 +8,7 @@ namespace lon
 {
 namespace system
 {
-class Env
+class LON_API Env
 {
   public:
     using MutexType = thread::RWMutex;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/endian.h"
+#include "util/macro.h"
 #include <algorithm>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
@@ -14,7 +15,7 @@ namespace lon
 {
 namespace util
 {
-class HashUtil
+class LON_API HashUtil
 {
   public:
     static uint32_t murmur3_hash(const char *str, const uint32_t &seed = 1060627423);

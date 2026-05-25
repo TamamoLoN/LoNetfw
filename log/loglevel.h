@@ -5,7 +5,7 @@ namespace lon
 {
 namespace log
 {
-class LogLevel
+class LON_API LogLevel
 {
   public:
     enum Level

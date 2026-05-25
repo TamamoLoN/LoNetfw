@@ -8,7 +8,7 @@ namespace lon
 {
 namespace scheduler
 {
-class Scheduler
+class LON_API Scheduler
 {
   public:
     using Ptr       = std::shared_ptr<Scheduler>;
@@ -67,7 +67,7 @@ class Scheduler
     bool hasIdleThreads();
 
   private:
-    struct Task
+    struct LON_API Task
     {
         Task();
         Task(fiber::Fiber::Ptr f, int t);

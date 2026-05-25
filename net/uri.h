@@ -18,7 +18,7 @@ namespace net
         |           |            |            |        |
      scheme     authority       path        query   fragment
  */
-class Uri
+class LON_API Uri
 {
   public:
     using Ptr = std::shared_ptr<Uri>;
@@ -26,7 +26,7 @@ class Uri
     virtual ~Uri();
     static Uri::Ptr create(const std::string &uristr);
     Address::Ptr create() const;
-    friend std::ostream &operator<<(std::ostream &os, const Uri &uri);
+    LON_API friend std::ostream &operator<<(std::ostream &os, const Uri &uri);
     std::ostream &toString(std::ostream &os) const;
     std::string toString() const;
 

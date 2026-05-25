@@ -18,7 +18,7 @@ namespace scheduler
 #ifdef _WIN32
 static int pipe(SOCKET sv[2]);
 #endif
-class IOScheduler : public Scheduler, public TimerManager
+class LON_API IOScheduler : public Scheduler, public TimerManager
 {
   public:
     enum Event
@@ -54,7 +54,7 @@ class IOScheduler : public Scheduler, public TimerManager
     void contextResize(size_t size);
 
   private:
-    struct FdContext
+    struct LON_API FdContext
     {
         using MutexType = thread::Mutex;
         struct EventContext
@@ -78,16 +78,17 @@ class IOScheduler : public Scheduler, public TimerManager
 #ifdef _WIN32
     HANDLE m_epoll_fd;
     SOCKET m_notify_pipe_fd[2];
+    std::unordered_map<uint64_t, FdContext *> m_fd_contexts;
 #else
     // epoll文件句柄
     int m_epoll_fd;
     // pipe文件句柄，其中[0]表示读端，[1]表示写端
     int m_notify_pipe_fd[2];
+    std::vector<FdContext *> m_fd_contexts;
 #endif
     // 等待执行的事件数量
     std::atomic<size_t> m_waitting_events_count;
     MutexType m_mutex;
-    std::vector<FdContext *> m_fd_contexts;
 };
 } // namespace scheduler
 } // namespace lon

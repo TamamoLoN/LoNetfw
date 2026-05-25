@@ -186,11 +186,13 @@ int Application::runTask()
         for (const auto &config_addr : config_server.addrs)
         {
             size_t pos = config_addr.find(":");
+#ifndef _WIN32
             if (pos == std::string::npos)
             {
                 addrs.push_back(net::UnixAddress::Ptr(new net::UnixAddress(config_addr)));
                 continue;
             }
+#endif
             int32_t port = atoi(config_addr.substr(pos + 1).c_str());
             // 127.0.0.1
             auto addr = net::IPAddress::create(config_addr.substr(0, pos).c_str(), port);

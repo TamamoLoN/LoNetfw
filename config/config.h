@@ -4,7 +4,7 @@ namespace lon
 {
 namespace config
 {
-class Config
+class LON_API Config
 {
   public:
     using ConfigDataMap = std::map<std::string, ConfigDataBase::Ptr>;

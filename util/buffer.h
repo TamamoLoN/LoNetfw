@@ -3,8 +3,11 @@
 #include "util/noncopyable.h"
 #include <atomic>
 #include <memory>
+#ifdef _WIN32
+#else
 #include <sys/eventfd.h>
 #include <unistd.h>
+#endif
 #include <vector>
 
 namespace lon

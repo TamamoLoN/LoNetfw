@@ -20,7 +20,7 @@ namespace lon
 {
 namespace hook
 {
-class Hook
+class LON_API Hook
 {
   public:
     Hook();
@@ -47,9 +47,9 @@ extern "C"
     // sleep相关api
     typedef VOID(WINAPI *Sleep_fun)(_In_ DWORD dwMilliseconds);
     extern Sleep_fun Sleep_f;
-    extern unsigned int sleep(unsigned int seconds);
-    extern int usleep(useconds_t usec);
-    extern int nanosleep(const struct timespec *req, struct timespec *rem);
+    LON_API extern unsigned int sleep(unsigned int seconds);
+    LON_API extern int usleep(useconds_t usec);
+    LON_API extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
     // socket相关api
     typedef SOCKET(WSAAPI *socket_fun)(_In_ int af, _In_ int type, _In_ int protocoll);
@@ -58,7 +58,7 @@ extern "C"
     typedef int(WSAAPI *connect_fun)(_In_ SOCKET s,
                                      _In_reads_bytes_(namelen) const struct sockaddr FAR *name,
                                      _In_ int namelen);
-    extern int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
+    LON_API extern int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
                                     int64_t timeout_ms);
     extern connect_fun connect_f;
 
@@ -155,7 +155,7 @@ extern "C"
     extern socket_fun socket_f;
 
     typedef int (*connect_fun)(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
-    extern int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
+    LON_API extern int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen,
                                     int64_t timeout_ms);
     extern connect_fun connect_f;
 

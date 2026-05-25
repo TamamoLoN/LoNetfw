@@ -9,7 +9,7 @@ namespace lon
 {
 namespace config
 {
-struct ConfigLogAppender
+struct LON_API ConfigLogAppender
 {
     explicit ConfigLogAppender(
         uint8_t type = 0, log::LogLevel::Level level = log::LogLevel::Level::DEBUG,
@@ -22,7 +22,7 @@ struct ConfigLogAppender
     std::string log_path;
 };
 
-struct ConfigLog
+struct LON_API ConfigLog
 {
     explicit ConfigLog(std::string name                         = "root",
                        log::LogLevel::Level level               = log::LogLevel::Level::DEBUG,
@@ -34,7 +34,7 @@ struct ConfigLog
     std::vector<ConfigLogAppender> appenders;
 };
 
-struct ConfigServer
+struct LON_API ConfigServer
 {
     explicit ConfigServer(std::string name               = "LoNetfw" LONETFW_VERSION,
                           std::vector<std::string> addrs = {"0.0.0.0:8080"},
@@ -58,7 +58,7 @@ struct ConfigServer
     std::string key_file;
 };
 
-struct GlobalConfig
+struct LON_API GlobalConfig
 {
     explicit GlobalConfig();
     static GlobalConfig &Instance();

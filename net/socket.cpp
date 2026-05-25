@@ -203,7 +203,7 @@ bool Socket::bind(const Address::Ptr &addr)
                             << " addr.family = " << addr->getFamily();
         return false;
     }
-
+#ifndef _WIN32
     UnixAddress::Ptr uaddr = std::dynamic_pointer_cast<UnixAddress>(addr);
     if (uaddr)
     {
@@ -217,7 +217,7 @@ bool Socket::bind(const Address::Ptr &addr)
             util::FSUtil::unlink(uaddr->getPath(), true);
         }
     }
-
+#endif
     if (::bind(m_sockfd, addr->getAddr(), addr->getAddrLen()) == -1)
     {
         LON_ERROR(g_logger) << "bind failed: bind error"

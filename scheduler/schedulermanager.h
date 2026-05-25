@@ -8,7 +8,7 @@ namespace lon
 {
 namespace scheduler
 {
-class SchedulerManager
+class LON_API SchedulerManager
 {
   public:
     explicit SchedulerManager();

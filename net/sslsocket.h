@@ -7,7 +7,7 @@ namespace lon
 {
 namespace net
 {
-struct SSLInitter
+struct LON_API SSLInitter
 {
     SSLInitter();
     SSLInitter(const SSLInitter &) = delete;
@@ -17,7 +17,7 @@ struct SSLInitter
     static SSLInitter &Instance();
 };
 
-class SSLSocket : public Socket
+class LON_API SSLSocket : public Socket
 {
   public:
     using Ptr = std::shared_ptr<SSLSocket>;

@@ -157,13 +157,44 @@ int64_t hook::Fd::getTimeout(const TimeoutType &rs_type) const
     }
 }
 
-FdManager::FdManager(int size) : m_size(size) { m_fds.resize(m_size); }
+FdManager::FdManager(int size) : m_size(size)
+{
+#ifdef _WIN32
+#else
+    m_fds.resize(m_size);
+#endif
+}
 
 FdManager::~FdManager() {}
 
 Fd::Ptr FdManager::get(int fd, bool auto_create)
 {
     MutexType::RdLock rlock(m_mutex);
+#ifdef _WIN32
+    if (m_fds.find(fd) == m_fds.end())
+    {
+        if (!auto_create)
+        {
+            return nullptr;
+        }
+    }
+    else
+    {
+        if (m_fds[fd] || !auto_create)
+        {
+            return m_fds[fd];
+        }
+    }
+    rlock.unlock();
+    MutexType::WrLock wlock(m_mutex);
+    auto new_fd = std::make_shared<Fd>(fd);
+    if (fd >= m_fds.size())
+    {
+        m_size = m_fds.size();
+    }
+    m_fds[fd] = new_fd;
+    return new_fd;
+#else
     if (fd >= m_size)
     {
         if (!auto_create)
@@ -188,15 +219,23 @@ Fd::Ptr FdManager::get(int fd, bool auto_create)
     }
     m_fds[fd] = new_fd;
     return new_fd;
+#endif
 }
 
 void FdManager::del(int fd)
 {
     MutexType::WrLock lock(m_mutex);
+#ifdef _WIN32
+    if (m_fds.find(fd) == m_fds.end())
+    {
+        return;
+    }
+#else
     if (fd >= m_size)
     {
         return;
     }
+#endif
     m_fds[fd].reset();
 }
 
@@ -204,6 +243,15 @@ size_t FdManager::size()
 {
     MutexType::RdLock lock(m_mutex);
     size_t count = 0;
+#ifdef _WIN32
+    for (auto &fd : m_fds)
+    {
+        if (fd.second)
+        {
+            ++count;
+        }
+    }
+#else
     for (auto &fd : m_fds)
     {
         if (fd)
@@ -211,6 +259,7 @@ size_t FdManager::size()
             ++count;
         }
     }
+#endif
     return count;
 }
 

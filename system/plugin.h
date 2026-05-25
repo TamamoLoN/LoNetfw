@@ -6,14 +6,19 @@
 #include "thread/mutex.h"
 #include "util/singleton.h"
 #include "util/stream.h"
-#include <dlfcn.h>
 #include <unordered_map>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#endif
 
 namespace lon
 {
 namespace system
 {
-class Plugin
+class LON_API Plugin
 {
   public:
     using Ptr = std::shared_ptr<Plugin>;
@@ -50,7 +55,7 @@ class Plugin
 
 #define PLUGINMGR lon::util::Singleton<lon::system::PluginManager>::Instance()
 
-class PluginManager
+class LON_API PluginManager
 {
   public:
     using MutexType = lon::thread::RWMutex;

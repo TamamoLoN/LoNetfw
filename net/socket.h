@@ -11,7 +11,7 @@ namespace lon
 {
 namespace net
 {
-class Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
+class LON_API Socket : public std::enable_shared_from_this<Socket>, util::Nonecopyable
 {
   public:
     enum Type

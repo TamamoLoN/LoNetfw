@@ -9,7 +9,7 @@ namespace lon
 {
 namespace thread
 {
-class Thread : public util::Nonecopyable
+class LON_API Thread : public util::Nonecopyable
 {
   public:
     using Ptr = std::shared_ptr<Thread>;

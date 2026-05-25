@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/endian.h"
+#include "util/macro.h"
 #include <fstream>
 #include <iomanip>
 #include <math.h>
@@ -24,7 +25,7 @@ namespace lon
 namespace util
 {
 
-class ZigZag
+class LON_API ZigZag
 {
     /**
      * 编码
@@ -50,7 +51,7 @@ class ZigZag
     static int64_t decode64(uint64_t n);
 };
 
-class Varint
+class LON_API Varint
 {
   public:
     static int8_t encode16(uint8_t *buf, uint16_t n);
@@ -58,7 +59,7 @@ class Varint
     static int8_t encode64(uint8_t *buf, uint64_t n);
 };
 
-struct ByteArrayNode
+struct LON_API ByteArrayNode
 {
     ByteArrayNode();
     ByteArrayNode(size_t s);
@@ -68,7 +69,7 @@ struct ByteArrayNode
     size_t size;
 };
 
-class ByteArray
+class LON_API ByteArray
 {
   public:
     using Ptr = std::shared_ptr<ByteArray>;

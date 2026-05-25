@@ -1,5 +1,6 @@
 #pragma once
 #include "thread/scopedlock.h"
+#include "util/macro.h"
 #include <atomic>
 #include <sstream>
 #ifdef _WIN32
@@ -14,7 +15,7 @@ namespace lon
 namespace thread
 {
 // 普通锁
-class MutexNull : public util::Nonecopyable
+class LON_API MutexNull : public util::Nonecopyable
 {
   public:
     using Lock           = ScopedLock<MutexNull>;
@@ -24,7 +25,7 @@ class MutexNull : public util::Nonecopyable
     void unlock() {}
 };
 
-class Mutex : public util::Nonecopyable
+class LON_API Mutex : public util::Nonecopyable
 {
   public:
     using Lock = ScopedLock<Mutex>;
@@ -38,7 +39,7 @@ class Mutex : public util::Nonecopyable
 };
 
 // 读写锁
-class RWMutexNull : public util::Nonecopyable
+class LON_API RWMutexNull : public util::Nonecopyable
 {
   public:
     using RdLock           = ScopedRdLock<RWMutexNull>;
@@ -50,7 +51,7 @@ class RWMutexNull : public util::Nonecopyable
     void unlock() {}
 };
 
-class RWMutex : public util::Nonecopyable
+class LON_API RWMutex : public util::Nonecopyable
 {
   public:
     using RdLock = ScopedRdLock<RWMutex>;
@@ -65,7 +66,7 @@ class RWMutex : public util::Nonecopyable
     mutable pthread_rwlock_t m_lock;
 };
 
-class SpinLock : public util::Nonecopyable
+class LON_API SpinLock : public util::Nonecopyable
 {
   public:
     using Lock = ScopedLock<SpinLock>;

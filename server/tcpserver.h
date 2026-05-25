@@ -9,7 +9,7 @@ namespace lon
 namespace server
 {
 // 防止在handleClient之前，TcpServer就被析构
-class TcpServer : public std::enable_shared_from_this<TcpServer>, util::Nonecopyable
+class LON_API TcpServer : public std::enable_shared_from_this<TcpServer>, util::Nonecopyable
 {
   public:
     using Ptr = std::shared_ptr<TcpServer>;

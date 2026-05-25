@@ -80,9 +80,8 @@ IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name
 
     rt = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_notify_pipe_fd[0], &event);
     LON_ASSERT(!rt);
-#endif
-
     contextResize(32);
+#endif
 
     start();
 }
@@ -94,16 +93,21 @@ IOScheduler::~IOScheduler()
     epoll_close(m_epoll_fd);
     closesocket(m_notify_pipe_fd[0]);
     closesocket(m_notify_pipe_fd[1]);
+    for (auto &it : m_fd_contexts)
+    {
+        delete it.second;
+        it.second = nullptr;
+    }
 #else
     close(m_epoll_fd);
     close(m_notify_pipe_fd[0]);
     close(m_notify_pipe_fd[1]);
-#endif
     for (auto &it : m_fd_contexts)
     {
         delete it;
         it = nullptr;
     }
+#endif
 }
 
 int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
@@ -111,6 +115,15 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     // 保证fd即是索引
     FdContext *fd_ctx = nullptr;
     MutexType::RdLock rlock(m_mutex);
+#ifdef _WIN32
+    if (m_fd_contexts.find(fd) == m_fd_contexts.end())
+    {
+        m_fd_contexts[fd] = new FdContext;
+        m_fd_contexts[fd]->fd = fd;
+    }
+    fd_ctx = m_fd_contexts[fd];
+    rlock.unlock();
+#else
     if ((int)m_fd_contexts.size() > fd)
     {
         fd_ctx = m_fd_contexts[fd];
@@ -123,6 +136,7 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
         contextResize(fd * 1.5);
         fd_ctx = m_fd_contexts[fd];
     }
+#endif
     FdContext::MutexType::Lock fd_ctx_lock(fd_ctx->mutex);
     // 一个句柄一般不会重复加同一个事件， 可能是两个不同的线程在操控同一个句柄添加事件
     if (fd_ctx->event & event)
@@ -170,10 +184,17 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
 bool IOScheduler::delEvent(int fd, Event event)
 {
     MutexType::RdLock rlock(m_mutex);
+#ifdef _WIN32
+    if (m_fd_contexts.find(fd) == m_fd_contexts.end())
+    {
+        return false;
+    }
+#else
     if ((int)m_fd_contexts.size() <= fd)
     {
         return false;
     }
+#endif
     FdContext *fd_ctx = m_fd_contexts[fd];
     rlock.unlock();
 
@@ -211,10 +232,17 @@ bool IOScheduler::delEvent(int fd, Event event)
 bool IOScheduler::cancelEvent(int fd, Event event)
 {
     MutexType::RdLock rlock(m_mutex);
+#ifdef _WIN32
+    if (m_fd_contexts.find(fd) == m_fd_contexts.end())
+    {
+        return false;
+    }
+#else
     if ((int)m_fd_contexts.size() <= fd)
     {
         return false;
     }
+#endif
     FdContext *fd_ctx = m_fd_contexts[fd];
     rlock.unlock();
 
@@ -250,10 +278,17 @@ bool IOScheduler::cancelEvent(int fd, Event event)
 bool IOScheduler::cancelAll(int fd)
 {
     MutexType::RdLock rlock(m_mutex);
+#ifdef _WIN32
+    if (m_fd_contexts.find(fd) == m_fd_contexts.end())
+    {
+        return false;
+    }
+#else
     if ((int)m_fd_contexts.size() <= fd)
     {
         return false;
     }
+#endif
     FdContext *fd_ctx = m_fd_contexts[fd];
     rlock.unlock();
 
@@ -450,6 +485,8 @@ void IOScheduler::onTimerInsertAtFront() { notify(); }
 
 void IOScheduler::contextResize(size_t size)
 {
+#ifdef _WIN32
+#else
     m_fd_contexts.resize(size);
     for (size_t cnt = 0; cnt < m_fd_contexts.size(); ++cnt)
     {
@@ -459,6 +496,7 @@ void IOScheduler::contextResize(size_t size)
             m_fd_contexts[cnt]->fd = cnt;
         }
     }
+#endif
 }
 
 // 静态方法

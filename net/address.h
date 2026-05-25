@@ -31,7 +31,7 @@ template <typename T> static uint32_t countBytes(T val)
 }
 
 class IPAddress;
-class Address
+class LON_API Address
 {
   public:
     using Ptr          = std::shared_ptr<Address>;
@@ -65,7 +65,7 @@ class Address
 };
 
 #ifndef _WIN32
-class UnixAddress : public Address
+class LON_API UnixAddress : public Address
 {
   public:
     using Ptr = std::shared_ptr<UnixAddress>;
@@ -85,7 +85,7 @@ class UnixAddress : public Address
 };
 #endif
 
-class UnknownAddress : public Address
+class LON_API UnknownAddress : public Address
 {
   public:
     using Ptr = std::shared_ptr<UnknownAddress>;
@@ -101,7 +101,7 @@ class UnknownAddress : public Address
     sockaddr m_addr;
 };
 
-class IPAddress : public Address
+class LON_API IPAddress : public Address
 {
   public:
     using Ptr            = std::shared_ptr<IPAddress>;
@@ -117,7 +117,7 @@ class IPAddress : public Address
     virtual void setPort(uint16_t port) = 0;
 };
 
-class IPv4Address : public IPAddress
+class LON_API IPv4Address : public IPAddress
 {
   public:
     using Ptr = std::shared_ptr<IPv4Address>;
@@ -141,7 +141,7 @@ class IPv4Address : public IPAddress
     sockaddr_in m_addr;
 };
 
-class IPv6Address : public IPAddress
+class LON_API IPv6Address : public IPAddress
 {
   public:
     using Ptr = std::shared_ptr<IPv6Address>;

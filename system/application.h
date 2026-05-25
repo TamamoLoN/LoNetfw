@@ -11,7 +11,7 @@ namespace lon
 {
 namespace system
 {
-class Application
+class LON_API Application
 {
   public:
     explicit Application();

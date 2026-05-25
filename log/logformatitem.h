@@ -9,7 +9,7 @@ namespace lon
 namespace log
 {
 class Logger;
-class LogFormatItem
+class LON_API LogFormatItem
 {
   public:
     using Ptr = std::shared_ptr<LogFormatItem>;
@@ -23,7 +23,7 @@ class LogFormatItem
 };
 
 //日志等级输出
-class LevelLogFormatItem : public LogFormatItem
+class LON_API LevelLogFormatItem : public LogFormatItem
 {
   public:
     explicit LevelLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -32,7 +32,7 @@ class LevelLogFormatItem : public LogFormatItem
 };
 
 //文件名输出
-class FilenameLogFormatItem : public LogFormatItem
+class LON_API FilenameLogFormatItem : public LogFormatItem
 {
   public:
     explicit FilenameLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -41,7 +41,7 @@ class FilenameLogFormatItem : public LogFormatItem
 };
 
 //行号输出
-class LineLogFormatItem : public LogFormatItem
+class LON_API LineLogFormatItem : public LogFormatItem
 {
   public:
     explicit LineLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -50,7 +50,7 @@ class LineLogFormatItem : public LogFormatItem
 };
 
 //日志名输出
-class NameLogFormatItem : public LogFormatItem
+class LON_API NameLogFormatItem : public LogFormatItem
 {
   public:
     explicit NameLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -59,7 +59,7 @@ class NameLogFormatItem : public LogFormatItem
 };
 
 //持续时间输出
-class ElapseLogFormatItem : public LogFormatItem
+class LON_API ElapseLogFormatItem : public LogFormatItem
 {
   public:
     explicit ElapseLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -68,7 +68,7 @@ class ElapseLogFormatItem : public LogFormatItem
 };
 
 //线程id输出
-class ThreadIdLogFormatItem : public LogFormatItem
+class LON_API ThreadIdLogFormatItem : public LogFormatItem
 {
   public:
     explicit ThreadIdLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -77,7 +77,7 @@ class ThreadIdLogFormatItem : public LogFormatItem
 };
 
 //协程ID输出
-class FiberIdLogFormatItem : public LogFormatItem
+class LON_API FiberIdLogFormatItem : public LogFormatItem
 {
   public:
     explicit FiberIdLogFormatItem(const std::string &format) : LogFormatItem(format) {}
@@ -86,7 +86,7 @@ class FiberIdLogFormatItem : public LogFormatItem
 };
 
 //日期时间输出
-class DateTimeLogFormatItem : public LogFormatItem
+class LON_API DateTimeLogFormatItem : public LogFormatItem
 {
   public:
     explicit DateTimeLogFormatItem(const std::string &str,
@@ -102,7 +102,7 @@ class DateTimeLogFormatItem : public LogFormatItem
 };
 
 //日志消息输出
-class MessageLogFormatItem : public LogFormatItem
+class LON_API MessageLogFormatItem : public LogFormatItem
 {
   public:
     explicit MessageLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -111,7 +111,7 @@ class MessageLogFormatItem : public LogFormatItem
 };
 
 //线程名输出
-class ThreadNameLogFormatItem : public LogFormatItem
+class LON_API ThreadNameLogFormatItem : public LogFormatItem
 {
   public:
     explicit ThreadNameLogFormatItem(const std::string &str) : LogFormatItem(str) {}
@@ -120,7 +120,7 @@ class ThreadNameLogFormatItem : public LogFormatItem
 };
 
 //换行符输出
-class NewLineLogFormatItem : public LogFormatItem
+class LON_API NewLineLogFormatItem : public LogFormatItem
 {
   public:
     explicit NewLineLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
@@ -129,7 +129,7 @@ class NewLineLogFormatItem : public LogFormatItem
 };
 
 //字符串输出
-class StringLogFormatItem : public LogFormatItem
+class LON_API StringLogFormatItem : public LogFormatItem
 {
   public:
     explicit StringLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}
@@ -138,7 +138,7 @@ class StringLogFormatItem : public LogFormatItem
 };
 
 //制表符输出
-class TabLogFormatItem : public LogFormatItem
+class LON_API TabLogFormatItem : public LogFormatItem
 {
   public:
     explicit TabLogFormatItem(const std::string &str = "") : LogFormatItem(str) {}

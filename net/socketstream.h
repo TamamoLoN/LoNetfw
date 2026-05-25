@@ -7,7 +7,7 @@ namespace lon
 {
 namespace net
 {
-class SocketStream : public util::Stream
+class LON_API SocketStream : public util::Stream
 {
   public:
     using Ptr = std::shared_ptr<SocketStream>;

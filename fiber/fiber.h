@@ -13,7 +13,7 @@ namespace lon
 {
 namespace fiber
 {
-class Fiber : public std::enable_shared_from_this<Fiber>
+class LON_API Fiber : public std::enable_shared_from_this<Fiber>
 {
   public:
     using Ptr            = std::shared_ptr<Fiber>;

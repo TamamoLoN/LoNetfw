@@ -19,3 +19,9 @@
     XX(wss, 443)                                                                                   \
     XX(rtsp, 554)                                                                                  \
     XX(mqtt, 1883)
+
+#ifdef _WIN32
+#define LON_API __declspec(dllexport)
+#else
+#define LON_API
+#endif

@@ -19,7 +19,7 @@ namespace log
  * @param[in] time 日志事件(秒)
  * @param[in] thread_name 线程名称
  */
-class LogEvent
+class LON_API LogEvent
 {
   public:
     using Ptr = std::shared_ptr<LogEvent>;

@@ -11,7 +11,7 @@ namespace lon
 {
 namespace log
 {
-class LogAppender
+class LON_API LogAppender
 {
   public:
     using Ptr       = std::shared_ptr<LogAppender>;
@@ -29,7 +29,7 @@ class LogAppender
     mutable MutexType m_mutex;
 };
 
-class StdoutLogAppender : public LogAppender
+class LON_API StdoutLogAppender : public LogAppender
 {
   public:
     using Ptr = std::shared_ptr<StdoutLogAppender>;
@@ -39,7 +39,7 @@ class StdoutLogAppender : public LogAppender
     std::string getYaml() override;
 };
 
-class FileLogAppender : public LogAppender
+class LON_API FileLogAppender : public LogAppender
 {
   public:
     using Ptr = std::shared_ptr<FileLogAppender>;

@@ -7,6 +7,46 @@ namespace util
 void FSUtil::getDirFiles(std::vector<std::string> &files, const std::string &dir_path,
                          const std::string &subfix)
 {
+#ifdef _WIN32
+    std::string find_path = dir_path + "/*";
+    WIN32_FIND_DATAA find_data;
+    HANDLE hFind = FindFirstFileA(find_path.c_str(), &find_data);
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        return;
+    }
+    do
+    {
+        if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
+            {
+                continue;
+            }
+            getDirFiles(files, dir_path + "/" + find_data.cFileName, subfix);
+        }
+        else
+        {
+            std::string filename(find_data.cFileName);
+            if (subfix.empty())
+            {
+                files.push_back(dir_path + "/" + filename);
+            }
+            else
+            {
+                if (filename.size() < subfix.size())
+                {
+                    continue;
+                }
+                if (filename.substr(filename.length() - subfix.size()) == subfix)
+                {
+                    files.push_back(dir_path + "/" + filename);
+                }
+            }
+        }
+    } while (FindNextFileA(hFind, &find_data) != 0);
+    FindClose(hFind);
+#else
     if (access(dir_path.c_str(), 0) != 0)
     {
         return;
@@ -48,6 +88,7 @@ void FSUtil::getDirFiles(std::vector<std::string> &files, const std::string &dir
         }
     }
     closedir(dir);
+#endif
 }
 
 bool FSUtil::mkdir(const std::string &dirname)
@@ -99,16 +140,28 @@ bool FSUtil::isProcRunning(const std::string &pidfile)
     {
         return false;
     }
-    pid_t pid = atoi(line.c_str());
+    int32_t pid = atoi(line.c_str());
     if (pid <= 1)
     {
         return false;
     }
+#ifdef _WIN32
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+    if (hProcess == NULL)
+    {
+        return false;
+    }
+    DWORD exitCode;
+    BOOL result = GetExitCodeProcess(hProcess, &exitCode);
+    CloseHandle(hProcess);
+    return result && (exitCode == STILL_ACTIVE);
+#else
     if (kill(pid, 0) != 0)
     {
         return false;
     }
     return true;
+#endif
 }
 
 bool FSUtil::unlink(const std::string &filename, bool exist)
@@ -117,13 +170,21 @@ bool FSUtil::unlink(const std::string &filename, bool exist)
     {
         return true;
     }
+#ifdef _WIN32
+    return _unlink(filename.c_str()) == 0;
+#else
     return ::unlink(filename.c_str()) == 0;
+#endif
 }
 
 bool FSUtil::rm(const std::string &path)
 {
-    struct stat st;
+    lon_stat_t st;
+#ifdef _WIN32
+    if (_stat(path.c_str(), &st))
+#else
     if (lstat(path.c_str(), &st))
+#endif
     {
         return true;
     }
@@ -132,6 +193,27 @@ bool FSUtil::rm(const std::string &path)
         return unlink(path);
     }
 
+#ifdef _WIN32
+    std::string find_path = path + "/*";
+    WIN32_FIND_DATAA find_data;
+    HANDLE hFind = FindFirstFileA(find_path.c_str(), &find_data);
+    if (hFind == INVALID_HANDLE_VALUE)
+    {
+        return false;
+    }
+
+    bool ret = true;
+    do
+    {
+        if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
+        {
+            continue;
+        }
+        std::string dirname = path + "/" + find_data.cFileName;
+        ret                 = rm(dirname);
+    } while (FindNextFileA(hFind, &find_data) != 0);
+    FindClose(hFind);
+#else
     DIR *dir = opendir(path.c_str());
     if (!dir)
     {
@@ -150,10 +232,18 @@ bool FSUtil::rm(const std::string &path)
         ret                 = rm(dirname);
     }
     closedir(dir);
+#endif
+#ifdef _WIN32
+    if (_rmdir(path.c_str()))
+    {
+        ret = false;
+    }
+#else
     if (::rmdir(path.c_str()))
     {
         ret = false;
     }
+#endif
     return ret;
 }
 
@@ -172,7 +262,11 @@ bool FSUtil::realpath(const std::string &path, std::string &rpath)
     {
         return false;
     }
+#ifdef _WIN32
+    char *ptr = _fullpath(nullptr, path.c_str(), 0);
+#else
     char *ptr = ::realpath(path.c_str(), nullptr);
+#endif
     if (nullptr == ptr)
     {
         return false;
@@ -188,7 +282,11 @@ bool FSUtil::symlink(const std::string &from, const std::string &to)
     {
         return false;
     }
+#ifdef _WIN32
+    return CreateSymbolicLinkA(to.c_str(), from.c_str(), 0) != 0;
+#else
     return ::symlink(from.c_str(), to.c_str()) == 0;
+#endif
 }
 
 std::string FSUtil::dirname(const std::string &filename)
@@ -250,14 +348,22 @@ bool FSUtil::openWrite(std::ofstream &ofs, const std::string &filename,
 
 bool FSUtil::isFileExist(const std::string &path)
 {
-    struct stat buffer;
+    lon_stat_t buffer;
+#ifdef _WIN32
+    return (_stat(path.c_str(), &buffer) == 0);
+#else
     return (stat(path.c_str(), &buffer) == 0);
+#endif
 }
 
 size_t FSUtil::getFileSize(const std::string &path)
 {
-    struct stat st;
+    lon_stat_t st;
+#ifdef _WIN32
+    if (_stat(path.c_str(), &st) == 0)
+#else
     if (stat(path.c_str(), &st) == 0)
+#endif
     {
         return st.st_size;
     }
@@ -267,10 +373,14 @@ size_t FSUtil::getFileSize(const std::string &path)
     }
 }
 
-int FSUtil::__lstat(const char *file, struct stat *st)
+int FSUtil::__lstat(const char *file, lon_stat_t *st)
 {
-    struct stat lst;
+    lon_stat_t lst;
+#ifdef _WIN32
+    int ret = ::_stat(file, &lst);
+#else
     int ret = ::lstat(file, &lst);
+#endif
     if (st)
     {
         *st = lst;
@@ -280,11 +390,19 @@ int FSUtil::__lstat(const char *file, struct stat *st)
 
 int FSUtil::__mkdir(const char *dirname)
 {
+#ifdef _WIN32
+    if (::_access(dirname, F_OK) == 0)
+    {
+        return 0;
+    }
+    return ::_mkdir(dirname);
+#else
     if (::access(dirname, F_OK) == 0)
     {
         return 0;
     }
     return ::mkdir(dirname, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
 }
 
 } // namespace util

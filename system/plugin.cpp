@@ -9,6 +9,22 @@ static auto g_logger = LON_LOG_ROOT;
 typedef Plugin *(*CreatePluginType)();
 typedef void (*DestroyPluginType)(Plugin *);
 
+#ifdef _WIN32
+static std::string getLastErrorString()
+{
+    DWORD error = GetLastError();
+    if (error == 0)
+        return std::string();
+    
+    LPSTR buffer = nullptr;
+    size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                 NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0, NULL);
+    std::string message(buffer, size);
+    LocalFree(buffer);
+    return message;
+}
+#endif
+
 class PluginCloser
 {
   public:
@@ -20,6 +36,20 @@ class PluginCloser
         std::string version = module->getVersion();
         std::string path    = module->getPath();
         m_destory(module);
+#ifdef _WIN32
+        int rt = FreeLibrary((HMODULE)m_handle) ? 0 : 1;
+        if (rt)
+        {
+            LON_ERROR(g_logger) << "FreeLibrary handle fail handle=" << m_handle << " name=" << name
+                                << " version=" << version << " path=" << path
+                                << " error=" << getLastErrorString();
+        }
+        else
+        {
+            LON_INFO(g_logger) << "destory plugin=" << name << " version=" << version
+                               << " path=" << path << " handle=" << m_handle << " success";
+        }
+#else
         int rt = dlclose(m_handle);
         if (rt)
         {
@@ -32,6 +62,7 @@ class PluginCloser
             LON_INFO(g_logger) << "destory plugin=" << name << " version=" << version
                                << " path=" << path << " handle=" << m_handle << " success";
         }
+#endif
     }
 
   private:
@@ -74,6 +105,32 @@ const std::string &Plugin::getId() const { return m_id; }
 
 Plugin::Ptr Plugin::loadPlugin(const std::string &path)
 {
+#ifdef _WIN32
+    HMODULE handle = LoadLibraryA(path.c_str());
+    if (!handle)
+    {
+        LON_ERROR(g_logger) << "cannot load plugin path=" << path << " error=" << getLastErrorString();
+        return nullptr;
+    }
+
+    CreatePluginType create = (CreatePluginType)GetProcAddress(handle, "CreatePlugin");
+    if (!create)
+    {
+        LON_ERROR(g_logger) << "cannot load symbol CreatePlugin in " << path
+                            << " error=" << getLastErrorString();
+        FreeLibrary(handle);
+        return nullptr;
+    }
+
+    DestroyPluginType destory = (DestroyPluginType)GetProcAddress(handle, "DestoryPlugin");
+    if (!destory)
+    {
+        LON_ERROR(g_logger) << "cannot load symbol DestoryPlugin in " << path
+                            << " error=" << getLastErrorString();
+        FreeLibrary(handle);
+        return nullptr;
+    }
+#else
     void *handle = dlopen(path.c_str(), RTLD_NOW);
     if (!handle)
     {
@@ -98,6 +155,7 @@ Plugin::Ptr Plugin::loadPlugin(const std::string &path)
         dlclose(handle);
         return nullptr;
     }
+#endif
 
     Plugin::Ptr plugin(create(), PluginCloser(handle, destory));
     plugin->m_path = path;
@@ -153,7 +211,11 @@ void PluginManager::delAll()
 void PluginManager::init(const std::string &plugin_path)
 {
     std::vector<std::string> plugins{};
+#ifdef _WIN32
+    util::FSUtil::getDirFiles(plugins, plugin_path, ".dll");
+#else
     util::FSUtil::getDirFiles(plugins, plugin_path, ".so");
+#endif
 
     std::sort(plugins.begin(), plugins.end());
     for (const auto &plugin : plugins)

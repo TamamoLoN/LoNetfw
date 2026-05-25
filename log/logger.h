@@ -16,7 +16,7 @@ namespace lon
 {
 namespace log
 {
-class Logger : public std::enable_shared_from_this<Logger>
+class LON_API Logger : public std::enable_shared_from_this<Logger>
 {
   public:
     using Ptr       = std::shared_ptr<Logger>;
@@ -49,7 +49,7 @@ class Logger : public std::enable_shared_from_this<Logger>
     mutable MutexType m_mutex;
 };
 
-class LoggerWrapper
+class LON_API LoggerWrapper
 {
   public:
     LoggerWrapper(Logger::Ptr logger, LogEvent::Ptr event);
@@ -63,7 +63,7 @@ class LoggerWrapper
     LogEvent::Ptr m_event;
 };
 
-class LoggerManager
+class LON_API LoggerManager
 {
   public:
     using MutexType = thread::SpinLock;

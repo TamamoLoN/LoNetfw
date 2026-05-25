@@ -5,14 +5,22 @@
 #include "util/util.h"
 #include <functional>
 #include <sstream>
+
+#ifdef _WIN32
+#include <windows.h>
+
+#include <process.h>
+typedef int pid_t;
+#else
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
 
 namespace lon
 {
 namespace system
 {
-struct ProcessInfo
+struct LON_API ProcessInfo
 {
     /// 父进程id
     pid_t parent_id = 0;
@@ -37,7 +45,7 @@ struct ProcessInfo
  * @param[in] is_daemon 是否守护进程的方式
  * @return 返回程序的执行结果
  */
-int start_daemon(int argc, char **argv, std::function<int(int argc, char **argv)> main_cb,
+LON_API int start_daemon(int argc, char **argv, std::function<int(int argc, char **argv)> main_cb,
                  bool is_daemon);
 
 } // namespace system

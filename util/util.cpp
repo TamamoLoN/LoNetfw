@@ -344,12 +344,27 @@ std::string time2Str(time_t time, const std::string &format)
 
 time_t str2Time(const std::string &str, const std::string &format)
 {
-    struct tm t;
-    memset(&t, 0, sizeof(t));
+    struct tm t{};
+#ifdef _WIN32
+    // Windows 没有 strptime，需要手动解析
+    // 假设 format = "%Y-%m-%d %H:%M:%S"
+    int year, mon, day, hour, min, sec;
+    if (sscanf_s(str.c_str(), "%d-%d-%d %d:%d:%d", &year, &mon, &day, &hour, &min, &sec) != 6)
+    {
+        return 0;
+    }
+    t.tm_year = year - 1900; // tm_year 是从 1900 开始
+    t.tm_mon  = mon - 1;     // tm_mon 0~11
+    t.tm_mday = day;
+    t.tm_hour = hour;
+    t.tm_min  = min;
+    t.tm_sec  = sec;
+#else
     if (!strptime(str.c_str(), format.c_str(), &t))
     {
         return 0;
     }
+#endif
     return mktime(&t);
 }
 

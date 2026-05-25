@@ -6,7 +6,7 @@ namespace lon
 {
 namespace server
 {
-class ServerFactory
+class LON_API ServerFactory
 {
   public:
     ServerFactory(const ServerFactory &) = delete;

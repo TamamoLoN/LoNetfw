@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/noncopyable.h"
+#include "util/macro.h"
 #include <errno.h>
 #include <semaphore.h>
 #include <sstream>
@@ -10,7 +11,7 @@ namespace lon
 {
 namespace thread
 {
-class Semaphore : public util::Nonecopyable
+class LON_API Semaphore : public util::Nonecopyable
 {
   public:
     explicit Semaphore(uint32_t count = 0);
