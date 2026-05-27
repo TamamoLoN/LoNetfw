@@ -4,9 +4,29 @@ namespace lon
 {
 namespace scheduler
 {
-SchedulerManager::SchedulerManager() : m_stopping(true), m_schedulers({}) {}
+#ifdef _WIN32
+SchedulerManager *SchedulerManager::s_instance = nullptr;
+#endif
+
+SchedulerManager::SchedulerManager() : m_stopping(true), m_schedulers({})
+{
+#ifdef _WIN32
+    s_instance = this;
+#endif
+}
 
 SchedulerManager::~SchedulerManager() { stop(); }
+
+#ifdef _WIN32
+SchedulerManager &SchedulerManager::Instance()
+{
+    if (!s_instance)
+    {
+        throw std::runtime_error("scheduler manager instance not initialized");
+    }
+    return *s_instance;
+}
+#endif
 
 void SchedulerManager::addScheduler(Scheduler::Ptr scheduler)
 {

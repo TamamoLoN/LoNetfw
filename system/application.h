@@ -38,6 +38,10 @@ class LON_API Application
     char **m_argv;
     std::unordered_map<std::string, std::vector<server::TcpServer::Ptr>> m_servers;
     scheduler::IOScheduler::Ptr m_main_ioscheduler;
+    static Application* s_instance;
+#ifdef _WIN32
+    scheduler::SchedulerManager::Ptr m_schedmgr;
+#endif
 };
 } // namespace system
 } // namespace lon

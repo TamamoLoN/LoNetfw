@@ -5,17 +5,25 @@ namespace lon
 namespace system
 {
 static auto g_logger = LON_LOG_ROOT;
+Application* Application::s_instance = nullptr;
 
 Application::Application() : m_argc(0), m_argv(nullptr), m_servers({}), m_main_ioscheduler(nullptr)
+#ifdef _WIN32
+, m_schedmgr(nullptr)
+#endif
 {
+    s_instance = this;
 }
 
 Application::~Application() {}
 
 Application &Application::Instance()
 {
-    static Application instance;
-    return instance;
+    if (!s_instance)
+    {
+        throw std::runtime_error("application instance not initialized");
+    }
+    return *s_instance;
 }
 
 bool Application::init(int argc, char **argv)
@@ -93,6 +101,11 @@ bool Application::getServer(const std::string &type, std::vector<server::TcpServ
 int Application::main(int argc, char **argv)
 {
     LON_INFO(g_logger) << "main";
+#ifdef _WIN32
+    m_schedmgr = std::make_shared<scheduler::SchedulerManager>();
+#else
+    signal(SIGPIPE, SIG_IGN);
+#endif
     auto config_path = ENVMGR.getConfigPath();
     config::Config::parseFromDir(config_path);
     {

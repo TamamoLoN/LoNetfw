@@ -2,8 +2,11 @@
 
 #include "scheduler/ioscheduler.h"
 
+#ifdef _WIN32
+#define SCHEDMGR lon::scheduler::SchedulerManager::Instance()
+#else
 #define SCHEDMGR lon::util::Singleton<lon::scheduler::SchedulerManager>::Instance()
-
+#endif
 namespace lon
 {
 namespace scheduler
@@ -11,9 +14,12 @@ namespace scheduler
 class LON_API SchedulerManager
 {
   public:
+    using Ptr = std::shared_ptr<SchedulerManager>;
     explicit SchedulerManager();
     virtual ~SchedulerManager();
-
+#ifdef _WIN32
+    static SchedulerManager &Instance();
+#endif
     void addScheduler(Scheduler::Ptr scheduler);
     Scheduler::Ptr getScheduler(const std::string &name);
 
@@ -53,6 +59,9 @@ class LON_API SchedulerManager
   private:
     std::unordered_map<std::string, std::vector<Scheduler::Ptr>> m_schedulers;
     bool m_stopping;
+#ifdef _WIN32
+    static SchedulerManager *s_instance;
+#endif
 };
 } // namespace scheduler
 } // namespace lon
