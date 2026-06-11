@@ -263,3 +263,13 @@ install(DIRECTORY
 )
 
 # install(FILES lonetfw/lonetfw.h DESTINATION include)
+if(WIN32)
+    install(DIRECTORY
+            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/pthreads-w32/include/
+            ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/win32/wepoll/include/
+            DESTINATION include
+            FILES_MATCHING
+            PATTERN "*.h"
+            PATTERN "*.hpp"
+    )
+endif()
