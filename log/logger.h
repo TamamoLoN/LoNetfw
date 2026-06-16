@@ -69,6 +69,9 @@ class LON_API LoggerManager
     using MutexType = thread::SpinLock;
     LoggerManager(const Logger::Ptr &logger_root = nullptr);
     ~LoggerManager() = default;
+#ifdef _WIN32
+    static LoggerManager &Instance();
+#endif
 
     void setLogger(const std::string &name, const Logger::Ptr &logger);
     Logger::Ptr getLogger(const std::string &name, bool auto_create = false);

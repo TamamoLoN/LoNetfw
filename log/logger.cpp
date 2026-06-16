@@ -99,6 +99,14 @@ LoggerWrapper::LoggerWrapper(Logger::Ptr logger, LogEvent::Ptr event)
 
 LoggerWrapper::~LoggerWrapper() { m_logger->log(m_event->getLevel(), m_event); }
 
+#ifdef _WIN32
+LoggerManager &LoggerManager::Instance()
+{
+    static LoggerManager instance;
+    return instance;
+}
+#endif
+
 std::stringstream &LoggerWrapper::getMessageStream() { return m_event->getMessageStream(); }
 
 LogEvent::Ptr LoggerWrapper::getEvent() const { return m_event; }

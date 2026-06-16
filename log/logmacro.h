@@ -38,7 +38,11 @@
 #define LON_FATAL_FMT(logger, fmt, ...)                                                            \
     LON_LOG_LEVEL_FMT(logger, lon::log::LogLevel::Level::FATAL, fmt, __VA_ARGS__)
 
+#ifdef _WIN32
+#define LON_LOG_MANAGER lon::log::LoggerManager::Instance()
+#else
 #define LON_LOG_MANAGER lon::util::Singleton<lon::log::LoggerManager>::Instance()
+#endif
 #define LON_LOG_ROOT LON_LOG_MANAGER.getRoot()
 #define LON_LOG_NAME(name) LON_LOG_MANAGER.getLogger(name, true)
 
