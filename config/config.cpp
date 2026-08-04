@@ -6,6 +6,36 @@ namespace config
 {
 static auto g_logger = LON_LOG_ROOT;
 
+void Config::setData(const ConfigDataBase::Ptr &data_ptr)
+{
+    thread::RWMutex::WrLock lock(getMutex());
+    auto name       = data_ptr->getName();
+    auto name_lower = util::toLower(name);
+    if (!util::isValidParamName(name_lower))
+    {
+        LON_ERROR(g_logger) << "data name is invalid: " << name;
+        return;
+    }
+    auto it = getDatas().find(name_lower);
+    if (it != getDatas().end())
+    {
+        auto exists_type = it->second->getType();
+        if (exists_type == data_ptr->getType())
+        {
+            LON_WARN(g_logger) << "data is exists: " << name;
+            return;
+        }
+        else
+        {
+            LON_ERROR(g_logger)
+                << "data is exists: " << name << ", but type is not match: this->"
+                << data_ptr->getType() << "; exists->" << exists_type;
+            return;
+        }
+    }
+    getDatas()[name_lower] = data_ptr;
+}
+
 ConfigDataBase::Ptr Config::getDataBase(const std::string &name)
 {
     if (getDatas().find(name) != getDatas().end())
@@ -114,6 +144,18 @@ std::string Config::toString()
     std::stringstream ss;
     toString(ss);
     return ss.str();
+}
+
+Config::ConfigDataMap &Config::getDatas()
+{
+    static ConfigDataMap s_datas;
+    return s_datas;
+}
+
+Config::MutexType &Config::getMutex()
+{
+    static MutexType s_mutex;
+    return s_mutex;
 }
 
 } // namespace config

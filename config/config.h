@@ -47,35 +47,7 @@ class LON_API Config
         return data_ptr;
     }
 
-    static void setData(const ConfigDataBase::Ptr &data_ptr)
-    {
-        thread::RWMutex::WrLock lock(getMutex());
-        auto name       = data_ptr->getName();
-        auto name_lower = util::toLower(name);
-        if (!util::isValidParamName(name_lower))
-        {
-            LON_ERROR(LON_LOG_ROOT) << "data name is invalid: " << name;
-            return;
-        }
-        auto it = getDatas().find(name_lower);
-        if (it != getDatas().end())
-        {
-            auto exists_type = it->second->getType();
-            if (exists_type == data_ptr->getType())
-            {
-                LON_WARN(LON_LOG_ROOT) << "data is exists: " << name;
-                return;
-            }
-            else
-            {
-                LON_ERROR(LON_LOG_ROOT)
-                    << "data is exists: " << name << ", but type is not match: this->"
-                    << data_ptr->getType() << "; exists->" << exists_type;
-                return;
-            }
-        }
-        getDatas()[name_lower] = data_ptr;
-    }
+    static void setData(const ConfigDataBase::Ptr &data_ptr);
 
     template <typename T> static typename ConfigData<T>::Ptr getData(const std::string &name)
     {
@@ -106,17 +78,8 @@ class LON_API Config
 
   private:
     //使静态变量s_datas必须先初始化
-    static ConfigDataMap &getDatas()
-    {
-        static ConfigDataMap s_datas;
-        return s_datas;
-    }
-
-    static MutexType &getMutex()
-    {
-        static MutexType s_mutex;
-        return s_mutex;
-    }
+    static ConfigDataMap &getDatas();
+    static MutexType &getMutex();
 };
 } // namespace config
 } // namespace lon
