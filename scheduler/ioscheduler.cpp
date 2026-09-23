@@ -61,6 +61,9 @@ IOScheduler::IOScheduler(size_t threads_count, bool use_caller, std::string name
     rt        = ioctlsocket(m_notify_pipe_fd[0], FIONBIO, &nb);
     LON_ASSERT(!rt);
 
+    rt = ioctlsocket(m_notify_pipe_fd[1], FIONBIO, &nb);
+    LON_ASSERT(!rt);
+
     rt = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_notify_pipe_fd[0], &event);
     LON_ASSERT(!rt);
 #else
@@ -335,11 +338,13 @@ void IOScheduler::notify()
 #ifdef _WIN32
     char c  = 'T';
     int ret = send(m_notify_pipe_fd[1], &c, 1, 0);
-    LON_ASSERT(ret == 1);
+    // 管道读端未及时 drain 时写端会暂时满，非阻塞下视为唤醒信号已排队
+    LON_ASSERT(ret == 1 ||
+               (ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK));
 #else
     int ret        = write(m_notify_pipe_fd[1], "T", 1);
-#endif
     LON_ASSERT(ret == 1);
+#endif
 }
 
 bool IOScheduler::stopping()
@@ -375,7 +380,13 @@ void IOScheduler::idle()
         int ret = 0;
         do
         {
+#ifdef _WIN32
+            // wepoll 对 loopback+EPOLLONESHOT 偶尔会丢唤醒事件(issue#35)，
+            // 短超时兜底：即使唤醒丢失，idle 也会周期性 yield 回 run() 重查任务队列
+            static const int MAX_TIMEOUT = 100; // ms
+#else
             static const int MAX_TIMEOUT = 3000; // ms
+#endif
             if (next_timeout != ~0ull)
             {
                 next_timeout = (int)next_timeout > MAX_TIMEOUT ? MAX_TIMEOUT : (int)next_timeout;
@@ -412,6 +423,12 @@ void IOScheduler::idle()
                 while (recv(m_notify_pipe_fd[0], &msg, 1, 0) == 1)
                 {
                 }
+                // EPOLLONESHOT 触发后不自动重挂，必须显式 re-arm 才能收到下次 notify
+                epoll_event rearm;
+                memset(&rearm, 0, sizeof(rearm));
+                rearm.events    = EPOLLIN | EPOLLONESHOT;
+                rearm.data.sock = m_notify_pipe_fd[0];
+                epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, m_notify_pipe_fd[0], &rearm);
                 continue;
             }
 #else
