@@ -119,13 +119,19 @@ int8_t IOScheduler::addEvent(int fd, Event event, std::function<void()> cb)
     FdContext *fd_ctx = nullptr;
     MutexType::RdLock rlock(m_mutex);
 #ifdef _WIN32
-    if (m_fd_contexts.find(fd) == m_fd_contexts.end())
+    if (m_fd_contexts.find(fd) != m_fd_contexts.end())
     {
-        m_fd_contexts[fd] = new FdContext;
-        m_fd_contexts[fd]->fd = fd;
+        fd_ctx = m_fd_contexts[fd];
+        rlock.unlock();
     }
-    fd_ctx = m_fd_contexts[fd];
-    rlock.unlock();
+    else
+    {
+        rlock.unlock();
+        fd_ctx     = new FdContext;
+        fd_ctx->fd = fd;
+        MutexType::WrLock wlock(m_mutex);
+        m_fd_contexts[fd] = fd_ctx;
+    }
 #else
     if ((int)m_fd_contexts.size() > fd)
     {
