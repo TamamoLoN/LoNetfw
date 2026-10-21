@@ -68,7 +68,9 @@ class LON_API HashUtil
     static std::vector<std::string> split(const std::string &str, const char *delims,
                                           size_t max = ~0);
 
-    static std::string random_string(size_t len);
+    static std::string
+    random_string(size_t len, const std::string &chars =
+                                  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 };
 } // namespace util
 } // namespace lon

@@ -597,18 +597,18 @@ std::vector<std::string> HashUtil::split(const std::string &str, const char *del
     return result;
 }
 
-std::string HashUtil::random_string(size_t len)
+std::string HashUtil::random_string(size_t len, const std::string &chars)
 {
-    if (len == 0)
+    if (len == 0 || chars.empty())
     {
         return "";
     }
-    static const char CHARS[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string rt;
     rt.resize(len);
+    int count = chars.size();
     for (size_t i = 0; i < len; ++i)
     {
-        rt[i] = CHARS[rand() % sizeof(CHARS)];
+        rt[i] = chars[rand() % count];
     }
     return rt;
 }

@@ -58,6 +58,10 @@ LON_API std::string toUpper(const std::string &str);
 LON_API std::vector<std::string> split(const std::string &s, const std::string &delimiter);
 LON_API std::string trim(const std::string &str);
 LON_API bool globMatch(const std::string &pattern, const std::string &text);
+LON_API std::string urlEncode(const std::string &str, bool space_as_plus = true);
+LON_API std::string urlDecode(const std::string &str, bool space_as_plus = true);
+LON_API std::string wStringToString(const std::wstring &ws);
+LON_API std::wstring stringToWString(const std::string &s);
 
 // yaml风格的格式参数名验证规则
 LON_API bool isValidParamName(const std::string &str);
